@@ -856,11 +856,10 @@
 
   function festivalList() {
     const rows = festivals.map((f) => [cell(String(f.rank), f.rank), cell('<button class="open"' + fattr("festival", f.name) + ">" + esc(f.name) + "</button>", f.name), cell(String(f.count), f.count), cell(String(f.concerts), f.concerts), cell(f.years.join(", "), f.years[0])]);
-    const span = (f) => f.years.length > 1 ? Math.min(...f.years) + " – " + Math.max(...f.years) : String(f.years[0]);
-    festivals.forEach((f, i) => { rows[i].span = span(f); });
+    festivals.forEach((f, i) => { rows[i].yrs = f.years.slice().sort().map((y) => "’" + String(y).slice(2)).join(" "); });
     return '<div class="list-head"><div class="list-title"><h2>' + plural(festivals.length, "festival", "festivals") + "</h2></div></div>" +
       table("festivals", [{ label: "#", num: true, cls: "num" }, { label: "Festival" }, { label: "Editions", num: true, cls: "num" }, { label: "Concerts", num: true, cls: "num" }, { label: "Years", cls: "muted" }], rows, 0,
-        (r) => ({ rank: r[0].h, title: r[1].h, sub: [plural(r[2].s, "edition", "editions"), r.span], value: r[3].h, unit: r[3].s === 1 ? "concert" : "concerts" }));
+        (r) => ({ rank: r[0].h, title: r[1].h, sub: [plural(r[2].s, "edition", "editions")], tag: '<span class="tag">' + r.yrs + "</span>", value: r[3].h, unit: r[3].s === 1 ? "concert" : "concerts" }));
   }
 
   function songList() {
