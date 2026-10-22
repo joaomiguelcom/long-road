@@ -146,7 +146,8 @@
     .search { max-width: none; } h1 { font-size: 34px; } .kpi { font-size: 34px; } td, th { padding: 10px 12px; }
     .brand svg { width: 46px; height: 46px; border-radius: 11px; }
     .brand .eyebrow { font-size: 11px; letter-spacing: .1em; margin-top: 7px; }
-    nav { margin: 16px -16px 0; padding: 0 16px; -webkit-mask-image: linear-gradient(90deg, #000 85%, transparent); mask-image: linear-gradient(90deg, #000 85%, transparent); }
+    nav { margin: 16px -16px 0; padding: 0 16px; }
+    nav.more-right { -webkit-mask-image: linear-gradient(90deg, #000 85%, transparent); mask-image: linear-gradient(90deg, #000 85%, transparent); }
     nav button { padding: 12px 12px; }
     .kpis { grid-template-columns: 1fr 1fr; gap: 12px; }
     .kpis .card { padding: 16px; }
@@ -528,7 +529,12 @@
     // keep the active tab visible when the tab bar scrolls sideways (phones)
     const nav = document.getElementById("tabs"), cur = nav.querySelector("[aria-current]");
     if (cur && nav.scrollWidth > nav.clientWidth) nav.scrollLeft = cur.offsetLeft - (nav.clientWidth - cur.offsetWidth) / 2;
+    fadeTabs();
   }
+  // fade the right edge only while there are more tabs to scroll to
+  const fadeTabs = () => { const nav = document.getElementById("tabs"); nav.classList.toggle("more-right", nav.scrollLeft + nav.clientWidth < nav.scrollWidth - 4); };
+  document.getElementById("tabs").addEventListener("scroll", fadeTabs, { passive: true });
+  window.addEventListener("resize", fadeTabs);
 
   // ---------- overview ----------
   const countryCities = (country) => new Set(concerts.filter((c) => c.country === country).map((c) => c.city)).size;
