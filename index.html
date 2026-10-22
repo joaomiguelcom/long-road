@@ -82,6 +82,24 @@
   input::placeholder { color: #8A9099; }
   input:focus-visible, button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   .table-box { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; }
+  .mlist, .msort { display: none; }
+  .mlist { list-style: none; margin: 0; padding: 0; border: 1px solid var(--line); border-radius: 12px; }
+  .mlist li { position: relative; display: flex; align-items: center; gap: 12px; padding: 12px 14px; }
+  .mlist li + li { border-top: 1px solid var(--line); }
+  .m-rank { flex: none; min-width: 22px; color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; }
+  .m-main { flex: 1; min-width: 0; }
+  .m-title { font-weight: 600; overflow-wrap: anywhere; }
+  .m-title .open, .m-title .open.muted-btn { background: none; border: 0; padding: 0; font: inherit; color: var(--text); font-weight: 600; text-align: left; cursor: pointer; }
+  .m-title .open::after { content: ""; position: absolute; inset: 0; }
+  .m-sub { margin-top: 2px; font-size: 13px; color: var(--muted); overflow-wrap: anywhere; }
+  .m-sub button { position: relative; z-index: 1; background: none; border: 0; padding: 0; font: inherit; color: inherit; text-decoration: underline; text-decoration-color: var(--line-2); text-underline-offset: 3px; cursor: pointer; }
+  .m-sub span[style] { white-space: normal !important; }
+  .m-tag { margin-top: 4px; font-size: 12px; } .m-tag br { display: none; } .m-tag .accent + .tag::before { content: " · "; }
+  .m-val { flex: none; text-align: right; font: 600 18px/1 var(--display); font-variant-numeric: tabular-nums; }
+  .m-val small { display: block; margin-top: 3px; font: 400 11px/1 Inter, system-ui, sans-serif; color: var(--muted); }
+  .msort { align-items: center; gap: 8px; margin-bottom: 10px; }
+  .msort label { margin: 0; white-space: nowrap; }
+  .msort select { flex: 1; min-width: 0; }
   table { width: 100%; min-width: 760px; border-collapse: collapse; font-size: 14px; }
   th.num, td.num { width: 1%; white-space: nowrap; }
   th { text-align: left; font-weight: 500; color: var(--muted); background: var(--surface); padding: 12px 16px; }
@@ -160,6 +178,7 @@
     .kpis { grid-template-columns: 1fr 1fr; gap: 12px; }
     .kpis .card { padding: 16px; }
     .kpis > :first-child:nth-last-child(odd) { grid-column: 1 / -1; }
+    .mlist { display: block; } .msort { display: flex; } .table-box.has-mlist { display: none; }
   }
   /* hover only where a real pointer exists, so taps on touch screens do not leave items highlighted */
   @media (hover: hover) {
@@ -518,7 +537,9 @@
   // Sortable tables: rows are arrays of cells { h: html, s: sort value }; sorting happens on the data,
   // before "Show more" limits, so the whole list is sorted and not only what is on screen.
   const cell = (h, s) => ({ h: h, s: s === undefined ? h : s });
-  function table(id, cols, rows, limit) {
+  // m(row) describes the mobile layout of a row: { rank, title, sub: [html…], tag, value, unit }.
+  // Phones get that two-line list instead of the wide table, so nothing scrolls sideways.
+  function table(id, cols, rows, limit, m) {
     const st = state.sorts[id];
     if (st) rows = rows.slice().sort((a, b) => {
       const x = a[st.col].s, y = b[st.col].s;
@@ -526,7 +547,18 @@
       return st.dir * r;
     });
     const shown = limit ? rows.slice(0, limit) : rows;
-    return '<div class="table-box"><table><thead><tr>' + cols.map((c, i) => {
+    const sortBar = m ? '<div class="msort"><label for="ms-' + id + '">Sort by</label><select id="ms-' + id + '" data-sortsel="' + id + '">' +
+      '<option value=""' + (st ? "" : " selected") + ">Default</option>" +
+      cols.map((c, i) => c.label === "#" ? "" : '<option value="' + i + '" data-num="' + (c.num ? 1 : 0) + '"' + (st && st.col === i ? " selected" : "") + ">" + c.label + "</option>").join("") + "</select>" +
+      (st ? '<button type="button" class="icon-btn" data-sortdir="' + id + '" aria-label="' + (st.dir > 0 ? "Ascending, switch to descending" : "Descending, switch to ascending") + '">' + (st.dir > 0 ? "↑" : "↓") + "</button>" : "") + "</div>" : "";
+    const mlist = m ? '<ul class="mlist">' + shown.map((r) => {
+      const x = m(r), sub = (x.sub || []).filter(Boolean);
+      return '<li>' + (x.rank !== undefined ? '<span class="m-rank">' + x.rank + "</span>" : "") +
+        '<div class="m-main"><div class="m-title">' + x.title + "</div>" +
+        (sub.length ? '<div class="m-sub">' + sub.join(" · ") + "</div>" : "") + (x.tag ? '<div class="m-tag">' + x.tag + "</div>" : "") + "</div>" +
+        (x.value ? '<span class="m-val">' + x.value + (x.unit ? "<small>" + x.unit + "</small>" : "") + "</span>" : "") + "</li>";
+    }).join("") + "</ul>" : "";
+    return sortBar + mlist + '<div class="table-box' + (m ? " has-mlist" : "") + '"><table><thead><tr>' + cols.map((c, i) => {
       const on = st && st.col === i;
       return '<th scope="col"' + (c.num ? ' class="num"' : "") + (on ? ' aria-sort="' + (st.dir > 0 ? "ascending" : "descending") + '"' : "") +
         '><button type="button" class="th-btn" data-sort="' + id + "|" + i + "|" + (c.num ? 1 : 0) + '">' + c.label +
@@ -544,6 +576,7 @@
     cell(notes(c), (c.festival || "") + (c.tour || "")),
     cell(String((c.songs || []).length || ""), (c.songs || []).length)
   ]);
+  const concertM = (r) => ({ title: r[1].h, sub: [r[0].h, r[2].h, r[3].h], tag: r[4].h, value: r[5].h, unit: r[5].s === 1 ? "song" : "songs" });
   const CONCERT_COLS = [{ label: "Date", cls: "muted" }, { label: "Artist" }, { label: "Venue" }, { label: "City", cls: "muted" }, { label: "Notes" }, { label: "Songs", num: true, cls: "num" }];
 
   const FILTERS = {
@@ -705,7 +738,7 @@
       '<div class="list-head"><div class="list-title"><h2>' + plural(list.length, "concert", "concerts") + "</h2>" +
       (F ? '<span class="chip"><span class="chip-label">' + F.label + "</span><strong>" + esc(F.show(state.filter.v)) + (state.filter.y ? " · " + esc(state.filter.y) : "") + '</strong><button type="button" id="clearf" aria-label="Clear filter"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button></span>' : "") +
       "</div>" + searchBox("q", "Search concerts", "Search artist, venue, city, year", state.q) + "</div>" +
-      table("concerts", CONCERT_COLS, concertRows(list), limitOf("concerts", 100));
+      table("concerts", CONCERT_COLS, concertRows(list), limitOf("concerts", 100), concertM);
   }
 
   function concertDetail(id) {
@@ -778,7 +811,8 @@
       cell(String(a.rank), a.rank), cell(artistBtn(a.key), a.key), cell(String(a.count), a.count),
       cell(fmtDate(s.first), s.first), cell(fmtDate(s.last), s.last)]; });
     return '<div class="list-head"><div class="list-title"><h2>' + plural(list.length, "artist", "artists") + "</h2></div>" + searchBox("aq", "Search artist", "Search artist", state.artistQ) + "</div>" +
-      table("artists", [{ label: "#", num: true, cls: "num" }, { label: "Artist" }, { label: "Concerts", num: true, cls: "num" }, { label: "First seen", cls: "muted" }, { label: "Last seen", cls: "muted" }], rows, limitOf("artists", 100));
+      table("artists", [{ label: "#", num: true, cls: "num" }, { label: "Artist" }, { label: "Concerts", num: true, cls: "num" }, { label: "First seen", cls: "muted" }, { label: "Last seen", cls: "muted" }], rows, limitOf("artists", 100),
+        (r) => ({ rank: r[0].h, title: r[1].h, sub: [r[3].s.slice(0, 4) === r[4].s.slice(0, 4) ? r[3].s.slice(0, 4) : r[3].s.slice(0, 4) + " – " + r[4].s.slice(0, 4)], value: r[2].h, unit: r[2].s === 1 ? "concert" : "concerts" }));
   }
 
   function artistPage(name) {
@@ -806,7 +840,7 @@
       "</section>" +
       (top.length ? '<section class="card"><h2>Songs you heard most</h2>' + bars(top.slice(0, 15), (s) => esc(s.name)) + "</section>" : "") +
       '<section class="card"><div class="card-head"><h2>Concerts</h2><button class="link"' + fattr("artist", name) + ">Open in concert list</button></div>" +
-        table("artist-concerts", CONCERT_COLS, concertRows(list)) + "</section>" +
+        table("artist-concerts", CONCERT_COLS, concertRows(list), 0, concertM) + "</section>" +
       (once.length ? '<section class="card"><h2>Heard only once</h2><p class="muted" style="margin:0">' + once.map((s) => esc(s.name)).join(" · ") + "</p></section>" : "") +
       (aCovers.length ? '<section class="card"><h2>Covers</h2><p class="muted" style="margin:0">' + aCovers.map((x) => esc(x.name) + " (" + esc(x.original) + ")" + (x.count > 1 ? " ×" + x.count : "")).join(" · ") + "</p></section>" : "") +
       "</div>";
@@ -816,13 +850,17 @@
   function venueList() {
     const rows = venues.map((v) => [cell(String(v.rank), v.rank), cell('<button class="open"' + fattr("venue", v.key) + ">" + esc(v.name) + "</button>", v.name), cell(esc(v.city), v.city), cell(String(v.count), v.count)]);
     return '<div class="list-head"><div class="list-title"><h2>' + plural(venues.length, "venue", "venues") + '</h2><span class="muted">Festivals are counted separately</span></div></div>' +
-      table("venues", [{ label: "#", num: true, cls: "num" }, { label: "Venue" }, { label: "City", cls: "muted" }, { label: "Concerts", num: true, cls: "num" }], rows);
+      table("venues", [{ label: "#", num: true, cls: "num" }, { label: "Venue" }, { label: "City", cls: "muted" }, { label: "Concerts", num: true, cls: "num" }], rows, 0,
+        (r) => ({ rank: r[0].h, title: r[1].h, sub: [r[2].h], value: r[3].h, unit: r[3].s === 1 ? "concert" : "concerts" }));
   }
 
   function festivalList() {
     const rows = festivals.map((f) => [cell(String(f.rank), f.rank), cell('<button class="open"' + fattr("festival", f.name) + ">" + esc(f.name) + "</button>", f.name), cell(String(f.count), f.count), cell(String(f.concerts), f.concerts), cell(f.years.join(", "), f.years[0])]);
+    const span = (f) => f.years.length > 1 ? Math.min(...f.years) + " – " + Math.max(...f.years) : String(f.years[0]);
+    festivals.forEach((f, i) => { rows[i].span = span(f); });
     return '<div class="list-head"><div class="list-title"><h2>' + plural(festivals.length, "festival", "festivals") + "</h2></div></div>" +
-      table("festivals", [{ label: "#", num: true, cls: "num" }, { label: "Festival" }, { label: "Editions", num: true, cls: "num" }, { label: "Concerts", num: true, cls: "num" }, { label: "Years", cls: "muted" }], rows);
+      table("festivals", [{ label: "#", num: true, cls: "num" }, { label: "Festival" }, { label: "Editions", num: true, cls: "num" }, { label: "Concerts", num: true, cls: "num" }, { label: "Years", cls: "muted" }], rows, 0,
+        (r) => ({ rank: r[0].h, title: r[1].h, sub: [plural(r[2].s, "edition", "editions"), r.span], value: r[3].h, unit: r[3].s === 1 ? "concert" : "concerts" }));
   }
 
   function songList() {
@@ -830,10 +868,13 @@
     const coverRows = covers.map((x) => [cell(esc(x.name), x.name), cell(esc(x.original), x.original), cell(artistBtn(x.artist, "open muted-btn"), x.artist), cell(String(x.count), x.count)]);
     const debutRows = debuts.slice().sort((a, b) => b.date.localeCompare(a.date)).map((d) => [cell('<button type="button" class="open muted-btn" data-open="' + esc(d.id) + '">' + fmtDate(d.date) + "</button>", d.date), cell(esc(d.name), d.name), cell(esc(d.artist), d.artist), cell(esc(d.info), d.info)]);
     return '<div class="list-head"><div class="list-title"><h2>Songs you heard most</h2><span class="muted">' + fmtN(songs.length) + " different songs, " + fmtN(songsHeard) + " in total, " + fmtN(heardOnce) + " heard only once</span></div></div>" +
-      table("songs", [{ label: "#", num: true, cls: "num" }, { label: "Song" }, { label: "Artist" }, { label: "Times", num: true, cls: "num" }], rows, limitOf("songs", 100)) +
+      table("songs", [{ label: "#", num: true, cls: "num" }, { label: "Song" }, { label: "Artist" }, { label: "Times", num: true, cls: "num" }], rows, limitOf("songs", 100),
+        (r) => ({ rank: r[0].h, title: r[1].h, sub: [r[2].h], value: r[3].h, unit: r[3].s === 1 ? "time" : "times" })) +
       '<h2 class="section-title">Rarities</h2>' +
-      '<section class="card"><h2>Covers heard live</h2>' + (coverRows.length ? table("covers", [{ label: "Song" }, { label: "Original by", cls: "muted" }, { label: "Played by" }, { label: "Times", num: true, cls: "num" }], coverRows, limitOf("covers", 50)) : '<p class="muted" style="margin:0">None found yet.</p>') + "</section>" +
-      '<section class="card"><h2>Live debuts you saw</h2>' + (debutRows.length ? table("debuts", [{ label: "Date", cls: "muted" }, { label: "Song" }, { label: "Artist" }, { label: "Note", cls: "muted" }], debutRows, limitOf("debuts", 50)) : '<p class="muted" style="margin:0">No songs marked as a live debut on setlist.fm yet.</p>') + "</section>";
+      '<section class="card"><h2>Covers heard live</h2>' + (coverRows.length ? table("covers", [{ label: "Song" }, { label: "Original by", cls: "muted" }, { label: "Played by" }, { label: "Times", num: true, cls: "num" }], coverRows, limitOf("covers", 50),
+        (r) => ({ title: r[0].h, sub: [r[1].h + " → " + r[2].h], value: r[3].h, unit: r[3].s === 1 ? "time" : "times" })) : '<p class="muted" style="margin:0">None found yet.</p>') + "</section>" +
+      '<section class="card"><h2>Live debuts you saw</h2>' + (debutRows.length ? table("debuts", [{ label: "Date", cls: "muted" }, { label: "Song" }, { label: "Artist" }, { label: "Note", cls: "muted" }], debutRows, limitOf("debuts", 50),
+        (r) => ({ title: r[1].h, sub: [r[0].h, esc(r[2].s), r[3].h] })) : '<p class="muted" style="margin:0">No songs marked as a live debut on setlist.fm yet.</p>') + "</section>";
   }
 
   // ---------- year in review ----------
@@ -979,6 +1020,7 @@
       state.sorts[id] = cur && cur.col === +col ? { col: +col, dir: -cur.dir } : { col: +col, dir: num === "1" ? -1 : 1 };
       render();
     }
+    else if (d.sortdir) { const st = state.sorts[d.sortdir]; if (st) { st.dir = -st.dir; render(); } }
     else if (d.more) { state.limits[d.more] = limitOf(d.more, 100) + 200; render(); }
     else if (t.id === "nextAll") { state.nextAll = !state.nextAll; render(); }
     else if (t.id === "clearf") { state.filter = null; state.limits.concerts = 0; render(); }
@@ -987,6 +1029,13 @@
   }, true);
   document.addEventListener("change", (e) => {
     if (e.target.id === "ysel") go(() => { state.year = e.target.value; });
+    const ss = e.target.dataset && e.target.dataset.sortsel;
+    if (ss) {
+      const v = e.target.value, opt = e.target.options[e.target.selectedIndex];
+      if (v === "") delete state.sorts[ss];
+      else state.sorts[ss] = { col: +v, dir: opt.dataset.num === "1" ? -1 : 1 };
+      render(); const el = document.getElementById("ms-" + ss); if (el) el.focus();
+    }
   });
   document.addEventListener("input", (e) => {
     if (e.target.id !== "q" && e.target.id !== "aq") return;
