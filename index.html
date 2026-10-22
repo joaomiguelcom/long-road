@@ -836,7 +836,7 @@
       '<button class="btn" id="backArtists">← All artists</button>' +
       '<div><div class="eyebrow">#' + a.rank + " most seen artist</div>" +
       '<h2 style="margin:4px 0 0;font:600 40px/1.1 var(--display)">' + esc(name) + "</h2>" +
-      '<div class="muted">First seen ' + fmtDate(first.date) + " at " + esc(first.festival || first.venue) + (list.length > 1 ? " · last seen " + fmtDate(last.date) + " at " + esc(last.festival || last.venue) : "") + "</div></div>" +
+      '<div class="muted">First seen ' + fmtDate(first.date) + " at " + esc(first.festival || first.venue) + (list.length > 1 ? " · Last seen " + fmtDate(last.date) + " at " + esc(last.festival || last.venue) : "") + "</div></div>" +
       '<section class="grid kpis" aria-label="Artist summary">' +
         kpi("Concerts", '<span class="accent">' + a.count + "</span>", aFest ? aFest + " at festivals" : "", fattr("artist", name)) +
         kpi("Songs heard", fmtN(heard), fmtN(aSongs.length) + " different") +
