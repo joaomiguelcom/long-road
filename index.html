@@ -260,6 +260,8 @@
   // The API has no festival field. Each festival edition is listed here with its venue and dates
   // (checked one by one, never guessed from the venue alone). "pad" widens the dates by N days
   // to catch a day where only one artist was seen (default 2; 0 for normal concert halls).
+  // "site" is the real festival ground, for editions where setlist.fm lists a stage name as the venue;
+  // the concert then shows the site, and the stage only as a detail.
   // Add one line per new edition.
   const FESTIVAL_EDITIONS = [
     { name: "Arraial d'Engenharia", venue: "CACE Cultural", pad: 0, from: "2007-10-24", to: "2007-10-26" },
@@ -290,10 +292,10 @@
     { name: "Festival Paredes de Coura", venue: "Praia Fluvial do Taboão", from: "2023-08-16", to: "2023-08-17" },
     { name: "Festival Paredes de Coura", venue: "Praia Fluvial do Taboão", from: "2024-08-14", to: "2024-08-17" },
     { name: "Festival Paredes de Coura", venue: "Praia Fluvial do Taboão", from: "2025-08-13", to: "2025-08-16" },
-    { name: "Festival Paredes de Coura", venue: ["Praia Fluvial do Taboão", "Palco Vodafone"], from: "2026-08-12", to: "2026-08-15" },
+    { name: "Festival Paredes de Coura", venue: ["Praia Fluvial do Taboão", "Palco Vodafone"], site: "Praia Fluvial do Taboão", from: "2026-08-12", to: "2026-08-15" },
     { name: "Festival Termómetro", venue: "Biblioteca Municipal Almeida Garrett", pad: 0, from: "2025-03-27", to: "2025-03-27" },
     { name: "I-Days", venue: "Ippodromo Snai La Maura", from: "2026-07-05", to: "2026-07-06" },
-    { name: "Mad Cool Festival", venue: ["Orange", "Region of Madrid"], from: "2026-07-08", to: "2026-07-08" },
+    { name: "Mad Cool Festival", venue: ["Orange", "Region of Madrid"], site: "Iberdrola Music", from: "2026-07-08", to: "2026-07-08" },
     { name: "MEO Kalorama", venue: "Parque da Bela Vista", from: "2022-09-01", to: "2022-09-03" },
     { name: "MEO Kalorama", venue: "Parque da Bela Vista", from: "2023-08-31", to: "2023-09-02" },
     { name: "MEO Kalorama", venue: "Parque da Bela Vista", from: "2024-08-29", to: "2024-08-31" },
@@ -322,8 +324,8 @@
     { name: "NOS Alive", venue: "Passeio Marítimo de Algés", from: "2010-07-08", to: "2010-07-10" },
     { name: "NOS Alive", venue: "Passeio Marítimo de Algés", from: "2011-07-07", to: "2011-07-08" },
     { name: "NOS Alive", venue: "Passeio Marítimo de Algés", from: "2012-07-13", to: "2012-07-15" },
-    { name: "NOS Alive", venue: "Palco Heineken", from: "2013-07-12", to: "2013-07-14" },
-    { name: "NOS Alive", venue: ["Palco Optimus", "Optimus Clubbing"], from: "2013-07-12", to: "2013-07-14" },
+    { name: "NOS Alive", venue: "Palco Heineken", site: "Passeio Marítimo de Algés", from: "2013-07-12", to: "2013-07-14" },
+    { name: "NOS Alive", venue: ["Palco Optimus", "Optimus Clubbing"], site: "Passeio Marítimo de Algés", from: "2013-07-12", to: "2013-07-14" },
     { name: "NOS Alive", venue: "Passeio Marítimo de Algés", from: "2016-07-07", to: "2016-07-09" },
     { name: "NOS Alive", venue: "Passeio Marítimo de Algés", from: "2017-07-06", to: "2017-07-08" },
     { name: "NOS Alive", venue: "Passeio Marítimo de Algés", from: "2018-07-12", to: "2018-07-14" },
@@ -391,6 +393,7 @@
       return [].concat(e.venue).some((v) => plain(v) === venue) && c.date >= shift(e.from, -pad) && c.date <= shift(e.to, pad);
     });
     c.festival = ed ? ed.name : null;
+    if (ed && ed.site && plain(ed.site) !== venue) { c.stage = c.venue; c.venue = ed.site; }
   }
 
   // One venue under several names (old names, rooms): stats use the main name, the concert also shows its original one unless hideAka
@@ -765,6 +768,7 @@
     const nights = new Set(chrono.filter((x, i) => i <= idx && x.venue === c.venue && x.city === c.city).map((x) => x.date)).size;
     const facts = ['<span class="fact">Concert #' + fmtN(idx + 1) + " of " + fmtN(chrono.length) + "</span>",
       '<span class="fact">' + (c.festival ? "Your " + ordinal(nights) + " day at " + esc(c.venue) : "Your " + ordinal(nights) + " night at " + esc(c.venue)) + "</span>"];
+    if (c.stage && !/^region of /i.test(c.stage)) facts.push('<span class="fact">' + esc(/palco|stage|tent|clubbing/i.test(c.stage) ? c.stage : c.stage + " stage") + "</span>");
     if (c.tour) facts.push('<span class="fact">' + esc(c.tour) + "</span>");
     const others = withArtist.filter((x) => x.id !== c.id);
     const history = '<div class="history"><span class="kpi-label">' + (others.length ? ordinal(nth) + " time seeing " + esc(c.artist) : "First time seeing " + esc(c.artist)) + "</span>" +
