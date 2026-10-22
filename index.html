@@ -383,6 +383,16 @@
   const byYear = countBy(concerts, (c) => c.date.slice(0, 4)).sort((a, b) => a.key.localeCompare(b.key));
   const byMonth = countBy(concerts, (c) => c.date.slice(0, 7));
   const byDay = countBy(concerts, (c) => c.date);
+  // artist with the longest gap between two consecutive shows
+  const reunion = (() => {
+    const last = new Map(); let best = null;
+    for (let i = concerts.length - 1; i >= 0; i--) {
+      const c = concerts[i], prev = last.get(c.artist);
+      if (prev && prev !== c.date) { const days = Math.round((Date.parse(c.date) - Date.parse(prev)) / DAY); if (!best || days > best.days) best = { artist: c.artist, days, from: prev, to: c.date }; }
+      last.set(c.artist, c.date);
+    }
+    return best;
+  })();
   const weekdayOf = (d) => new Date(d + "T12:00:00").toLocaleDateString("en-GB", { weekday: "long" });
   const weekdays = countBy(concerts, (c) => weekdayOf(c.date));
   const firstSeen = new Map();   // artist -> date of the first concert
@@ -636,6 +646,7 @@
         (oldest ? fun("Where it all began", esc(oldest.artist), fmtDate(oldest.date) + " · " + esc(oldest.venue), openAttr(oldest)) : "") +
         (span ? fun("Most loyal to", esc(topArtist.key), "Seen " + topArtist.count + " times, " + span.first.slice(0, 4) + "–" + span.last.slice(0, 4), aattr(topArtist.key)) : "") +
         (covers.length ? fun("Covers heard live", fmtN(covers.reduce((n, x) => n + x.count, 0)), "Most heard: " + esc(covers[0].name) + " by " + esc(covers[0].artist), tabAttr("songs")) : "") +
+        (reunion ? fun("Longest wait for an encore", esc(reunion.artist), Math.floor(reunion.days / 365.25) + " years between " + fmtDate(reunion.from) + " and " + fmtDate(reunion.to), aattr(reunion.artist)) : "") +
         (songs.length ? fun("One-time songs", fmtN(heardOnce), "Songs you only heard live once", tabAttr("songs")) : "") +
       "</div></section>" +
       milestones();
