@@ -536,9 +536,15 @@
 
   // ---------- milestones ----------
   const CONCERT_MARKS = [1, 50, 100, 250, 500, 750, 1000, 1250, 1500, 2000, 2500, 3000];
+  // setlist.fm has no stage times, so the order of same-day concerts is arbitrary; pin the ones João remembers
+  const MILESTONE_PINS = [{ n: 1000, date: "2026-06-11", artist: "The xx" }];
   const ARTIST_MARKS = [1, 100, 250, 500, 750, 1000, 1500, 2000];
   function milestones() {
     const asc = concerts.slice().reverse(); // same-day concerts keep the order setlist.fm returned
+    for (const pin of MILESTONE_PINS) {
+      const from = asc.findIndex((c) => c.date === pin.date && c.artist === pin.artist);
+      if (from >= 0 && asc[pin.n - 1] && asc[pin.n - 1].date === pin.date) asc.splice(pin.n - 1, 0, asc.splice(from, 1)[0]);
+    }
     const seen = new Set(), newArtists = [];
     for (const c of asc) if (!seen.has(c.artist)) { seen.add(c.artist); newArtists.push(c); }
     const item = (n, c, what) => '<li><button type="button" class="ms-item" data-open="' + esc(c.id) + '"><span class="ms-n">' + ordinal(n) + '</span>' +

@@ -86,7 +86,11 @@ $concerts = foreach ($s in $raw) {
     songs   = @($songs)
   }
 }
-$concerts = @($concerts | Sort-Object { $_.date } -Descending)
+# Newest first; same-day concerts keep the order the API returned (Sort-Object alone is not stable)
+$i = 0
+$concerts = @($concerts | ForEach-Object { [pscustomobject]@{ c = $_; i = $i++ } } |
+  Sort-Object @{ Expression = { $_.c.date }; Descending = $true }, @{ Expression = { $_.i }; Ascending = $true } |
+  ForEach-Object { $_.c })
 
 New-Item -ItemType Directory -Force -Path $OutDir | Out-Null
 $generatedAt = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
