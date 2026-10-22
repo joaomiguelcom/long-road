@@ -1,0 +1,782 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Long Road · João Miguel</title>
+<meta name="theme-color" content="#0F1115">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Long Road">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2214%22%20fill%3D%22%230F1115%22/%3E%3Ccircle%20cx%3D%2232%22%20cy%3D%2219%22%20r%3D%229%22%20fill%3D%22%23F2A541%22%20opacity%3D%22.35%22/%3E%3Cpath%20d%3D%22M29.5%2019h5L54%2058H10z%22%20fill%3D%22%23F2A541%22/%3E%3Cpath%20d%3D%22M31.4%2023h1.2l.3%205h-1.8zM31%2033h2l.5%208h-3zM30.3%2046h3.4l.6%2012h-4.6z%22%20fill%3D%22%230F1115%22/%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="data:image/png;base64,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">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600&family=Inter:wght@400;500;600&display=swap">
+<style>
+  :root {
+    --bg: #0F1115; --surface: #181B21; --line: #262A31; --line-2: #3A3F48;
+    --text: #ECEDEE; --muted: #9AA0A6; --accent: #F2A541; --accent-2: #FFC876; --ok: #7BC67E;
+    --display: Oswald, "Arial Narrow", sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.5 Inter, system-ui, sans-serif; }
+  a { color: var(--accent); } a:hover { color: var(--accent-2); }
+  button { font: inherit; }
+  .wrap { max-width: 1200px; margin: 0 auto; padding: 0 16px; }
+  header { border-bottom: 1px solid var(--line); }
+  .head { padding-top: 24px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 12px; }
+  h1 { margin: 0; font: 600 40px/1.1 var(--display); letter-spacing: .01em; }
+  .eyebrow { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+  .sync { font-size: 13px; color: var(--muted); display: flex; gap: 8px; align-items: center; }
+  nav { display: flex; gap: 4px; overflow-x: auto; margin-top: 16px; }
+  nav button { background: none; border: 0; border-bottom: 3px solid transparent; color: var(--muted); padding: 12px 14px; min-height: 44px; cursor: pointer; white-space: nowrap; font-weight: 500; }
+  nav button[aria-current="page"] { color: var(--text); border-bottom-color: var(--accent); font-weight: 600; }
+  main.wrap { padding-top: 28px; padding-bottom: 48px; display: flex; flex-direction: column; gap: 24px; }
+  .grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--min, 220px)), 1fr)); }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 20px; min-width: 0; }
+  .card h2 { margin: 0 0 14px; font: 500 22px/1.2 var(--display); }
+  .card-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+  .card-head h2 { margin-bottom: 14px; }
+  .kpi-label { font-size: 13px; color: var(--muted); }
+  .kpi { font: 500 44px/1.1 var(--display); }
+  .kpi.sm { font-size: 24px; line-height: 1.25; }
+  .accent { color: var(--accent); }
+  .muted { color: var(--muted); }
+  .link { background: none; border: 0; color: var(--accent); cursor: pointer; padding: 8px 0; font-size: 14px; }
+  .bars { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+  .bars .row { display: flex; justify-content: space-between; gap: 8px; font-size: 14px; }
+  .bars .row span:last-child, .num { color: var(--muted); font-variant-numeric: tabular-nums; }
+  .track { height: 6px; background: var(--line); border-radius: 3px; margin-top: 4px; }
+  .fill { height: 6px; background: var(--accent); border-radius: 3px; }
+  .rank { display: inline-block; min-width: 24px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .barbtn { display: block; width: 100%; background: none; border: 0; padding: 3px 0; color: inherit; text-align: left; cursor: pointer; font: inherit; }
+  .barbtn:hover .row span:first-child { color: var(--accent); }
+  .barbtn:hover .fill, .year:hover .b { background: var(--accent-2); }
+  button.year { background: none; border: 0; padding: 0; color: inherit; cursor: pointer; font: inherit; }
+  .list-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 16px; }
+  .list-title { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; min-width: 0; }
+  .list-title h2 { margin: 0; font: 500 26px/1.2 var(--display); }
+  .search { position: relative; width: 100%; max-width: 320px; }
+  .search svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); pointer-events: none; }
+  .search input[type=search] { max-width: none; padding-left: 38px; }
+  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+  .chip-label { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--accent); }
+  .chip { display: inline-flex; align-items: center; gap: 8px; background: rgba(242,165,65,.10); border: 1px solid rgba(242,165,65,.35); border-radius: 999px; padding: 2px 2px 2px 12px; font-size: 14px; max-width: 100%; }
+  .chip button { background: none; border: 0; color: var(--muted); cursor: pointer; width: 32px; height: 32px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; }
+  .chip button:hover { color: var(--text); background: var(--line); }
+  .years { display: flex; align-items: flex-end; gap: 4px; height: 200px; overflow-x: auto; padding-bottom: 4px; }
+  .year { flex: 1 0 28px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; gap: 4px; }
+  .year .v { font-size: 11px; color: var(--muted); }
+  .year .b { width: 100%; background: var(--accent); border-radius: 3px 3px 0 0; min-height: 2px; }
+  .year .y { font-size: 11px; color: var(--muted); }
+  .fun { display: flex; flex-direction: column; gap: 2px; }
+  .fun .big { font: 500 26px/1.2 var(--display); color: var(--accent); }
+  .fun .small { font-size: 13px; color: var(--muted); }
+  label { font-size: 13px; color: var(--muted); display: block; margin-bottom: 4px; }
+  input[type=search] { width: 100%; max-width: 360px; background: var(--surface); border: 1px solid var(--line-2); border-radius: 8px; color: var(--text); padding: 10px 12px; font-size: 15px; min-height: 44px; }
+  input::placeholder { color: #8A9099; }
+  input:focus-visible, button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .table-box { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; }
+  table { width: 100%; min-width: 760px; border-collapse: collapse; font-size: 14px; }
+  th.num, td.num { width: 1%; white-space: nowrap; }
+  th { text-align: left; font-weight: 500; color: var(--muted); background: var(--surface); padding: 12px 16px; }
+  td { padding: 10px 16px; border-top: 1px solid var(--line); vertical-align: top; }
+  td .open { background: none; border: 0; color: var(--text); font-weight: 600; cursor: pointer; padding: 4px 0; text-align: left; }
+  td .open:hover { color: var(--accent); }
+  .toolbar { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 12px; }
+  .toolbar h2 { margin: 0; font: 500 26px/1.2 var(--display); }
+  .detail { max-width: 760px; display: flex; flex-direction: column; gap: 16px; }
+  .btn { align-self: flex-start; background: none; border: 1px solid var(--line-2); border-radius: 8px; color: var(--text); padding: 10px 14px; min-height: 44px; cursor: pointer; }
+  ol.setlist { margin: 0; padding-left: 28px; display: flex; flex-direction: column; gap: 4px; }
+  .set-label { margin: 12px 0 4px; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+  .tag { font-size: 12px; color: var(--muted); }
+  .more { text-align: center; }
+  .otd-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+  .otd-item { width: 100%; display: flex; align-items: center; gap: 14px; background: none; border: 0; border-radius: 8px; padding: 8px; margin: 0 -8px; color: inherit; text-align: left; cursor: pointer; font: inherit; }
+  .otd-item:hover { background: var(--line); }
+  .otd-year { font: 500 22px/1 var(--display); color: var(--accent); min-width: 52px; }
+  .otd-main { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+  .th-btn { background: none; border: 0; padding: 0; color: inherit; font: inherit; cursor: pointer; display: inline-flex; gap: 6px; align-items: center; white-space: nowrap; }
+  .th-btn:hover { color: var(--text); }
+  .th-btn .arrow { font-size: 11px; opacity: .5; }
+  th[aria-sort] .th-btn { color: var(--text); } th[aria-sort] .arrow { opacity: 1; color: var(--accent); }
+  td .muted-btn { font-weight: 400; color: var(--muted); }
+  .title-link { background: none; border: 0; padding: 0; color: inherit; font: inherit; cursor: pointer; text-align: left; }
+  .title-link:hover { color: var(--accent); }
+  .detail-wide { display: flex; flex-direction: column; gap: 24px; }
+  .section-title { margin: 16px 0 0; font: 500 26px/1.2 var(--display); }
+  .year-nav { display: flex; gap: 8px; align-items: center; }
+  .year-nav .btn { align-self: auto; }
+  select { background: var(--surface); color: var(--text); border: 1px solid var(--line-2); border-radius: 8px; padding: 10px 12px; min-height: 44px; font: inherit; }
+  #map { height: min(70vh, 640px); border-radius: 12px; border: 1px solid var(--line); background: #1b1d22; }
+  .leaflet-popup-content-wrapper, .leaflet-popup-tip { background: var(--surface); color: var(--text); }
+  .leaflet-popup-content { font: 14px/1.45 Inter, system-ui, sans-serif; }
+  .pop ul { margin: 6px 0; padding-left: 18px; }
+  .barbtn.static { cursor: default; }
+  .barbtn.static:hover .fill { background: var(--accent); }
+  .barbtn.static:hover .row span:first-child { color: inherit; }
+  .ms-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+  .ms-item { width: 100%; display: flex; gap: 14px; align-items: center; background: none; border: 0; border-radius: 8px; padding: 8px; margin: 0 -8px; color: inherit; text-align: left; cursor: pointer; font: inherit; }
+  .ms-item:hover { background: var(--line); }
+  .ms-n { font: 500 22px/1 var(--display); color: var(--accent); min-width: 64px; }
+  .ms-main { display: flex; flex-direction: column; min-width: 0; }
+  .ms-next { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--line); font-size: 14px; }
+  .ms-next .row { display: flex; justify-content: space-between; gap: 8px; }
+  footer { border-top: 1px solid var(--line); padding: 20px 0 32px; font-size: 13px; color: var(--muted); }
+  .empty { padding: 48px 0; color: var(--muted); }
+  @media (max-width: 600px) { .search { max-width: none; } h1 { font-size: 32px; } .kpi { font-size: 36px; } td, th { padding: 10px 12px; } }
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="head">
+      <div>
+        <h1>Long Road</h1>
+        <div class="eyebrow">João Miguel's concert archive</div>
+      </div>
+      <div class="sync" id="sync"></div>
+    </div>
+    <nav aria-label="Sections" id="tabs"></nav>
+  </div>
+</header>
+<main class="wrap" id="app"></main>
+<footer><div class="wrap">Concert data from <a href="https://www.setlist.fm/concerts/ojoaomiguel">setlist.fm</a>. Long Road is a personal, non-commercial backup.</div></footer>
+
+<script src="data/data.js"></script>
+<script>
+(function () {
+  "use strict";
+  const DATA = window.LONG_ROAD;
+  const app = document.getElementById("app");
+  const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const fmtN = (n) => n.toLocaleString("en-GB");
+  const fmtDate = (iso) => new Date(iso + "T12:00:00").toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+  const DAY = 86400000;
+
+  if (!DATA || !DATA.concerts) {
+    app.innerHTML = '<div class="empty">No data yet. Run <code>export.ps1</code> first; it creates <code>data/data.js</code> next to this page.</div>';
+    return;
+  }
+
+  const concerts = DATA.concerts.slice().sort((a, b) => b.date.localeCompare(a.date));
+
+  // ---------- festivals ----------
+  // The API has no festival field. Each festival edition is listed here with its venue and dates
+  // (checked one by one, never guessed from the venue alone). "pad" widens the dates by N days
+  // to catch a day where only one artist was seen (default 2; 0 for normal concert halls).
+  // Add one line per new edition.
+  const FESTIVAL_EDITIONS = [
+    { name: "Arraial d'Engenharia", venue: "CACE Cultural", pad: 0, from: "2007-10-24", to: "2007-10-26" },
+    { name: "Arraial d'Engenharia", venue: "Palácio do Freixo", pad: 0, from: "2008-10-30", to: "2008-10-31" },
+    { name: "Arraial d'Engenharia", venue: "Centro de Congressos da Alfândega", pad: 0, from: "2009-10-27", to: "2009-10-28" },
+    { name: "Arraial d'Engenharia", venue: "Dragão Arena", pad: 0, from: "2011-10-26", to: "2011-10-28" },
+    { name: "Arraial d'Engenharia", venue: "Dragão Arena", pad: 0, from: "2012-10-24", to: "2012-10-26" },
+    { name: "Courage", venue: "Largo Hintze Ribeiro", pad: 0, from: "2021-12-03", to: "2021-12-04" },
+    { name: "Courage", venue: "Caixa da Música", pad: 0, from: "2021-12-04", to: "2021-12-04" },
+    { name: "Elétrico", venue: "Parque Urbano da Pasteleira", from: "2022-07-03", to: "2022-07-03" },
+    { name: "Festival do Sudoeste", venue: "Herdade da Casa Branca", from: "2007-08-02", to: "2007-08-05" },
+    { name: "Festival do Sudoeste", venue: "Herdade da Casa Branca", from: "2008-08-07", to: "2008-08-10" },
+    { name: "Festival do Sudoeste", venue: "Herdade da Casa Branca", from: "2009-08-06", to: "2009-08-09" },
+    { name: "Festival do Sudoeste", venue: "Herdade da Casa Branca", from: "2010-08-05", to: "2010-08-08" },
+    { name: "Festival do Sudoeste", venue: "Herdade da Casa Branca", from: "2012-08-01", to: "2012-08-05" },
+    { name: "Festival Paredes de Coura", venue: "Praia Fluvial do Taboão", from: "2003-08-18", to: "2003-08-20" },
+    { name: "Festival Paredes de Coura", venue: "Praia Fluvial do Taboão", from: "2004-08-18", to: "2004-08-20" },
+    { name: "Festival Paredes de Coura", venue: "Praia Fluvial do Taboão", from: "2008-07-31", to: "2008-08-03" },
+    { name: "Festival Paredes de Coura", venue: "Praia Fluvial do Taboão", from: "2009-07-30", to: "2009-08-01" },
+    { name: "Festival Paredes de Coura", venue: "Praia Fluvial do Taboão", from: "2010-07-31", to: "2010-07-31" },
+    { name: "Festival Paredes de Coura", venue: "Praia Fluvial do Taboão", from: "2011-08-17", to: "2011-08-20" },
+    { name: "Festival Paredes de Coura", venue: "Praia Fluvial do Taboão", from: "2012-08-15", to: "2012-08-17" },
+    { name: "Festival Paredes de Coura", venue: "Praia Fluvial do Taboão", from: "2016-08-18", to: "2016-08-18" },
+    { name: "Festival Paredes de Coura", venue: "Praia Fluvial do Taboão", from: "2017-08-18", to: "2017-08-18" },
+    { name: "Festival Paredes de Coura", venue: "Praia Fluvial do Taboão", from: "2018-08-16", to: "2018-08-18" },
+    { name: "Festival Paredes de Coura", venue: "Praia Fluvial do Taboão", from: "2019-08-14", to: "2019-08-17" },
+    { name: "Festival Paredes de Coura", venue: "Praia Fluvial do Taboão", from: "2022-08-20", to: "2022-08-20" },
+    { name: "Festival Paredes de Coura", venue: "Praia Fluvial do Taboão", from: "2023-08-16", to: "2023-08-17" },
+    { name: "Festival Paredes de Coura", venue: "Praia Fluvial do Taboão", from: "2024-08-14", to: "2024-08-17" },
+    { name: "Festival Paredes de Coura", venue: "Praia Fluvial do Taboão", from: "2025-08-13", to: "2025-08-16" },
+    { name: "Festival Paredes de Coura", venue: ["Praia Fluvial do Taboão", "Palco Vodafone"], from: "2026-08-12", to: "2026-08-15" },
+    { name: "Festival Termómetro", venue: "Biblioteca Municipal Almeida Garrett", pad: 0, from: "2025-03-27", to: "2025-03-27" },
+    { name: "I-Days", venue: "Ippodromo Snai La Maura", from: "2026-07-05", to: "2026-07-06" },
+    { name: "Mad Cool Festival", venue: ["Orange", "Region of Madrid"], from: "2026-07-08", to: "2026-07-08" },
+    { name: "MEO Kalorama", venue: "Parque da Bela Vista", from: "2022-09-01", to: "2022-09-03" },
+    { name: "MEO Kalorama", venue: "Parque da Bela Vista", from: "2023-08-31", to: "2023-09-02" },
+    { name: "MEO Kalorama", venue: "Parque da Bela Vista", from: "2024-08-29", to: "2024-08-31" },
+    { name: "MEO Kalorama", venue: "Parque da Bela Vista", from: "2026-08-30", to: "2026-08-30" },
+    { name: "MEO Marés", venue: "Praia do Cabedelo do Douro", from: "2008-07-18", to: "2008-07-19" },
+    { name: "MEO Marés", venue: "Praia do Cabedelo do Douro", from: "2009-07-16", to: "2009-07-16" },
+    { name: "MEO Marés", venue: "Praia do Cabedelo do Douro", from: "2010-07-15", to: "2010-07-16" },
+    { name: "MEO Marés", venue: "Praia do Cabedelo do Douro", from: "2012-07-18", to: "2012-07-20" },
+    { name: "MEO Marés", venue: "Praia do Cabedelo do Douro", from: "2018-07-20", to: "2018-07-20" },
+    { name: "MEO Marés", venue: "Praia do Cabedelo do Douro", from: "2019-07-20", to: "2019-07-20" },
+    { name: "MEO Marés", venue: "Praia do Aterro", from: "2026-07-17", to: "2026-07-18" },
+    { name: "MTV Galicia", venue: "Auditorio Monte do Gozo", from: "2010-09-05", to: "2010-09-05" },
+    { name: "Neopop Festival", venue: "Forte Santiago da Barra", from: "2007-08-10", to: "2007-08-10" },
+    { name: "Neopop Festival", venue: "Forte Santiago da Barra", from: "2011-07-29", to: "2011-07-30" },
+    { name: "Neopop Festival", venue: "Forte Santiago da Barra", from: "2012-08-08", to: "2012-08-08" },
+    { name: "Neopop Festival", venue: "Forte Santiago da Barra", from: "2014-08-14", to: "2014-08-14" },
+    { name: "Neopop Festival", venue: "Forte Santiago da Barra", from: "2015-08-14", to: "2015-08-14" },
+    { name: "Neopop Festival", venue: "Forte Santiago da Barra", from: "2018-08-08", to: "2018-08-08" },
+    { name: "Noites Ritual", venue: "Jardins do Palácio de Cristal", pad: 0, from: "2011-08-26", to: "2011-08-28" },
+    { name: "Noites Ritual", venue: "Jardins do Palácio de Cristal", pad: 0, from: "2010-08-27", to: "2010-08-28" },
+    { name: "North Music Festival", venue: "Centro de Congressos da Alfândega", pad: 0, from: "2018-05-25", to: "2018-05-26" },
+    { name: "North Music Festival", venue: "Centro de Congressos da Alfândega", pad: 0, from: "2022-05-26", to: "2022-05-26" },
+    { name: "North Music Festival", venue: "Cidade Desportiva da Maia", from: "2026-06-06", to: "2026-06-07" },
+    { name: "NOS Alive", venue: "Passeio Marítimo de Algés", from: "2007-06-08", to: "2007-06-09" },
+    { name: "NOS Alive", venue: "Passeio Marítimo de Algés", from: "2008-07-10", to: "2008-07-10" },
+    { name: "NOS Alive", venue: "Passeio Marítimo de Algés", from: "2010-07-08", to: "2010-07-10" },
+    { name: "NOS Alive", venue: "Passeio Marítimo de Algés", from: "2011-07-07", to: "2011-07-08" },
+    { name: "NOS Alive", venue: "Passeio Marítimo de Algés", from: "2012-07-13", to: "2012-07-15" },
+    { name: "NOS Alive", venue: "Palco Heineken", from: "2013-07-12", to: "2013-07-14" },
+    { name: "NOS Alive", venue: ["Palco Optimus", "Optimus Clubbing"], from: "2013-07-12", to: "2013-07-14" },
+    { name: "NOS Alive", venue: "Passeio Marítimo de Algés", from: "2016-07-07", to: "2016-07-09" },
+    { name: "NOS Alive", venue: "Passeio Marítimo de Algés", from: "2017-07-06", to: "2017-07-08" },
+    { name: "NOS Alive", venue: "Passeio Marítimo de Algés", from: "2018-07-12", to: "2018-07-14" },
+    { name: "NOS Alive", venue: "Passeio Marítimo de Algés", from: "2019-07-11", to: "2019-07-13" },
+    { name: "NOS Alive", venue: "Passeio Marítimo de Algés", from: "2023-07-08", to: "2023-07-08" },
+    { name: "NOS Alive", venue: "Passeio Marítimo de Algés", from: "2024-07-11", to: "2024-07-13" },
+    { name: "NOS Alive", venue: "Passeio Marítimo de Algés", from: "2026-07-09", to: "2026-07-10" },
+    { name: "Primavera Sound Porto", venue: "Parque da Cidade do Porto", from: "2012-06-07", to: "2012-06-09" },
+    { name: "Primavera Sound Porto", venue: "Parque da Cidade do Porto", from: "2013-05-30", to: "2013-06-01" },
+    { name: "Primavera Sound Porto", venue: "Parque da Cidade do Porto", from: "2014-06-06", to: "2014-06-06" },
+    { name: "Primavera Sound Porto", venue: "Parque da Cidade do Porto", from: "2015-06-04", to: "2015-06-06" },
+    { name: "Primavera Sound Porto", venue: "Parque da Cidade do Porto", from: "2016-06-09", to: "2016-06-11" },
+    { name: "Primavera Sound Porto", venue: "Parque da Cidade do Porto", from: "2017-06-09", to: "2017-06-10" },
+    { name: "Primavera Sound Porto", venue: "Parque da Cidade do Porto", from: "2018-06-07", to: "2018-06-09" },
+    { name: "Primavera Sound Porto", venue: "Parque da Cidade do Porto", from: "2019-06-07", to: "2019-06-07" },
+    { name: "Primavera Sound Porto", venue: "Parque da Cidade do Porto", from: "2022-06-09", to: "2022-06-11" },
+    { name: "Primavera Sound Porto", venue: "Parque da Cidade do Porto", from: "2023-06-07", to: "2023-06-10" },
+    { name: "Primavera Sound Porto", venue: "Parque da Cidade do Porto", from: "2024-06-06", to: "2024-06-08" },
+    { name: "Primavera Sound Porto", venue: "Parque da Cidade do Porto", from: "2025-06-12", to: "2025-06-14" },
+    { name: "Primavera Sound Porto", venue: "Parque da Cidade do Porto", from: "2026-06-11", to: "2026-06-13" },
+    { name: "Queima das Fitas do Porto", venue: "Queimódromo", from: "2005-05-01", to: "2005-05-07" },
+    { name: "Queima das Fitas do Porto", venue: "Queimódromo", from: "2006-05-07", to: "2006-05-13" },
+    { name: "Queima das Fitas do Porto", venue: "Queimódromo", from: "2007-05-06", to: "2007-05-12" },
+    { name: "Queima das Fitas do Porto", venue: "Queimódromo", from: "2008-05-04", to: "2008-05-04" },
+    { name: "Queima das Fitas do Porto", venue: "Queimódromo", from: "2009-05-03", to: "2009-05-08" },
+    { name: "Queima das Fitas do Porto", venue: "Queimódromo", from: "2010-05-03", to: "2010-05-05" },
+    { name: "Queima das Fitas do Porto", venue: "Queimódromo", from: "2011-05-01", to: "2011-05-06" },
+    { name: "Queima das Fitas do Porto", venue: "Queimódromo", from: "2012-05-11", to: "2012-05-11" },
+    { name: "Queima das Fitas do Porto", venue: "Queimódromo", from: "2013-05-06", to: "2013-05-11" },
+    { name: "Queima das Fitas de Coimbra", venue: "Praça da Canção", from: "2009-05-05", to: "2009-05-05" },
+    { name: "Rock in Rio", venue: "Parque da Bela Vista", from: "2010-05-27", to: "2010-05-27" },
+    { name: "Rock in Rio", venue: "Parque da Bela Vista", from: "2012-06-03", to: "2012-06-03" },
+    { name: "Rock no Rio Febras", venue: "Quinta da Ponte", from: "2025-07-26", to: "2025-07-26" },
+    { name: "SonicBlast", venue: "Praia Da Duna Do Caldeirao", from: "2025-08-07", to: "2025-08-07" },
+    { name: "Sons do Cais", venue: "Cais de Gaia", pad: 0, from: "2026-06-20", to: "2026-06-20" },
+    { name: "Super Bock Super Rock", venue: "Parque da Cidade do Porto", from: "2008-07-04", to: "2008-07-05" },
+    { name: "Super Bock Super Rock", venue: "Estádio do Restelo", from: "2009-07-18", to: "2009-07-18" },
+    { name: "Super Bock Super Rock", venue: "Meco", from: "2010-07-18", to: "2010-07-18" },
+    { name: "Super Bock Super Rock", venue: "Meco", from: "2011-07-14", to: "2011-07-16" },
+    { name: "Super Bock Super Rock", venue: "Meco", from: "2014-07-17", to: "2014-07-19" },
+    { name: "Super Bock Super Rock", venue: "Parque das Nações", from: "2015-07-17", to: "2015-07-18" },
+    { name: "Surf Fest", venue: "Praia do Tonel", from: "2009-08-13", to: "2009-08-14" },
+    { name: "Viana Bate Forte", venue: "Praça da República", pad: 0, from: "2016-09-16", to: "2016-09-17" },
+    { name: "Viana Bate Forte", venue: ["Praça da República", "Praça da Liberdade", "Praça da Erva"], pad: 0, from: "2019-09-13", to: "2019-09-13" },
+    { name: "Viana Bate Forte", venue: ["Praça da República", "Praça da Liberdade", "Praça da Erva"], pad: 0, from: "2023-09-15", to: "2023-09-16" },
+    { name: "Vilar de Mouros", venue: "Vilar de Mouros", from: "2019-08-24", to: "2019-08-24" },
+    { name: "Festa da Cerveja", venue: "Alameda da Quinta das Freiras", pad: 0, from: "2009-06-11", to: "2009-06-11" },
+    { name: "Festival para Gente Sentada", venue: "Theatro Circo", pad: 0, from: "2023-11-24", to: "2023-11-25" },
+    { name: "Misty Fest", venue: ["Centro Cultural de Belém", "Casa da Música"], pad: 0, from: "2023-11-01", to: "2023-11-23" },
+    { name: "Rock in Rio", venue: "Parque da Bela Vista", from: "2014-05-29", to: "2014-05-29" },
+    { name: "Rock in Rio", venue: "Parque da Bela Vista", from: "2016-05-19", to: "2016-05-19" },
+    { name: "Serralves em Festa", venue: "Museu de Arte Contemporânea de Serralves", pad: 0, from: "2009-05-30", to: "2009-05-30" },
+    { name: "Serralves em Festa", venue: "Serralves", from: "2025-05-30", to: "2025-06-01" },
+    { name: "Serralves em Festa", venue: "Serralves", from: "2026-05-28", to: "2026-05-31" },
+    { name: "O Festival sobe à Vila", venue: "R. Conselheiro Miguel Dantas", pad: 0, from: "2017-08-14", to: "2017-08-14" },
+    { name: "ZigurFest", venue: "Puro Malte", pad: 0, from: "2011-09-02", to: "2011-09-02" },
+    { name: "O Salgado Faz Anos... FEST!", venue: "Maus Hábitos", pad: 0, from: "2026-01-31", to: "2026-01-31" }
+  ];
+  const plain = (s) => String(s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+  const shift = (iso, days) => new Date(Date.parse(iso) + days * DAY).toISOString().slice(0, 10);
+  for (const c of concerts) {
+    const venue = plain(c.venue);
+    const ed = FESTIVAL_EDITIONS.find((e) => {
+      const pad = e.pad == null ? 2 : e.pad;
+      return [].concat(e.venue).some((v) => plain(v) === venue) && c.date >= shift(e.from, -pad) && c.date <= shift(e.to, pad);
+    });
+    c.festival = ed ? ed.name : null;
+  }
+  document.getElementById("sync").innerHTML =
+    '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7BC67E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>' +
+    "Backup updated on " + esc(new Date(DATA.generatedAt).toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" }));
+
+  // ---------- aggregations ----------
+  const countBy = (list, keyFn) => {
+    const m = new Map();
+    for (const x of list) { const k = keyFn(x); if (k == null || k === "") continue; m.set(k, (m.get(k) || 0) + 1); }
+    return [...m.entries()].map(([key, count]) => ({ key, count })).sort((a, b) => b.count - a.count || String(a.key).localeCompare(String(b.key)));
+  };
+  const artists = countBy(concerts, (c) => c.artist);
+  const venueKey = (c) => c.venue + "||" + (c.city || "");
+  const venues = countBy(concerts.filter((c) => !c.festival), venueKey).map((v) => { const [name, city] = v.key.split("||"); return { ...v, name, city }; });
+  const festivals = (() => {
+    const m = new Map();
+    for (const c of concerts) if (c.festival) {
+      const f = m.get(c.festival) || { name: c.festival, concerts: 0, days: new Set(), years: new Set() };
+      f.concerts++; f.days.add(c.date); f.years.add(c.date.slice(0, 4)); m.set(c.festival, f);
+    }
+    return [...m.values()].map((f) => ({ name: f.name, concerts: f.concerts, days: f.days.size, count: f.years.size, years: [...f.years].sort() }))
+      .sort((a, b) => b.count - a.count || b.concerts - a.concerts || a.name.localeCompare(b.name));
+  })();
+  const cities = countBy(concerts, (c) => c.city);
+  const countries = countBy(concerts, (c) => c.country);
+  const byYear = countBy(concerts, (c) => c.date.slice(0, 4)).sort((a, b) => a.key.localeCompare(b.key));
+  const byMonth = countBy(concerts, (c) => c.date.slice(0, 7));
+  const byDay = countBy(concerts, (c) => c.date);
+  const weekdays = countBy(concerts, (c) => new Date(c.date + "T12:00:00").toLocaleDateString("en-GB", { weekday: "long" }));
+
+  const songMap = new Map();
+  let songsHeard = 0;
+  for (const c of concerts) for (const s of c.songs || []) {
+    if (s.tape || !s.name) continue;
+    songsHeard++;
+    const k = s.name + "||" + c.artist;
+    const e = songMap.get(k) || { name: s.name, artist: c.artist, count: 0 };
+    e.count++; songMap.set(k, e);
+  }
+  const songs = [...songMap.values()].sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+
+  // competition ranking: ties share a rank (1, 2, 2, 4), like setlist.fm
+  const withRank = (list) => { let r = 0; return list.map((x, i) => { if (i === 0 || x.count !== list[i - 1].count) r = i + 1; x.rank = r; return x; }); };
+  [artists, venues, festivals, songs, countries].forEach(withRank);
+
+  // longest streak of consecutive days with a concert, and longest gap
+  const days = [...new Set(concerts.map((c) => c.date))].sort();
+  let best = { len: 0 }, cur = { len: 0 }, gap = { days: 0 };
+  for (let i = 0; i < days.length; i++) {
+    const t = Date.parse(days[i]);
+    const prev = i ? Date.parse(days[i - 1]) : null;
+    if (prev !== null && t - prev === DAY) { cur.len++; cur.end = days[i]; }
+    else cur = { len: 1, start: days[i], end: days[i] };
+    if (cur.len > best.len) best = { ...cur };
+    if (prev !== null && (t - prev) / DAY > gap.days) gap = { days: Math.round((t - prev) / DAY), from: days[i - 1], to: days[i] };
+  }
+  const oldest = concerts[concerts.length - 1];
+  const artistSpan = (name) => { const l = concerts.filter((c) => c.artist === name); return { first: l[l.length - 1].date, last: l[0].date }; };
+
+  // rarities: covers heard live and songs seen on their live debut
+  const coverMap = new Map();
+  const debuts = [];
+  for (const c of concerts) for (const s of c.songs || []) {
+    if (s.tape || !s.name) continue;
+    if (s.cover) {
+      const k = s.name + "||" + s.cover + "||" + c.artist;
+      const e = coverMap.get(k) || { name: s.name, original: s.cover, artist: c.artist, count: 0 };
+      e.count++; coverMap.set(k, e);
+    }
+    if (s.info && /debut|first time (ever|live)|live premiere|premiere/i.test(s.info)) debuts.push({ name: s.name, artist: c.artist, date: c.date, id: c.id, info: s.info });
+  }
+  const covers = [...coverMap.values()].sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+  const heardOnce = songs.filter((s) => s.count === 1).length;
+
+  // ---------- rendering helpers ----------
+  const fattr = (f, v) => ' data-f="' + f + '" data-v="' + esc(v) + '"';
+  const aattr = (name) => ' data-artist="' + esc(name) + '"';
+  // attrFn(x) returns [field, value] (opens the concert list filtered) or an attribute string
+  const bars = (list, labelFn, attrFn) => {
+    const top = list[0] ? list[0].count : 1;
+    return '<ol class="bars">' + list.map((x) => {
+      const at = attrFn ? attrFn(x) : null;
+      const inner = '<div class="row"><span>' + (x.rank ? '<span class="rank">' + x.rank + "</span>" : "") + labelFn(x) + "</span><span>" + x.count + "</span></div>" +
+        '<div class="track"><div class="fill" style="width:' + Math.max(2, Math.round(x.count / top * 100)) + '%"></div></div>';
+      return "<li>" + (at ? '<button type="button" class="barbtn"' + (typeof at === "string" ? at : fattr(...at)) + ">" + inner + "</button>" : '<div class="barbtn static">' + inner + "</div>") + "</li>";
+    }).join("") + "</ol>";
+  };
+  const kpi = (label, value, extra) => '<div class="card"><div class="kpi-label">' + label + '</div><div class="kpi">' + value + "</div>" + (extra ? '<div class="kpi-label">' + extra + "</div>" : "") + "</div>";
+  const fun = (label, big, small) => '<div class="card fun"><div class="kpi-label">' + label + '</div><div class="big">' + big + '</div><div class="small">' + (small || "") + "</div></div>";
+  const searchBox = (id, label, placeholder, value) => '<div class="search"><label for="' + id + '" class="sr-only">' + label + "</label>" +
+    '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8A9099" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>' +
+    '<input id="' + id + '" type="search" placeholder="' + placeholder + '" value="' + esc(value) + '"></div>';
+  const artistBtn = (name, cls) => '<button type="button" class="' + (cls || "open") + '"' + aattr(name) + ">" + esc(name) + "</button>";
+  const notes = (c) => (c.festival ? '<span class="accent">' + esc(c.festival) + "</span>" : "") + (c.festival && c.tour ? "<br>" : "") + (c.tour ? '<span class="tag">' + esc(c.tour) + "</span>" : "");
+  const plural = (n, one, many) => fmtN(n) + " " + (n === 1 ? one : many);
+
+  // Sortable tables: rows are arrays of cells { h: html, s: sort value }; sorting happens on the data,
+  // before "Show more" limits, so the whole list is sorted and not only what is on screen.
+  const cell = (h, s) => ({ h: h, s: s === undefined ? h : s });
+  function table(id, cols, rows, limit) {
+    const st = state.sorts[id];
+    if (st) rows = rows.slice().sort((a, b) => {
+      const x = a[st.col].s, y = b[st.col].s;
+      const r = typeof x === "number" && typeof y === "number" ? x - y : String(x).localeCompare(String(y), "en", { sensitivity: "base" });
+      return st.dir * r;
+    });
+    const shown = limit ? rows.slice(0, limit) : rows;
+    return '<div class="table-box"><table><thead><tr>' + cols.map((c, i) => {
+      const on = st && st.col === i;
+      return '<th scope="col"' + (c.num ? ' class="num"' : "") + (on ? ' aria-sort="' + (st.dir > 0 ? "ascending" : "descending") + '"' : "") +
+        '><button type="button" class="th-btn" data-sort="' + id + "|" + i + "|" + (c.num ? 1 : 0) + '">' + c.label +
+        '<span class="arrow" aria-hidden="true">' + (on ? (st.dir > 0 ? "↑" : "↓") : "↕") + "</span></button></th>";
+    }).join("") + "</tr></thead><tbody>" +
+      shown.map((r) => "<tr>" + r.map((c, i) => "<td" + (cols[i].cls ? ' class="' + cols[i].cls + '"' : "") + ">" + c.h + "</td>").join("") + "</tr>").join("") +
+      "</tbody></table></div>" +
+      (limit && rows.length > limit ? '<div class="more"><button class="btn" data-more="' + id + '">Show more</button></div>' : "");
+  }
+  const concertRows = (list) => list.map((c) => [
+    cell('<span style="white-space:nowrap">' + fmtDate(c.date) + "</span>", c.date),
+    cell('<button type="button" class="open" data-open="' + esc(c.id) + '">' + esc(c.artist) + "</button>", c.artist),
+    cell(esc(c.venue), c.venue),
+    cell(esc(c.city), c.city),
+    cell(notes(c), (c.festival || "") + (c.tour || "")),
+    cell(String((c.songs || []).length || ""), (c.songs || []).length)
+  ]);
+  const CONCERT_COLS = [{ label: "Date", cls: "muted" }, { label: "Artist" }, { label: "Venue" }, { label: "City", cls: "muted" }, { label: "Notes" }, { label: "Songs", num: true, cls: "num" }];
+
+  const FILTERS = {
+    artist: { label: "Artist", test: (c, v) => c.artist === v, show: (v) => v },
+    venue: { label: "Venue", test: (c, v) => !c.festival && c.venue + "||" + c.city === v, show: (v) => v.replace("||", ", ") },
+    festival: { label: "Festival", test: (c, v) => c.festival === v, show: (v) => v },
+    country: { label: "Country", test: (c, v) => c.country === v, show: (v) => v },
+    city: { label: "City", test: (c, v) => c.city === v, show: (v) => v },
+    year: { label: "Year", test: (c, v) => c.date.startsWith(v), show: (v) => v }
+  };
+
+  const state = { tab: "overview", q: "", detail: null, limits: {}, artistQ: "", filter: null, artist: null, year: byYear.length ? byYear[byYear.length - 1].key : null, sorts: {} };
+  const limitOf = (id, def) => state.limits[id] || def;
+  const TABS = [["overview", "Overview"], ["concerts", "Concerts"], ["artists", "Artists"], ["venues", "Venues"], ["festivals", "Festivals"], ["songs", "Songs"], ["years", "Year in review"], ["map", "Map"]];
+
+  function renderTabs() {
+    document.getElementById("tabs").innerHTML = TABS.map(([id, label]) =>
+      '<button type="button" data-tab="' + id + '"' + (state.tab === id ? ' aria-current="page"' : "") + ">" + label + "</button>").join("");
+  }
+
+  // ---------- overview ----------
+  const countryCities = (country) => new Set(concerts.filter((c) => c.country === country).map((c) => c.city)).size;
+  const mmdd = (d) => String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+
+  function onThisDay() {
+    const today = new Date();
+    let day = today, list = [];
+    for (let i = 0; i < 366 && !list.length; i++) {
+      day = new Date(today.getTime() + i * DAY);
+      list = concerts.filter((c) => c.date.slice(5) === mmdd(day));
+    }
+    if (!list.length) return "";
+    const isToday = mmdd(day) === mmdd(today);
+    const label = day.toLocaleDateString("en-GB", { day: "numeric", month: "long" });
+    const thisYear = today.getFullYear();
+    return '<section class="card otd" aria-labelledby="h-otd"><div class="card-head"><h2 id="h-otd">' + (isToday ? "On this day" : "Coming up") + '</h2><span class="muted">' + (isToday ? label : "Nothing today · next on " + label) + "</span></div>" +
+      '<ul class="otd-list">' + list.map((c) => {
+        const y = +c.date.slice(0, 4), ago = thisYear - y;
+        return '<li><button type="button" class="otd-item" data-open="' + esc(c.id) + '"><span class="otd-year">' + y + '</span><span class="otd-main"><strong>' + esc(c.artist) + "</strong>" +
+          '<span class="muted">' + esc(c.festival || c.venue) + " · " + esc(c.city) + "</span></span>" +
+          '<span class="tag">' + (ago === 0 ? "this year" : ago === 1 ? "1 year ago" : ago + " years ago") + "</span></button></li>";
+      }).join("") + "</ul></section>";
+  }
+
+  // ---------- milestones ----------
+  const CONCERT_MARKS = [1, 50, 100, 250, 500, 750, 1000, 1250, 1500, 2000, 2500, 3000];
+  const ARTIST_MARKS = [1, 100, 250, 500, 750, 1000, 1500, 2000];
+  function milestones() {
+    const asc = concerts.slice().reverse(); // same-day concerts keep the order setlist.fm returned
+    const seen = new Set(), newArtists = [];
+    for (const c of asc) if (!seen.has(c.artist)) { seen.add(c.artist); newArtists.push(c); }
+    const item = (n, c, what) => '<li><button type="button" class="ms-item" data-open="' + esc(c.id) + '"><span class="ms-n">' + ordinal(n) + '</span>' +
+      '<span class="ms-main"><span class="kpi-label">' + what + "</span><strong>" + esc(c.artist) + '</strong><span class="muted">' + fmtDate(c.date) + " · " + esc(c.festival || c.venue) + "</span></span></button></li>";
+    const nextC = CONCERT_MARKS.find((m) => m > asc.length);
+    const nextA = ARTIST_MARKS.find((m) => m > newArtists.length);
+    const progress = (have, next, prevMark, label) => next ? '<div class="ms-next"><div class="row"><span>Next: ' + ordinal(next) + " " + label + '</span><span class="muted">' + (next - have) + " to go</span></div>" +
+      '<div class="track"><div class="fill" style="width:' + Math.round((have - prevMark) / (next - prevMark) * 100) + '%"></div></div></div>' : "";
+    const lastC = CONCERT_MARKS.filter((m) => m <= asc.length).pop() || 0;
+    const lastA = ARTIST_MARKS.filter((m) => m <= newArtists.length).pop() || 0;
+    return '<section aria-labelledby="h-ms"><h2 id="h-ms" style="margin:0 0 14px;font:500 22px/1.2 var(--display)">Milestones</h2><div class="grid" style="--min:340px">' +
+      '<div class="card"><h2>Concerts</h2><ol class="ms-list">' + CONCERT_MARKS.filter((m) => m <= asc.length).map((m) => item(m, asc[m - 1], "concert")).join("") + "</ol>" + progress(asc.length, nextC, lastC, "concert") + "</div>" +
+      '<div class="card"><h2>New artists</h2><ol class="ms-list">' + ARTIST_MARKS.filter((m) => m <= newArtists.length).map((m) => item(m, newArtists[m - 1], "artist seen")).join("") + "</ol>" + progress(newArtists.length, nextA, lastA, "artist") + "</div>" +
+      "</div></section>";
+  }
+
+  function overview() {
+    const topSong = songs[0];
+    const pjSong = songs.find((s) => s.artist === "Pearl Jam");
+    const topDay = byDay[0];
+    const topArtist = artists[0];
+    const span = topArtist ? artistSpan(topArtist.key) : null;
+    const maxYear = Math.max(...byYear.map((y) => y.count));
+    const yearsTop = byYear.slice().sort((a, b) => b.count - a.count)[0];
+    return '' +
+      '<section class="grid" aria-label="Summary">' +
+        kpi("Concerts", '<span class="accent">' + fmtN(concerts.length) + "</span>") +
+        kpi("Different artists", fmtN(artists.length)) +
+        kpi("Songs heard live", fmtN(songsHeard)) +
+        kpi("Venues", fmtN(venues.length), fmtN(cities.length) + " cities · " + plural(countries.length, "country", "countries")) +
+        kpi("Festivals", fmtN(festivals.length), fmtN(festivals.reduce((n, f) => n + f.count, 0)) + " editions · " + fmtN(festivals.reduce((n, f) => n + f.concerts, 0)) + " concerts") +
+      "</section>" +
+      onThisDay() +
+      '<section class="card"><div class="card-head"><h2>Most seen artists</h2><button class="link" data-tab="artists">See all</button></div>' +
+        bars(artists.slice(0, 10), (a) => esc(a.key), (a) => aattr(a.key)) + "</section>" +
+      '<section class="card"><div class="card-head"><h2>Venues</h2><button class="link" data-tab="venues">See all</button></div>' +
+        bars(venues.slice(0, 10), (v) => esc(v.name) + ' <span class="muted">· ' + esc(v.city) + "</span>", (v) => ["venue", v.key]) +
+        '<p class="tag" style="margin:12px 0 0">Festival concerts are not counted here.</p></section>' +
+      '<section class="card"><div class="card-head"><h2>Festivals</h2><button class="link" data-tab="festivals">See all</button></div>' +
+        bars(festivals.slice(0, 10), (f) => esc(f.name) + ' <span class="muted">· ' + f.concerts + " concerts</span>", (f) => ["festival", f.name]) +
+        '<p class="tag" style="margin:12px 0 0">Bars show editions attended.</p></section>' +
+      '<section class="card"><div class="card-head"><h2>Countries</h2><button class="link" data-tab="map">See map</button></div>' +
+        bars(countries, (c) => esc(c.key) + ' <span class="muted">· ' + plural(countryCities(c.key), "city", "cities") + "</span>", (c) => ["country", c.key]) + "</section>" +
+      '<section class="card" aria-labelledby="h-year"><div class="card-head"><h2 id="h-year">Concerts per year</h2><button class="link" data-tab="years">Year in review</button></div><div class="years">' +
+        byYear.map((y) => '<button type="button" class="year"' + fattr("year", y.key) + ' title="' + y.key + ": " + y.count + ' concerts" aria-label="' + y.key + ": " + y.count + ' concerts"><span class="v">' + y.count + '</span><span class="b" style="display:block;height:' + Math.round(y.count / maxYear * 150) + 'px"></span><span class="y">' + "’" + y.key.slice(2) + "</span></button>").join("") +
+      "</div></section>" +
+      '<section aria-labelledby="h-fun"><h2 id="h-fun" style="margin:0 0 14px;font:500 22px/1.2 var(--display)">Fun facts</h2><div class="grid" style="--min:240px">' +
+        (topSong ? fun("Most heard song live", esc(topSong.name), esc(topSong.artist) + " · " + topSong.count + " times") : "") +
+        (pjSong && pjSong !== topSong ? fun("Top Pearl Jam song live", esc(pjSong.name), pjSong.count + " times") : "") +
+        (yearsTop ? fun("Busiest year", yearsTop.key, yearsTop.count + " concerts") : "") +
+        (byMonth[0] ? fun("Busiest month", new Date(byMonth[0].key + "-15").toLocaleDateString("en-GB", { month: "long", year: "numeric" }), byMonth[0].count + " concerts") : "") +
+        (best.len > 1 ? fun("Longest streak", best.len + " nights in a row", fmtDate(best.start) + " to " + fmtDate(best.end)) : "") +
+        (topDay ? fun("Most concerts in one day", topDay.count, fmtDate(topDay.key)) : "") +
+        (weekdays[0] ? fun("Favourite night out", weekdays[0].key, weekdays[0].count + " concerts") : "") +
+        (gap.days ? fun("Longest break", gap.days + " days", fmtDate(gap.from) + " to " + fmtDate(gap.to)) : "") +
+        (oldest ? fun("Where it all began", esc(oldest.artist), fmtDate(oldest.date) + " · " + esc(oldest.venue)) : "") +
+        (span ? fun("Most loyal to", esc(topArtist.key), "Seen " + topArtist.count + " times, " + span.first.slice(0, 4) + "–" + span.last.slice(0, 4)) : "") +
+        (covers.length ? fun("Covers heard live", fmtN(covers.reduce((n, x) => n + x.count, 0)), "Most heard: " + esc(covers[0].name) + " by " + esc(covers[0].artist)) : "") +
+        (songs.length ? fun("One-time songs", fmtN(heardOnce), "Songs you only heard live once") : "") +
+      "</div></section>" +
+      milestones();
+  }
+
+  // ---------- concerts ----------
+  function matches(c, q) {
+    return [c.artist, c.venue, c.city, c.country, c.tour, c.festival, c.date].some((f) => f && f.toLowerCase().includes(q));
+  }
+
+  function concertList() {
+    if (state.detail) return concertDetail(state.detail);
+    const q = state.q.trim().toLowerCase();
+    const F = state.filter && FILTERS[state.filter.f];
+    let list = F ? concerts.filter((c) => F.test(c, state.filter.v)) : concerts;
+    if (q) list = list.filter((c) => matches(c, q));
+    return '' +
+      '<div class="list-head"><div class="list-title"><h2>' + plural(list.length, "concert", "concerts") + "</h2>" +
+      (F ? '<span class="chip"><span class="chip-label">' + F.label + "</span><strong>" + esc(F.show(state.filter.v)) + '</strong><button type="button" id="clearf" aria-label="Clear filter"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button></span>' : "") +
+      "</div>" + searchBox("q", "Search concerts", "Search artist, venue, city, year", state.q) + "</div>" +
+      table("concerts", CONCERT_COLS, concertRows(list), limitOf("concerts", 100));
+  }
+
+  function concertDetail(id) {
+    const c = concerts.find((x) => x.id === id);
+    if (!c) return "";
+    const groups = [];
+    for (const s of c.songs || []) {
+      let g = groups[groups.length - 1];
+      if (!g || g.set !== s.set) { g = { set: s.set, songs: [] }; groups.push(g); }
+      g.songs.push(s);
+    }
+    const seenBefore = concerts.filter((x) => x.artist === c.artist && x.date <= c.date).length;
+    return '<article class="card detail">' +
+      '<button class="btn" id="back">← Back</button>' +
+      '<div><h2 style="margin:0;font:600 34px/1.15 var(--display)">' + artistBtn(c.artist, "title-link") + '</h2><div class="muted">' + fmtDate(c.date) + " · " + (c.festival ? esc(c.festival) + " · " : "") + esc(c.venue) + ", " + esc(c.city) + "</div>" +
+      (c.tour ? '<div class="tag">Note: ' + esc(c.tour) + "</div>" : "") +
+      '<div class="tag" style="margin-top:6px">Your ' + ordinal(seenBefore) + " time seeing " + esc(c.artist) + "</div></div>" +
+      (groups.length ? groups.map((g, i) => '<div><div class="set-label">' + esc(g.set) + '</div><ol class="setlist"' + (i ? ' start="' + (groups.slice(0, i).reduce((n, x) => n + x.songs.length, 0) + 1) + '"' : "") + ">" +
+        g.songs.map((s) => "<li>" + esc(s.name) + (s.cover ? ' <span class="tag">(' + esc(s.cover) + " cover)</span>" : "") + (s.tape ? ' <span class="tag">(tape)</span>' : "") + (s.info ? ' <span class="tag">· ' + esc(s.info) + "</span>" : "") + "</li>").join("") + "</ol></div>").join("")
+        : '<p class="muted" style="margin:0">No setlist on setlist.fm for this concert yet.</p>') +
+      (c.info ? '<p class="muted" style="margin:0">' + esc(c.info) + "</p>" : "") +
+      '<a href="' + esc(c.url) + '" target="_blank" rel="noopener">Open on setlist.fm</a></article>';
+  }
+  const ordinal = (n) => n + (["th", "st", "nd", "rd"][(n % 100 - 20) % 10] || ["th", "st", "nd", "rd"][n % 100] || "th");
+
+  // ---------- artists ----------
+  function artistList() {
+    if (state.artist) return artistPage(state.artist);
+    const q = state.artistQ.trim().toLowerCase();
+    const list = q ? artists.filter((a) => a.key.toLowerCase().includes(q)) : artists;
+    const rows = list.map((a) => { const s = artistSpan(a.key); return [
+      cell(String(a.rank), a.rank), cell(artistBtn(a.key), a.key), cell(String(a.count), a.count),
+      cell(fmtDate(s.first), s.first), cell(fmtDate(s.last), s.last)]; });
+    return '<div class="list-head"><div class="list-title"><h2>' + plural(list.length, "artist", "artists") + "</h2></div>" + searchBox("aq", "Search artist", "Search artist", state.artistQ) + "</div>" +
+      table("artists", [{ label: "#", num: true, cls: "num" }, { label: "Artist" }, { label: "Concerts", num: true, cls: "num" }, { label: "First seen", cls: "muted" }, { label: "Last seen", cls: "muted" }], rows, limitOf("artists", 100));
+  }
+
+  function artistPage(name) {
+    const a = artists.find((x) => x.key === name);
+    if (!a) return "";
+    const list = concerts.filter((c) => c.artist === name);
+    const first = list[list.length - 1], last = list[0];
+    const aSongs = songs.filter((s) => s.artist === name);
+    const heard = aSongs.reduce((n, s) => n + s.count, 0);
+    const once = aSongs.filter((s) => s.count === 1);
+    const aCovers = covers.filter((x) => x.artist === name);
+    const aCountries = new Set(list.map((c) => c.country)).size;
+    const aFest = list.filter((c) => c.festival).length;
+    const top = withRank(aSongs.map((s) => ({ ...s })));
+    return '<div class="detail-wide">' +
+      '<button class="btn" id="backArtists">← All artists</button>' +
+      '<div><div class="eyebrow">#' + a.rank + " most seen artist</div>" +
+      '<h2 style="margin:4px 0 0;font:600 40px/1.1 var(--display)">' + esc(name) + "</h2>" +
+      '<div class="muted">First seen ' + fmtDate(first.date) + " at " + esc(first.festival || first.venue) + (list.length > 1 ? " · last seen " + fmtDate(last.date) + " at " + esc(last.festival || last.venue) : "") + "</div></div>" +
+      '<section class="grid" aria-label="Artist summary">' +
+        kpi("Concerts", '<span class="accent">' + a.count + "</span>", aFest ? aFest + " at festivals" : "") +
+        kpi("Songs heard", fmtN(heard), fmtN(aSongs.length) + " different") +
+        kpi("Years", (+last.date.slice(0, 4) - +first.date.slice(0, 4) + 1) + "", first.date.slice(0, 4) + "–" + last.date.slice(0, 4)) +
+        kpi("Countries", aCountries + "") +
+      "</section>" +
+      (top.length ? '<section class="card"><h2>Songs you heard most</h2>' + bars(top.slice(0, 15), (s) => esc(s.name)) + "</section>" : "") +
+      '<section class="card"><div class="card-head"><h2>Concerts</h2><button class="link"' + fattr("artist", name) + ">Open in concert list</button></div>" +
+        table("artist-concerts", CONCERT_COLS, concertRows(list)) + "</section>" +
+      (once.length ? '<section class="card"><h2>Heard only once</h2><p class="muted" style="margin:0">' + once.map((s) => esc(s.name)).join(" · ") + "</p></section>" : "") +
+      (aCovers.length ? '<section class="card"><h2>Covers</h2><p class="muted" style="margin:0">' + aCovers.map((x) => esc(x.name) + " (" + esc(x.original) + ")" + (x.count > 1 ? " ×" + x.count : "")).join(" · ") + "</p></section>" : "") +
+      "</div>";
+  }
+
+  // ---------- venues, festivals, songs ----------
+  function venueList() {
+    const rows = venues.map((v) => [cell(String(v.rank), v.rank), cell('<button class="open"' + fattr("venue", v.key) + ">" + esc(v.name) + "</button>", v.name), cell(esc(v.city), v.city), cell(String(v.count), v.count)]);
+    return '<div class="list-head"><div class="list-title"><h2>' + plural(venues.length, "venue", "venues") + '</h2><span class="muted">Festivals are counted separately</span></div></div>' +
+      table("venues", [{ label: "#", num: true, cls: "num" }, { label: "Venue" }, { label: "City", cls: "muted" }, { label: "Concerts", num: true, cls: "num" }], rows);
+  }
+
+  function festivalList() {
+    const rows = festivals.map((f) => [cell(String(f.rank), f.rank), cell('<button class="open"' + fattr("festival", f.name) + ">" + esc(f.name) + "</button>", f.name), cell(String(f.count), f.count), cell(String(f.concerts), f.concerts), cell(f.years.join(", "), f.years[0])]);
+    return '<div class="list-head"><div class="list-title"><h2>' + plural(festivals.length, "festival", "festivals") + "</h2></div></div>" +
+      table("festivals", [{ label: "#", num: true, cls: "num" }, { label: "Festival" }, { label: "Editions", num: true, cls: "num" }, { label: "Concerts", num: true, cls: "num" }, { label: "Years", cls: "muted" }], rows);
+  }
+
+  function songList() {
+    const rows = songs.map((s) => [cell(String(s.rank), s.rank), cell(esc(s.name), s.name), cell(artistBtn(s.artist, "open muted-btn"), s.artist), cell(String(s.count), s.count)]);
+    const coverRows = covers.map((x) => [cell(esc(x.name), x.name), cell(esc(x.original), x.original), cell(artistBtn(x.artist, "open muted-btn"), x.artist), cell(String(x.count), x.count)]);
+    const debutRows = debuts.slice().sort((a, b) => b.date.localeCompare(a.date)).map((d) => [cell('<button type="button" class="open muted-btn" data-open="' + esc(d.id) + '">' + fmtDate(d.date) + "</button>", d.date), cell(esc(d.name), d.name), cell(esc(d.artist), d.artist), cell(esc(d.info), d.info)]);
+    return '<div class="list-head"><div class="list-title"><h2>Songs you heard most</h2><span class="muted">' + fmtN(songs.length) + " different songs, " + fmtN(songsHeard) + " in total, " + fmtN(heardOnce) + " heard only once</span></div></div>" +
+      table("songs", [{ label: "#", num: true, cls: "num" }, { label: "Song" }, { label: "Artist" }, { label: "Times", num: true, cls: "num" }], rows, limitOf("songs", 100)) +
+      '<h2 class="section-title">Rarities</h2>' +
+      '<section class="card"><h2>Covers heard live</h2>' + (coverRows.length ? table("covers", [{ label: "Song" }, { label: "Original by", cls: "muted" }, { label: "Played by" }, { label: "Times", num: true, cls: "num" }], coverRows, limitOf("covers", 50)) : '<p class="muted" style="margin:0">None found yet.</p>') + "</section>" +
+      '<section class="card"><h2>Live debuts you saw</h2>' + (debutRows.length ? table("debuts", [{ label: "Date", cls: "muted" }, { label: "Song" }, { label: "Artist" }, { label: "Note", cls: "muted" }], debutRows, limitOf("debuts", 50)) : '<p class="muted" style="margin:0">No songs marked as a live debut on setlist.fm yet.</p>') + "</section>";
+  }
+
+  // ---------- year in review ----------
+  function yearReview() {
+    const y = state.year;
+    const list = concerts.filter((c) => c.date.startsWith(y));
+    if (!list.length) return '<div class="empty">No concerts in ' + esc(y) + ".</div>";
+    const firstEver = new Map();
+    for (let i = concerts.length - 1; i >= 0; i--) if (!firstEver.has(concerts[i].artist)) firstEver.set(concerts[i].artist, concerts[i].date);
+    const yArtists = withRank(countBy(list, (c) => c.artist));
+    const newArtists = yArtists.filter((a) => firstEver.get(a.key).startsWith(y));
+    const yVenues = withRank(countBy(list.filter((c) => !c.festival), venueKey).map((v) => { const [name, city] = v.key.split("||"); return { ...v, name, city }; }));
+    const yFest = withRank(countBy(list, (c) => c.festival));
+    const yMonths = countBy(list, (c) => c.date.slice(0, 7));
+    const ySongs = list.reduce((n, c) => n + (c.songs || []).filter((s) => !s.tape).length, 0);
+    const first = list[list.length - 1], last = list[0];
+    const yi = byYear.findIndex((x) => x.key === y);
+    const prev = byYear[yi - 1], next = byYear[yi + 1];
+    return '<div class="list-head"><div class="list-title"><h2 style="font-size:40px">' + esc(y) + "</h2>" +
+      '<span class="muted">' + plural(list.length, "concert", "concerts") + "</span></div>" +
+      '<div class="year-nav">' + (prev ? '<button class="btn" data-year="' + prev.key + '">← ' + prev.key + "</button>" : "") +
+      '<label for="ysel" class="sr-only">Year</label><select id="ysel">' + byYear.slice().reverse().map((x) => '<option value="' + x.key + '"' + (x.key === y ? " selected" : "") + ">" + x.key + "</option>").join("") + "</select>" +
+      (next ? '<button class="btn" data-year="' + next.key + '">' + next.key + " →</button>" : "") + "</div></div>" +
+      '<section class="grid" aria-label="Year summary">' +
+        kpi("Concerts", '<span class="accent">' + list.length + "</span>", '<button class="link"' + fattr("year", y) + ">See them all</button>") +
+        kpi("Artists", yArtists.length + "", newArtists.length + " seen for the first time") +
+        kpi("Venues", yVenues.length + "", plural(new Set(list.map((c) => c.city)).size, "city", "cities") + " · " + plural(new Set(list.map((c) => c.country)).size, "country", "countries")) +
+        kpi("Festivals", yFest.length + "", list.filter((c) => c.festival).length + " festival concerts") +
+        (ySongs ? kpi("Songs heard", fmtN(ySongs)) : "") +
+      "</section>" +
+      '<div class="grid" style="--min:240px">' +
+        fun("First concert", esc(first.artist), fmtDate(first.date) + " · " + esc(first.festival || first.venue)) +
+        fun("Last concert", esc(last.artist), fmtDate(last.date) + " · " + esc(last.festival || last.venue)) +
+        (yMonths[0] ? fun("Busiest month", new Date(yMonths[0].key + "-15").toLocaleDateString("en-GB", { month: "long" }), yMonths[0].count + " concerts") : "") +
+        (newArtists.length ? fun("New discoveries", newArtists.length + "", newArtists.slice(0, 3).map((a) => esc(a.key)).join(", ") + (newArtists.length > 3 ? "…" : "")) : "") +
+      "</div>" +
+      '<section class="card"><h2>Top artists</h2>' + bars(yArtists.slice(0, 10), (a) => esc(a.key), (a) => aattr(a.key)) + "</section>" +
+      (yVenues.length ? '<section class="card"><h2>Venues</h2>' + bars(yVenues.slice(0, 10), (v) => esc(v.name) + ' <span class="muted">· ' + esc(v.city) + "</span>", (v) => ["venue", v.key]) + "</section>" : "") +
+      (yFest.length ? '<section class="card"><h2>Festivals</h2>' + bars(yFest, (f) => esc(f.key), (f) => ["festival", f.key]) + "</section>" : "");
+  }
+
+  // ---------- map ----------
+  let map = null;
+  function mapView() {
+    const withCoords = concerts.filter((c) => c.lat != null && c.lng != null);
+    if (!withCoords.length) return '<div class="empty">The map needs coordinates. Run <code>export.ps1</code> again (the new version saves them) and reload this page.</div>';
+    return '<div class="list-head"><div class="list-title"><h2>Map</h2><span class="muted">' + plural(cities.length, "city", "cities") + " · " + plural(countries.length, "country", "countries") + '</span></div></div><div id="map" role="region" aria-label="Map of concert cities"></div>' +
+      '<p class="tag" style="margin:0">Circles are cities (setlist.fm gives coordinates per city, not per venue). Bigger means more concerts. Click one to see its concerts.</p>';
+  }
+  function loadLeaflet(cb) {
+    if (window.L) return cb();
+    const css = document.createElement("link");
+    css.rel = "stylesheet"; css.href = "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css";
+    document.head.appendChild(css);
+    const js = document.createElement("script");
+    js.src = "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js";
+    js.onload = cb;
+    js.onerror = () => { const el = document.getElementById("map"); if (el) el.innerHTML = '<div class="empty" style="padding:24px">Could not load the map library. Check your internet connection.</div>'; };
+    document.head.appendChild(js);
+  }
+  function initMap() {
+    const el = document.getElementById("map");
+    if (!el) return;
+    loadLeaflet(() => {
+      if (!document.getElementById("map")) return;
+      const byCity = new Map();
+      for (const c of concerts) {
+        if (c.lat == null || c.lng == null) continue;
+        const k = c.city + "||" + c.country;
+        const e = byCity.get(k) || { city: c.city, country: c.country, lat: +c.lat, lng: +c.lng, count: 0, venues: new Map() };
+        e.count++; const vn = c.festival || c.venue; e.venues.set(vn, (e.venues.get(vn) || 0) + 1); byCity.set(k, e);
+      }
+      map = L.map("map", { scrollWheelZoom: false, worldCopyJump: true });
+      // Esri tiles need no API key and work when the page is opened from a file (no Referer)
+      const esri = "https://server.arcgisonline.com/ArcGIS/rest/services/";
+      const dark = L.layerGroup([
+        L.tileLayer(esri + "Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}", { maxZoom: 16, attribution: "Tiles &copy; Esri" }),
+        L.tileLayer(esri + "Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}", { maxZoom: 16 })
+      ]).addTo(map);
+      const street = L.tileLayer(esri + "World_Street_Map/MapServer/tile/{z}/{y}/{x}", { maxZoom: 18, attribution: "Tiles &copy; Esri" });
+      L.control.layers({ Dark: dark, Streets: street }, null, { position: "topright" }).addTo(map);
+      const pts = [];
+      for (const e of byCity.values()) {
+        pts.push([e.lat, e.lng]);
+        const top = [...e.venues.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5);
+        L.circleMarker([e.lat, e.lng], { radius: 5 + Math.sqrt(e.count) * 2, color: "#F2A541", weight: 1.5, fillColor: "#F2A541", fillOpacity: 0.45 })
+          .bindPopup('<div class="pop"><strong>' + esc(e.city) + '</strong> <span class="muted">' + esc(e.country) + "</span><br>" + plural(e.count, "concert", "concerts") +
+            "<ul>" + top.map(([n, k]) => "<li>" + esc(n) + " · " + k + "</li>").join("") + "</ul>" +
+            '<button type="button" class="link"' + fattr("city", e.city) + ">See concerts</button></div>")
+          .addTo(map);
+      }
+      map.fitBounds(pts, { padding: [30, 30], maxZoom: 7 });
+    });
+  }
+
+  function render() {
+    if (map) { map.remove(); map = null; }
+    renderTabs();
+    const views = { overview, concerts: concertList, artists: artistList, venues: venueList, festivals: festivalList, songs: songList, years: yearReview, map: mapView };
+    app.innerHTML = views[state.tab]();
+    if (state.tab === "map") initMap();
+  }
+  const go = (fn) => { fn(); render(); window.scrollTo(0, 0); };
+
+  // ---------- events ----------
+  // capture phase: map popups stop click propagation, so listen before they do
+  document.addEventListener("click", (e) => {
+    const t = e.target.closest("button");
+    if (!t) return;
+    const d = t.dataset;
+    if (d.tab) go(() => { state.tab = d.tab; state.detail = null; state.filter = null; state.artist = null; });
+    else if (d.open) go(() => { state.tab = "concerts"; state.detail = d.open; });
+    else if (d.artist) go(() => { state.tab = "artists"; state.artist = d.artist; state.detail = null; });
+    else if (d.f) go(() => { state.tab = "concerts"; state.detail = null; state.filter = { f: d.f, v: d.v }; state.q = ""; state.limits.concerts = 0; });
+    else if (d.year) go(() => { state.year = d.year; });
+    else if (d.sort) {
+      const [id, col, num] = d.sort.split("|");
+      const cur = state.sorts[id];
+      state.sorts[id] = cur && cur.col === +col ? { col: +col, dir: -cur.dir } : { col: +col, dir: num === "1" ? -1 : 1 };
+      render();
+    }
+    else if (d.more) { state.limits[d.more] = limitOf(d.more, 100) + 200; render(); }
+    else if (t.id === "clearf") { state.filter = null; state.limits.concerts = 0; render(); }
+    else if (t.id === "back") { state.detail = null; render(); }
+    else if (t.id === "backArtists") go(() => { state.artist = null; });
+  }, true);
+  document.addEventListener("change", (e) => {
+    if (e.target.id === "ysel") go(() => { state.year = e.target.value; });
+  });
+  document.addEventListener("input", (e) => {
+    if (e.target.id !== "q" && e.target.id !== "aq") return;
+    const id = e.target.id, pos = e.target.selectionStart;
+    if (id === "q") { state.q = e.target.value; state.limits.concerts = 0; } else { state.artistQ = e.target.value; state.limits.artists = 0; }
+    render();
+    const el = document.getElementById(id); el.focus(); el.setSelectionRange(pos, pos);
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>
