@@ -23,19 +23,25 @@
   button { font: inherit; }
   .wrap { max-width: 1200px; margin: 0 auto; padding: 0 16px; }
   header { border-bottom: 1px solid var(--line); }
-  .head { padding-top: 24px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 12px; }
-  h1 { margin: 0; font: 600 40px/1.1 var(--display); letter-spacing: .01em; }
+  header { background: linear-gradient(180deg, rgba(242,165,65,.07), rgba(242,165,65,0) 70%); }
+  .head { padding-top: max(24px, env(safe-area-inset-top)); display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 14px 24px; }
+  .brand { display: flex; align-items: center; gap: 14px; min-width: 0; }
+  .brand svg { flex: none; width: 52px; height: 52px; border-radius: 13px; box-shadow: 0 0 0 1px var(--line-2); }
+  h1 { margin: 0; font: 600 40px/1 var(--display); letter-spacing: .01em; }
   .eyebrow { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
-  .sync { font-size: 13px; color: var(--muted); display: flex; gap: 8px; align-items: center; }
-  nav { display: flex; gap: 4px; overflow-x: auto; margin-top: 16px; }
+  .brand .eyebrow { margin-top: 8px; }
+  .sync { font-size: 12px; color: var(--muted); display: inline-flex; gap: 7px; align-items: center; padding: 6px 12px; border: 1px solid var(--line-2); border-radius: 999px; background: var(--surface); white-space: nowrap; }
+  .sync .dot { width: 7px; height: 7px; border-radius: 50%; background: #7BC67E; box-shadow: 0 0 0 3px rgba(123,198,126,.18); }
+  nav { display: flex; gap: 4px; overflow-x: auto; margin-top: 20px; scrollbar-width: none; }
+  nav::-webkit-scrollbar { display: none; }
   nav button { background: none; border: 0; border-bottom: 3px solid transparent; color: var(--muted); padding: 12px 14px; min-height: 44px; cursor: pointer; white-space: nowrap; font-weight: 500; }
   nav button[aria-current="page"] { color: var(--text); border-bottom-color: var(--accent); font-weight: 600; }
   main.wrap { padding-top: 28px; padding-bottom: 48px; display: flex; flex-direction: column; gap: 24px; }
   .grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--min, 220px)), 1fr)); }
   .card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 20px; min-width: 0; }
   .card h2 { margin: 0 0 14px; font: 500 22px/1.2 var(--display); }
-  .card-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
-  .card-head h2 { margin-bottom: 14px; }
+  .card-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 0 12px; margin-bottom: 14px; }
+  .card-head h2 { margin-bottom: 0; flex: none; }
   .kpi-label { font-size: 13px; color: var(--muted); }
   .kpi { font: 500 44px/1.1 var(--display); }
   .kpi.sm { font-size: 24px; line-height: 1.25; }
@@ -69,7 +75,7 @@
   .year .b { width: 100%; background: var(--accent); border-radius: 3px 3px 0 0; min-height: 2px; }
   .year .y { font-size: 11px; color: var(--muted); }
   .fun { display: flex; flex-direction: column; gap: 2px; }
-  button.card { width: 100%; text-align: left; font: inherit; color: inherit; cursor: pointer; transition: border-color .15s; }
+  button.card { width: 100%; display: flex; flex-direction: column; justify-content: flex-start; align-items: stretch; text-align: left; font: inherit; color: inherit; cursor: pointer; transition: border-color .15s; }
   button.card:hover, button.card:focus-visible { border-color: var(--accent); }
   .card .go { color: var(--accent); }
   .fun .big { font: 500 26px/1.2 var(--display); color: var(--accent); }
@@ -127,16 +133,28 @@
   .ms-next .row { display: flex; justify-content: space-between; gap: 8px; }
   footer { border-top: 1px solid var(--line); padding: 20px 0 32px; font-size: 13px; color: var(--muted); }
   .empty { padding: 48px 0; color: var(--muted); }
-  @media (max-width: 600px) { .search { max-width: none; } h1 { font-size: 32px; } .kpi { font-size: 36px; } td, th { padding: 10px 12px; } }
+  @media (max-width: 600px) {
+    .search { max-width: none; } h1 { font-size: 34px; } .kpi { font-size: 34px; } td, th { padding: 10px 12px; }
+    .brand svg { width: 46px; height: 46px; border-radius: 11px; }
+    .brand .eyebrow { font-size: 11px; letter-spacing: .1em; margin-top: 7px; }
+    nav { margin: 16px -16px 0; padding: 0 16px; -webkit-mask-image: linear-gradient(90deg, #000 85%, transparent); mask-image: linear-gradient(90deg, #000 85%, transparent); }
+    nav button { padding: 12px 12px; }
+    .kpis { grid-template-columns: 1fr 1fr; gap: 12px; }
+    .kpis .card { padding: 16px; }
+    .kpis > :last-child:nth-child(odd) { grid-column: 1 / -1; }
+  }
 </style>
 </head>
 <body>
 <header>
   <div class="wrap">
     <div class="head">
-      <div>
-        <h1>Long Road</h1>
-        <div class="eyebrow">João Miguel's concert archive</div>
+      <div class="brand">
+        <svg viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="14" fill="#181B21"/><circle cx="32" cy="19" r="9" fill="#F2A541" opacity=".35"/><path d="M29.5 19h5L54 58H10z" fill="#F2A541"/><path d="M31.4 23h1.2l.3 5h-1.8zM31 33h2l.5 8h-3zM30.3 46h3.4l.6 12h-4.6z" fill="#181B21"/></svg>
+        <div>
+          <h1>Long Road</h1>
+          <div class="eyebrow">João Miguel's concert archive</div>
+        </div>
       </div>
       <div class="sync" id="sync"></div>
     </div>
@@ -330,8 +348,8 @@
     if (r) { if (!r.hideAka) c.venueThen = c.venue; c.venue = r.name; }
   }
   document.getElementById("sync").innerHTML =
-    '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7BC67E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>' +
-    "Backup updated on " + esc(new Date(DATA.generatedAt).toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" }));
+    '<span class="dot" aria-hidden="true"></span>' +
+    "Updated " + esc(new Date(DATA.generatedAt).toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" }));
 
   // ---------- aggregations ----------
   const countBy = (list, keyFn) => {
@@ -487,6 +505,9 @@
   function renderTabs() {
     document.getElementById("tabs").innerHTML = TABS.map(([id, label]) =>
       '<button type="button" data-tab="' + id + '"' + (state.tab === id ? ' aria-current="page"' : "") + ">" + label + "</button>").join("");
+    // keep the active tab visible when the tab bar scrolls sideways (phones)
+    const nav = document.getElementById("tabs"), cur = nav.querySelector("[aria-current]");
+    if (cur && nav.scrollWidth > nav.clientWidth) nav.scrollLeft = cur.offsetLeft - (nav.clientWidth - cur.offsetWidth) / 2;
   }
 
   // ---------- overview ----------
@@ -543,7 +564,7 @@
     const maxYear = Math.max(...byYear.map((y) => y.count));
     const yearsTop = byYear.slice().sort((a, b) => b.count - a.count)[0];
     return '' +
-      '<section class="grid" aria-label="Summary">' +
+      '<section class="grid kpis" aria-label="Summary">' +
         kpi("Concerts", '<span class="accent">' + fmtN(concerts.length) + "</span>", "", tabAttr("concerts")) +
         kpi("Different artists", fmtN(artists.length), "", tabAttr("artists")) +
         kpi("Songs heard live", fmtN(songsHeard), "", tabAttr("songs")) +
@@ -651,7 +672,7 @@
       '<div><div class="eyebrow">#' + a.rank + " most seen artist</div>" +
       '<h2 style="margin:4px 0 0;font:600 40px/1.1 var(--display)">' + esc(name) + "</h2>" +
       '<div class="muted">First seen ' + fmtDate(first.date) + " at " + esc(first.festival || first.venue) + (list.length > 1 ? " · last seen " + fmtDate(last.date) + " at " + esc(last.festival || last.venue) : "") + "</div></div>" +
-      '<section class="grid" aria-label="Artist summary">' +
+      '<section class="grid kpis" aria-label="Artist summary">' +
         kpi("Concerts", '<span class="accent">' + a.count + "</span>", aFest ? aFest + " at festivals" : "", fattr("artist", name)) +
         kpi("Songs heard", fmtN(heard), fmtN(aSongs.length) + " different") +
         kpi("Years", (+last.date.slice(0, 4) - +first.date.slice(0, 4) + 1) + "", first.date.slice(0, 4) + "–" + last.date.slice(0, 4)) +
@@ -710,7 +731,7 @@
       '<div class="year-nav">' + (prev ? '<button class="btn" data-year="' + prev.key + '">← ' + prev.key + "</button>" : "") +
       '<label for="ysel" class="sr-only">Year</label><select id="ysel">' + byYear.slice().reverse().map((x) => '<option value="' + x.key + '"' + (x.key === y ? " selected" : "") + ">" + x.key + "</option>").join("") + "</select>" +
       (next ? '<button class="btn" data-year="' + next.key + '">' + next.key + " →</button>" : "") + "</div></div>" +
-      '<section class="grid" aria-label="Year summary">' +
+      '<section class="grid kpis" aria-label="Year summary">' +
         kpi("Concerts", '<span class="accent">' + list.length + "</span>", '<span class="go">See them all</span>', fattr("year", y)) +
         kpi("Artists", yArtists.length + "", newArtists.length + " seen for the first time", fattr("newArtists", y)) +
         kpi("Venues", yVenues.length + "", plural(new Set(list.map((c) => c.city)).size, "city", "cities") + " · " + plural(new Set(list.map((c) => c.country)).size, "country", "countries"), fattr("venues", y)) +
