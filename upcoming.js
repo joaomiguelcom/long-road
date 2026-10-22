@@ -54,6 +54,12 @@ window.LONG_ROAD_UPCOMING = {
       "url": "https://www.setlist.fm/show/2027-04-23/hard-club-porto-portugal-bb3d90a.html?setlist=5b7e2780"
     },
     {
+      "date": "2027-07-09",
+      "artist": "Faith No More",
+      "place": "NOS Alive 2027",
+      "url": "https://www.setlist.fm/upcoming/faith-no-more/2027/passeio-maritimo-de-alges-oeiras-portugal-3b7c085c.html"
+    },
+    {
       "date": "2027-07-10",
       "artist": "Tame Impala",
       "place": "NOS Alive 2027",
