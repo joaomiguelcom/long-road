@@ -94,7 +94,44 @@ $concerts = @($concerts | ForEach-Object { [pscustomobject]@{ c = $_; i = $i++ }
 
 New-Item -ItemType Directory -Force -Path $OutDir | Out-Null
 $generatedAt = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
-$payload = [ordered]@{ user = $User; generatedAt = $generatedAt; total = $total; concerts = $concerts }
+# Upcoming shows: the API has none, so read the "Upcoming Shows" list of the public attendance page
+function Get-Upcoming {
+  $months = @{ Jan = 1; Feb = 2; Mar = 3; Apr = 4; May = 5; Jun = 6; Jul = 7; Aug = 8; Sep = 9; Oct = 10; Nov = 11; Dec = 12 }
+  $resp = Invoke-WebRequest -Uri "https://www.setlist.fm/attended/$User" -UseBasicParsing -Headers @{ "User-Agent" = "Mozilla/5.0 (Long Road backup)"; "Accept-Language" = "en" }
+  $html = $utf8.GetString($resp.RawContentStream.ToArray())
+  $start = $html.IndexOf("Upcoming Shows")
+  if ($start -lt 0) { return @() }
+  $end = $html.IndexOf("Attended Shows", $start)
+  if ($end -lt 0) { $end = $html.Length }
+  $section = $html.Substring($start, $end - $start)
+  $list = foreach ($li in ($section -split "<li[\s>]" | Select-Object -Skip 1)) {
+    $m = [regex]::Match($li, 'href="([^"]*/(?:show|upcoming)/[^"]+)"')
+    if (-not $m.Success) { continue }
+    $url = [Net.WebUtility]::HtmlDecode($m.Groups[1].Value)
+    if ($url.StartsWith("/")) { $url = "https://www.setlist.fm$url" }
+    $text = [Net.WebUtility]::HtmlDecode(($li -replace "<[^>]+>", " ")) -replace "\s+", " "
+    $d = [regex]::Match($text, "\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.? (\d{1,2}) (\d{4})\b")
+    if (-not $d.Success) { continue }
+    $date = "{0}-{1:00}-{2:00}" -f $d.Groups[3].Value, $months[$d.Groups[1].Value], [int]$d.Groups[2].Value
+    $t = [regex]::Match($li, 'title="View this (.+?) show"')
+    $artist = $(if ($t.Success) { [Net.WebUtility]::HtmlDecode($t.Groups[1].Value) } else { $null })
+    $rest = $text.Substring($d.Index + $d.Length)
+    if ($artist) { $i = $rest.IndexOf($artist); if ($i -ge 0) { $rest = $rest.Substring($i + $artist.Length) } }
+    $rest = ($rest -replace "Add a private note.*$", "" -replace "Edit private note.*$", "").Trim(" ", ",", "-")
+    [ordered]@{ date = $date; artist = $artist; place = $rest; url = $url }
+  }
+  return @($list | Sort-Object { $_.date })
+}
+$upcoming = @()
+try {
+  $upcoming = @(Get-Upcoming)
+  Write-Host "Upcoming shows: $($upcoming.Count)"
+  foreach ($u in $upcoming) { Write-Host "  $($u.date) | $($u.artist) | $($u.place)" }
+} catch {
+  Write-Host "Could not read upcoming shows: $($_.Exception.Message)"
+}
+
+$payload = [ordered]@{ user = $User; generatedAt = $generatedAt; total = $total; concerts = $concerts; upcoming = $upcoming }
 $json = ConvertTo-Json -InputObject $payload -Depth 10 -Compress
 
 # 1) Full raw backup, exactly as the API returned it
