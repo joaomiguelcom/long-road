@@ -809,6 +809,8 @@
     const views = { overview, concerts: concertList, artists: artistList, venues: venueList, festivals: festivalList, songs: songList, years: yearReview, map: mapView };
     app.innerHTML = views[state.tab]();
     if (state.tab === "map") initMap();
+    // years chart scrolls sideways on phones: start at the most recent years
+    app.querySelectorAll(".years").forEach((el) => { el.scrollLeft = el.scrollWidth; });
   }
   // Every view change is a browser history entry, so Back (button, browser or iPhone swipe) returns to the previous view
   const snap = (n) => ({ n, tab: state.tab, detail: state.detail, filter: state.filter, artist: state.artist, year: state.year, q: state.q, scroll: window.scrollY });
