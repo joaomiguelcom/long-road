@@ -15,7 +15,7 @@ The setlist.fm API has no festival field. Festivals live in `FESTIVAL_EDITIONS` 
    `{ name: "Festival", venue: "Exact venue name from the data", from: "YYYY-MM-DD", to: "YYYY-MM-DD" }`
    `venue` can be an array when the festival uses several stage names. Add `pad: 0` when the venue also hosts normal concerts (halls, clubs); leave it out for festival grounds (default ±2 days).
 4. Run `node tools/festival-check.js --mark-all` so every checked concert goes into `tools/reviewed-ids.txt`.
-5. If you added editions: create a branch `festivals/YYYY-MM-DD`, commit, push and open a PR to `main`. In the description, list each new edition with its source link and each concert you left as normal with a short reason. João merges it himself; never merge.
+5. If you added editions: create a branch `festivals/YYYY-MM-DD`, commit, push and open a PR to `main`. In the description, list each new edition with its source link and each concert you left as normal with a short reason. Tell João in the project thread; merge only after he approves there in writing.
    If you added nothing: commit only `tools/reviewed-ids.txt` straight to `main` and push.
 
 ## Other rules
