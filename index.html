@@ -399,9 +399,9 @@
   const heardOnce = songs.filter((s) => s.count === 1).length;
 
   // ---------- rendering helpers ----------
-  const fattr = (f, v) => ' data-f="' + f + '" data-v="' + esc(v) + '"';
+  const fattr = (f, v, y) => ' data-f="' + f + '" data-v="' + esc(v) + '"' + (y ? ' data-y="' + esc(y) + '"' : "");
   const aattr = (name) => ' data-artist="' + esc(name) + '"';
-  // attrFn(x) returns [field, value] (opens the concert list filtered) or an attribute string
+  // attrFn(x) returns [field, value, year?] (opens the concert list filtered) or an attribute string
   const bars = (list, labelFn, attrFn) => {
     const top = list[0] ? list[0].count : 1;
     return '<ol class="bars">' + list.map((x) => {
@@ -570,11 +570,11 @@
     if (state.detail) return concertDetail(state.detail);
     const q = state.q.trim().toLowerCase();
     const F = state.filter && FILTERS[state.filter.f];
-    let list = F ? concerts.filter((c) => F.test(c, state.filter.v)) : concerts;
+    let list = F ? concerts.filter((c) => F.test(c, state.filter.v) && (!state.filter.y || c.date.startsWith(state.filter.y))) : concerts;
     if (q) list = list.filter((c) => matches(c, q));
     return '' +
       '<div class="list-head"><div class="list-title"><h2>' + plural(list.length, "concert", "concerts") + "</h2>" +
-      (F ? '<span class="chip"><span class="chip-label">' + F.label + "</span><strong>" + esc(F.show(state.filter.v)) + '</strong><button type="button" id="clearf" aria-label="Clear filter"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button></span>' : "") +
+      (F ? '<span class="chip"><span class="chip-label">' + F.label + "</span><strong>" + esc(F.show(state.filter.v)) + (state.filter.y ? " · " + esc(state.filter.y) : "") + '</strong><button type="button" id="clearf" aria-label="Clear filter"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button></span>' : "") +
       "</div>" + searchBox("q", "Search concerts", "Search artist, venue, city, year", state.q) + "</div>" +
       table("concerts", CONCERT_COLS, concertRows(list), limitOf("concerts", 100));
   }
@@ -703,9 +703,9 @@
         (yMonths[0] ? fun("Busiest month", new Date(yMonths[0].key + "-15").toLocaleDateString("en-GB", { month: "long" }), yMonths[0].count + " concerts") : "") +
         (newArtists.length ? fun("New discoveries", newArtists.length + "", newArtists.slice(0, 3).map((a) => esc(a.key)).join(", ") + (newArtists.length > 3 ? "…" : "")) : "") +
       "</div>" +
-      '<section class="card"><h2>Top artists</h2>' + bars(yArtists.slice(0, 10), (a) => esc(a.key), (a) => aattr(a.key)) + "</section>" +
-      (yVenues.length ? '<section class="card"><h2>Venues</h2>' + bars(yVenues.slice(0, 10), (v) => esc(v.name) + ' <span class="muted">· ' + esc(v.city) + "</span>", (v) => ["venue", v.key]) + "</section>" : "") +
-      (yFest.length ? '<section class="card"><h2>Festivals</h2>' + bars(yFest, (f) => esc(f.key), (f) => ["festival", f.key]) + "</section>" : "");
+      '<section class="card"><h2>Top artists</h2>' + bars(yArtists.slice(0, 10), (a) => esc(a.key), (a) => ["artist", a.key, y]) + "</section>" +
+      (yVenues.length ? '<section class="card"><h2>Venues</h2>' + bars(yVenues.slice(0, 10), (v) => esc(v.name) + ' <span class="muted">· ' + esc(v.city) + "</span>", (v) => ["venue", v.key, y]) + "</section>" : "") +
+      (yFest.length ? '<section class="card"><h2>Festivals</h2>' + bars(yFest, (f) => esc(f.key), (f) => ["festival", f.key, y]) + "</section>" : "");
   }
 
   // ---------- map ----------
@@ -769,7 +769,22 @@
     app.innerHTML = views[state.tab]();
     if (state.tab === "map") initMap();
   }
-  const go = (fn) => { fn(); render(); window.scrollTo(0, 0); };
+  // Every view change is a browser history entry, so Back (button, browser or iPhone swipe) returns to the previous view
+  const snap = (n) => ({ n, tab: state.tab, detail: state.detail, filter: state.filter, artist: state.artist, year: state.year, q: state.q, scroll: window.scrollY });
+  const depth = () => (history.state && history.state.n) || 0;
+  const go = (fn) => {
+    history.replaceState(snap(depth()), "");
+    fn();
+    history.pushState(snap(depth() + 1), "");
+    render(); window.scrollTo(0, 0);
+  };
+  history.replaceState(snap(0), "");
+  window.addEventListener("popstate", (e) => {
+    const h = e.state;
+    if (!h) return;
+    Object.assign(state, { tab: h.tab, detail: h.detail, filter: h.filter, artist: h.artist, year: h.year, q: h.q });
+    render(); window.scrollTo(0, h.scroll || 0);
+  });
 
   // ---------- events ----------
   // capture phase: map popups stop click propagation, so listen before they do
@@ -780,7 +795,7 @@
     if (d.tab) go(() => { state.tab = d.tab; state.detail = null; state.filter = null; state.artist = null; });
     else if (d.open) go(() => { state.tab = "concerts"; state.detail = d.open; });
     else if (d.artist) go(() => { state.tab = "artists"; state.artist = d.artist; state.detail = null; });
-    else if (d.f) go(() => { state.tab = "concerts"; state.detail = null; state.filter = { f: d.f, v: d.v }; state.q = ""; state.limits.concerts = 0; });
+    else if (d.f) go(() => { state.tab = "concerts"; state.detail = null; state.filter = { f: d.f, v: d.v, y: d.y || null }; state.q = ""; state.limits.concerts = 0; });
     else if (d.year) go(() => { state.year = d.year; });
     else if (d.sort) {
       const [id, col, num] = d.sort.split("|");
@@ -790,7 +805,7 @@
     }
     else if (d.more) { state.limits[d.more] = limitOf(d.more, 100) + 200; render(); }
     else if (t.id === "clearf") { state.filter = null; state.limits.concerts = 0; render(); }
-    else if (t.id === "back") { state.detail = null; render(); }
+    else if (t.id === "back") { if (depth() > 0) history.back(); else go(() => { state.detail = null; }); }
     else if (t.id === "backArtists") go(() => { state.artist = null; });
   }, true);
   document.addEventListener("change", (e) => {
