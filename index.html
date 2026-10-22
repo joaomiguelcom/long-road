@@ -564,7 +564,7 @@
     const isToday = mmdd(day) === mmdd(today);
     const label = day.toLocaleDateString("en-GB", { day: "numeric", month: "long" });
     const thisYear = today.getFullYear();
-    return '<section class="card otd" aria-labelledby="h-otd"><div class="card-head"><h2 id="h-otd">' + (isToday ? "On this day" : "Coming up") + '</h2><span class="muted">' + (isToday ? label : "Nothing today · next on " + label) + "</span></div>" +
+    return '<section class="card otd" aria-labelledby="h-otd"><div class="card-head"><h2 id="h-otd">' + (isToday ? "On this day, years ago" : "On " + label + ", years ago") + '</h2><span class="muted">' + (isToday ? "Concert anniversaries · " + label : "Next concert anniversary · nothing on " + today.toLocaleDateString("en-GB", { day: "numeric", month: "long" })) + "</span></div>" +
       '<ul class="otd-list">' + list.map((c) => {
         const y = +c.date.slice(0, 4), ago = thisYear - y;
         return '<li><button type="button" class="otd-item" data-open="' + esc(c.id) + '"><span class="otd-year">' + y + '</span><span class="otd-main"><strong>' + esc(c.artist) + "</strong>" +
