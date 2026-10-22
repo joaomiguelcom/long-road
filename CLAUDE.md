@@ -22,3 +22,4 @@ The setlist.fm API has no festival field. Festivals live in `FESTIVAL_EDITIONS` 
 
 - `data/` is written only by the GitHub Action (`.github/workflows/update.yml`). Do not edit it by hand.
 - The API key is the repo secret `SETLISTFM_API_KEY`. Never write it anywhere.
+- Venues with several names (renamed venues, rooms of the same building) are merged in `VENUE_ALIASES` in `index.html`. Only add entries João confirms.
