@@ -12,9 +12,11 @@ permissions:
   pages: write
   id-token: write
 
+# App changes (push) only redeploy, so a newer push replaces an older one still waiting;
+# exports never get cancelled halfway.
 concurrency:
-  group: update
-  cancel-in-progress: false
+  group: update-${{ github.event_name == 'push' && 'deploy' || 'export' }}
+  cancel-in-progress: ${{ github.event_name == 'push' }}
 
 jobs:
   update:
