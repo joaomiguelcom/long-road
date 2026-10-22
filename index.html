@@ -854,22 +854,27 @@
     // years chart scrolls sideways on phones: start at the most recent years
     app.querySelectorAll(".years").forEach((el) => { el.scrollLeft = el.scrollWidth; });
   }
-  // Every view change is a browser history entry, so Back (button, browser or iPhone swipe) returns to the previous view
+  // Every view change can be undone with Back. On desktop it is a browser history entry (browser Back works too);
+  // on touch screens it is an in-app stack, so the iPhone edge swipe does not navigate inside the app.
+  const useHistory = !window.matchMedia("(pointer: coarse)").matches;
+  const stack = [];
   const snap = (n) => ({ n, tab: state.tab, detail: state.detail, filter: state.filter, artist: state.artist, year: state.year, q: state.q, scroll: window.scrollY });
-  const depth = () => (history.state && history.state.n) || 0;
-  const go = (fn) => {
-    history.replaceState(snap(depth()), "");
-    fn();
-    history.pushState(snap(depth() + 1), "");
-    render(); window.scrollTo(0, 0);
-  };
-  history.replaceState(snap(0), "");
-  window.addEventListener("popstate", (e) => {
-    const h = e.state;
-    if (!h) return;
+  const depth = () => useHistory ? (history.state && history.state.n) || 0 : stack.length;
+  const restore = (h) => {
     Object.assign(state, { tab: h.tab, detail: h.detail, filter: h.filter, artist: h.artist, year: h.year, q: h.q });
     render(); window.scrollTo(0, h.scroll || 0);
-  });
+  };
+  const go = (fn) => {
+    if (useHistory) history.replaceState(snap(depth()), ""); else stack.push(snap(depth()));
+    fn();
+    if (useHistory) history.pushState(snap(depth() + 1), "");
+    render(); window.scrollTo(0, 0);
+  };
+  const goBack = () => { if (useHistory) history.back(); else restore(stack.pop()); };
+  if (useHistory) {
+    history.replaceState(snap(0), "");
+    window.addEventListener("popstate", (e) => { if (e.state) restore(e.state); });
+  }
 
   // ---------- events ----------
   // capture phase: map popups stop click propagation, so listen before they do
@@ -892,7 +897,7 @@
     else if (d.more) { state.limits[d.more] = limitOf(d.more, 100) + 200; render(); }
     else if (t.id === "nextAll") { state.nextAll = !state.nextAll; render(); }
     else if (t.id === "clearf") { state.filter = null; state.limits.concerts = 0; render(); }
-    else if (t.id === "back") { if (depth() > 0) history.back(); else go(() => { state.detail = null; }); }
+    else if (t.id === "back") { if (depth() > 0) goBack(); else go(() => { state.detail = null; }); }
     else if (t.id === "backArtists") go(() => { state.artist = null; });
   }, true);
   document.addEventListener("change", (e) => {
