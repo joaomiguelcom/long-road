@@ -171,7 +171,7 @@
   </div>
 </header>
 <main class="wrap" id="app"></main>
-<footer><div class="wrap"><span id="foot-line">Concert data</span> from <a href="https://www.setlist.fm/concerts/ojoaomiguel" target="_blank" rel="noopener">setlist.fm</a>.</div></footer>
+<footer><div class="wrap">Long Road, like the Pearl Jam song. Data from <a href="https://www.setlist.fm/concerts/ojoaomiguel" target="_blank" rel="noopener">setlist.fm</a>.</div></footer>
 
 <script>
 // The iPhone home-screen app resumes from cache, so check for a newer deploy on open and when it comes back to the foreground
@@ -357,8 +357,6 @@
     const r = VENUE_ALIASES.find((r) => plain(r.city) === plain(c.city) && r.aka.some((w) => plain(w) === plain(c.venue)));
     if (r) { if (!r.hideAka) c.venueThen = c.venue; c.venue = r.name; }
   }
-  document.getElementById("foot-line").textContent = "Long Road, like the Pearl Jam song: " + concerts.length.toLocaleString("en-GB") + " concerts since " +
-    new Date(concerts[concerts.length - 1].date + "T12:00:00").toLocaleDateString("en-GB", { month: "long", year: "numeric" }) + ", with data";
   document.getElementById("sync").innerHTML =
     '<span class="dot" aria-hidden="true"></span>' +
     "Updated " + esc(new Date(DATA.generatedAt).toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" }));
