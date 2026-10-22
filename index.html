@@ -93,7 +93,30 @@
   td .open:hover { color: var(--accent); }
   .toolbar { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 12px; }
   .toolbar h2 { margin: 0; font: 500 26px/1.2 var(--display); }
-  .detail { max-width: 760px; display: flex; flex-direction: column; gap: 16px; }
+  .detail { max-width: 760px; display: flex; flex-direction: column; gap: 18px; }
+  .detail-top { display: flex; justify-content: space-between; align-items: center; }
+  .detail-nav { display: flex; gap: 8px; }
+  .icon-btn { width: 44px; height: 44px; display: grid; place-items: center; background: none; border: 1px solid var(--line-2); border-radius: 10px; color: var(--text); font-size: 20px; line-height: 1; cursor: pointer; }
+  .icon-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .icon-btn.off { opacity: .3; cursor: default; }
+  .detail-head { display: flex; gap: 16px; align-items: center; }
+  .next-date.big { width: 64px; padding: 6px 0 7px; }
+  .next-date.big .d { font-size: 30px; }
+  .detail-title { margin: 0; font: 600 34px/1.1 var(--display); overflow-wrap: anywhere; }
+  .detail-meta { margin-top: 4px; }
+  .inline-link { background: none; border: 0; padding: 0; font: inherit; color: inherit; cursor: pointer; text-decoration: underline; text-decoration-color: var(--line-2); text-underline-offset: 3px; }
+  .inline-link:hover { color: var(--accent); text-decoration-color: currentColor; }
+  .facts { display: flex; flex-wrap: wrap; gap: 8px; }
+  .fact { font-size: 12px; color: var(--muted); border: 1px solid var(--line-2); border-radius: 999px; padding: 4px 10px; }
+  .history { display: flex; flex-direction: column; gap: 8px; }
+  .history-list { display: flex; flex-wrap: wrap; gap: 6px; }
+  .hist { font: inherit; font-size: 13px; background: var(--line); border: 0; border-radius: 6px; padding: 4px 9px; color: var(--muted); cursor: pointer; }
+  .hist:hover { color: var(--accent); }
+  .hist.cur { background: var(--accent); color: #0F1115; font-weight: 600; cursor: default; }
+  .sec-title { margin: 0; font: 500 18px/1.2 var(--display); }
+  .badge { font-size: 11px; border-radius: 999px; padding: 1px 8px; margin-left: 4px; background: rgba(242,165,65,.15); color: var(--accent); white-space: nowrap; }
+  .badge.cover { background: var(--line); color: var(--muted); }
+  .set-label.encore { color: var(--accent); }
   .btn { align-self: flex-start; background: none; border: 1px solid var(--line-2); border-radius: 8px; color: var(--text); padding: 10px 14px; min-height: 44px; cursor: pointer; }
   ol.setlist { margin: 0; padding-left: 28px; display: flex; flex-direction: column; gap: 4px; }
   .set-label { margin: 12px 0 4px; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
@@ -411,6 +434,22 @@
   }
   const songs = [...songMap.values()].sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
 
+  // oldest first, same-day ties by setlist id (stable whatever order the API returns)
+  // setlist.fm has no stage times, so the order of same-day concerts is arbitrary.
+  // Reached milestones are frozen here by setlist id and never recalculated; add each new one when it is reached.
+  const FIXED_MILESTONES = {
+    concerts: { 1: "4beb2b76", 50: "53d473f9", 100: "2bd52cda", 250: "2bd46486", 500: "bc9e5ee", 750: "2bb0a006", 1000: "734cb629" }
+  };
+  // oldest first; same-day ties broken by setlist id, then each frozen milestone is moved to its number within its day
+  const chrono = concerts.slice().sort((a, b) => a.date.localeCompare(b.date) || a.id.localeCompare(b.id));
+  Object.entries(FIXED_MILESTONES.concerts).forEach(([n, id]) => {
+    const from = chrono.findIndex((c) => c.id === id), to = n - 1;
+    if (from >= 0 && chrono[to] && chrono[to].date === chrono[from].date) chrono.splice(to, 0, chrono.splice(from, 1)[0]);
+  });
+  const chronoIdx = new Map(chrono.map((c, i) => [c.id, i]));
+  const firstHeard = new Map();   // "song||artist" -> id of the concert where João first heard it
+  for (const c of chrono) for (const s of c.songs || []) if (!s.tape && s.name && !firstHeard.has(s.name + "||" + c.artist)) firstHeard.set(s.name + "||" + c.artist, c.id);
+
   // competition ranking: ties share a rank (1, 2, 2, 4), like setlist.fm
   const withRank = (list) => { let r = 0; return list.map((x, i) => { if (i === 0 || x.count !== list[i - 1].count) r = i + 1; x.rank = r; return x; }); };
   [artists, venues, festivals, songs, countries].forEach(withRank);
@@ -582,11 +621,6 @@
 
   // ---------- milestones ----------
   const CONCERT_MARKS = [1, 50, 100, 250, 500, 750, 1000, 1250, 1500, 2000, 2500, 3000];
-  // setlist.fm has no stage times, so the order of same-day concerts is arbitrary.
-  // Reached milestones are frozen here by setlist id and never recalculated; add each new one when it is reached.
-  const FIXED_MILESTONES = {
-    concerts: { 1: "4beb2b76", 50: "53d473f9", 100: "2bd52cda", 250: "2bd46486", 500: "bc9e5ee", 750: "2bb0a006", 1000: "734cb629" }
-  };
   function milestones() {
     // oldest first; same-day ties broken by setlist id so the result never depends on the API order
     const asc = concerts.slice().sort((a, b) => a.date.localeCompare(b.date) || a.id.localeCompare(b.id));
@@ -678,17 +712,55 @@
       if (!g || g.set !== s.set) { g = { set: s.set, songs: [] }; groups.push(g); }
       g.songs.push(s);
     }
-    const seenBefore = concerts.filter((x) => x.artist === c.artist && x.date <= c.date).length;
+    const idx = chronoIdx.get(c.id), prev = chrono[idx - 1], next = chrono[idx + 1];
+    const d = new Date(c.date + "T12:00:00");
+    const link = (label, attr) => '<button type="button" class="inline-link"' + attr + ">" + label + "</button>";
+    // header meta: festival / venue / city, each opening the filtered list
+    const meta = [
+      c.festival ? link(esc(c.festival), fattr("festival", c.festival)) : null,
+      (c.festival ? esc(c.venue) : link(esc(c.venue), fattr("venue", venueKey(c)))) + (c.venueThen ? ' <span class="tag">(' + esc(c.venueThen) + ")</span>" : ""),
+      link(esc(c.city), fattr("city", c.city))
+    ].filter(Boolean).join(" · ");
+    // context facts
+    const withArtist = chrono.filter((x) => x.artist === c.artist);
+    const nth = withArtist.findIndex((x) => x.id === c.id) + 1;
+    const nights = new Set(chrono.filter((x, i) => i <= idx && x.venue === c.venue && x.city === c.city).map((x) => x.date)).size;
+    const facts = ['<span class="fact">Concert #' + fmtN(idx + 1) + " of " + fmtN(chrono.length) + "</span>",
+      '<span class="fact">' + (c.festival ? "Your " + ordinal(nights) + " day at " + esc(c.venue) : "Your " + ordinal(nights) + " night at " + esc(c.venue)) + "</span>"];
+    if (c.tour) facts.push('<span class="fact">' + esc(c.tour) + "</span>");
+    const others = withArtist.filter((x) => x.id !== c.id);
+    const history = '<div class="history"><span class="kpi-label">' + (others.length ? ordinal(nth) + " time seeing " + esc(c.artist) : "First time seeing " + esc(c.artist)) + "</span>" +
+      (others.length ? '<div class="history-list">' + withArtist.map((x) => x.id === c.id ? '<span class="hist cur">' + (x.date.slice(0, 4)) + "</span>" :
+        '<button type="button" class="hist"' + ' data-open="' + esc(x.id) + '" title="' + esc(fmtDate(x.date) + " · " + (x.festival || x.venue)) + '">' + x.date.slice(0, 4) + "</button>").join("") + "</div>" : "") + "</div>";
+    // setlist
+    const played = (c.songs || []).filter((x) => !x.tape && x.name);
+    const isNew = (x) => !x.tape && x.name && firstHeard.get(x.name + "||" + c.artist) === c.id;
+    const newCount = played.filter(isNew).length, coverCount = played.filter((x) => x.cover).length;
+    const encores = groups.filter((g) => /^Encore/.test(g.set)).length;
+    const summary = [plural(played.length, "song", "songs"), encores ? plural(encores, "encore", "encores") : "", coverCount ? plural(coverCount, "cover", "covers") : "", newCount && nth > 1 ? newCount + " new for you" : ""].filter(Boolean).join(" · ");
+    const setlist = groups.length ?
+      '<section><div class="card-head"><h3 class="sec-title">Setlist</h3><span class="muted">' + summary + "</span></div>" +
+      groups.map((g, i) => '<div><div class="set-label' + (/^Encore/.test(g.set) ? " encore" : "") + '">' + esc(g.set) + '</div><ol class="setlist"' + (i ? ' start="' + (groups.slice(0, i).reduce((n, x) => n + x.songs.length, 0) + 1) + '"' : "") + ">" +
+        g.songs.map((x) => "<li>" + esc(x.name) +
+          (nth > 1 && isNew(x) ? ' <span class="badge">new for you</span>' : "") +
+          (x.cover ? ' <span class="badge cover">' + esc(x.cover) + " cover</span>" : "") +
+          (x.tape ? ' <span class="tag">(tape)</span>' : "") + (x.info ? ' <span class="tag">· ' + esc(x.info) + "</span>" : "") + "</li>").join("") + "</ol></div>").join("") +
+      "</section>"
+      : '<p class="tag" style="margin:0">No setlist yet. <a href="' + esc(c.url) + '" target="_blank" rel="noopener">Add it on setlist.fm</a></p>';
+    // same night
+    const sameNight = chrono.filter((x) => x.date === c.date && x.id !== c.id);
+    const night = sameNight.length ? '<section><h3 class="sec-title">Same night</h3><ul class="otd-list">' + sameNight.map((x) =>
+      '<li><button type="button" class="otd-item" data-open="' + esc(x.id) + '"><span class="otd-main"><strong>' + esc(x.artist) + '</strong><span class="muted">' + esc(x.festival || x.venue) + " · " + esc(x.city) + "</span></span></button></li>").join("") + "</ul></section>" : "";
+    const navBtn = (x, dir) => x ? '<button type="button" class="icon-btn" data-swap="' + esc(x.id) + '" aria-label="' + (dir < 0 ? "Previous" : "Next") + " concert: " + esc(x.artist) + '" title="' + esc(x.artist + " · " + fmtDate(x.date)) + '">' + (dir < 0 ? "‹" : "›") + "</button>" : '<span class="icon-btn off" aria-hidden="true">' + (dir < 0 ? "‹" : "›") + "</span>";
     return '<article class="card detail">' +
-      '<button class="btn" id="back">← Back</button>' +
-      '<div><h2 style="margin:0;font:600 34px/1.15 var(--display)">' + artistBtn(c.artist, "title-link") + '</h2><div class="muted">' + fmtDate(c.date) + " · " + (c.festival ? esc(c.festival) + " · " : "") + esc(c.venue) + (c.venueThen ? " (" + esc(c.venueThen) + ")" : "") + ", " + esc(c.city) + "</div>" +
-      (c.tour ? '<div class="tag">Note: ' + esc(c.tour) + "</div>" : "") +
-      '<div class="tag" style="margin-top:6px">Your ' + ordinal(seenBefore) + " time seeing " + esc(c.artist) + "</div></div>" +
-      (groups.length ? groups.map((g, i) => '<div><div class="set-label">' + esc(g.set) + '</div><ol class="setlist"' + (i ? ' start="' + (groups.slice(0, i).reduce((n, x) => n + x.songs.length, 0) + 1) + '"' : "") + ">" +
-        g.songs.map((s) => "<li>" + esc(s.name) + (s.cover ? ' <span class="tag">(' + esc(s.cover) + " cover)</span>" : "") + (s.tape ? ' <span class="tag">(tape)</span>' : "") + (s.info ? ' <span class="tag">· ' + esc(s.info) + "</span>" : "") + "</li>").join("") + "</ol></div>").join("")
-        : '<p class="muted" style="margin:0">No setlist on setlist.fm for this concert yet.</p>') +
+      '<div class="detail-top"><button class="icon-btn" id="back" aria-label="Back">←</button><div class="detail-nav">' + navBtn(prev, -1) + navBtn(next, 1) + "</div></div>" +
+      '<div class="detail-head"><span class="next-date big"><span class="m">' + d.toLocaleDateString("en-GB", { month: "short" }) + '</span><span class="d">' + d.getDate() + '</span><span class="y">' + d.getFullYear() + "</span></span>" +
+        '<div style="min-width:0"><h2 class="detail-title">' + artistBtn(c.artist, "title-link") + '</h2><div class="muted detail-meta">' + meta + "</div></div></div>" +
+      '<div class="facts">' + facts.join("") + "</div>" +
+      history + setlist + night +
       (c.info ? '<p class="muted" style="margin:0">' + esc(c.info) + "</p>" : "") +
-      '<a href="' + esc(c.url) + '" target="_blank" rel="noopener">Open on setlist.fm</a></article>';
+      (groups.length ? '<a class="tag" href="' + esc(c.url) + '" target="_blank" rel="noopener">Open on setlist.fm</a>' : "") +
+      "</article>";
   }
   const ordinal = (n) => n + (["th", "st", "nd", "rd"][(n % 100 - 20) % 10] || ["th", "st", "nd", "rd"][n % 100] || "th");
 
@@ -891,6 +963,7 @@
     const d = t.dataset;
     if (d.tab) go(() => { state.tab = d.tab; state.detail = null; state.filter = null; state.artist = null; });
     else if (d.open) go(() => { state.tab = "concerts"; state.detail = d.open; });
+    else if (d.swap) { state.detail = d.swap; if (useHistory) history.replaceState(snap(depth()), ""); render(); window.scrollTo(0, 0); }
     else if (d.artist) go(() => { state.tab = "artists"; state.artist = d.artist; state.detail = null; });
     else if (d.f) go(() => { state.tab = "concerts"; state.detail = null; state.filter = { f: d.f, v: d.v, y: d.y || null }; state.q = ""; state.limits.concerts = 0; });
     else if (d.year) go(() => { state.year = d.year; });
