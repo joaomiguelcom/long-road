@@ -577,7 +577,6 @@
         kpi("Venues", fmtN(venues.length), fmtN(cities.length) + " cities · " + plural(countries.length, "country", "countries"), tabAttr("venues")) +
         kpi("Festivals", fmtN(festivals.length), fmtN(festivals.reduce((n, f) => n + f.count, 0)) + " editions · " + fmtN(festivals.reduce((n, f) => n + f.concerts, 0)) + " concerts", tabAttr("festivals")) +
       "</section>" +
-      onThisDay() +
       '<section class="card"><div class="card-head"><h2>Most seen artists</h2><button class="link" data-tab="artists">See all</button></div>' +
         bars(artists.slice(0, 10), (a) => esc(a.key), (a) => aattr(a.key)) + "</section>" +
       '<section class="card"><div class="card-head"><h2>Venues</h2><button class="link" data-tab="venues">See all</button></div>' +
@@ -591,6 +590,7 @@
       '<section class="card" aria-labelledby="h-year"><div class="card-head"><h2 id="h-year">Concerts per year</h2><button class="link" data-tab="years">Year in review</button></div><div class="years">' +
         byYear.map((y) => '<button type="button" class="year"' + fattr("year", y.key) + ' title="' + y.key + ": " + y.count + ' concerts" aria-label="' + y.key + ": " + y.count + ' concerts"><span class="v">' + y.count + '</span><span class="b" style="display:block;height:' + Math.round(y.count / maxYear * 150) + 'px"></span><span class="y">' + "’" + y.key.slice(2) + "</span></button>").join("") +
       "</div></section>" +
+      onThisDay() +
       '<section aria-labelledby="h-fun"><h2 id="h-fun" style="margin:0 0 14px;font:500 22px/1.2 var(--display)">Fun facts</h2><div class="grid" style="--min:240px">' +
         (topSong ? fun("Most heard song live", esc(topSong.name), esc(topSong.artist) + " · " + topSong.count + " times", fattr("song", topSong.artist + "||" + topSong.name)) : "") +
         (pjSong && pjSong !== topSong ? fun("Top Pearl Jam song live", esc(pjSong.name), pjSong.count + " times", fattr("song", pjSong.artist + "||" + pjSong.name)) : "") +
