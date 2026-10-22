@@ -23,3 +23,4 @@ The setlist.fm API has no festival field. Festivals live in `FESTIVAL_EDITIONS` 
 - `data/` is written only by the GitHub Action (`.github/workflows/update.yml`). Do not edit it by hand.
 - The API key is the repo secret `SETLISTFM_API_KEY`. Never write it anywhere.
 - Venues with several names (renamed venues, rooms of the same building) are merged in `VENUE_ALIASES` in `index.html`. Only add entries João confirms.
+- Upcoming shows live in `upcoming.js`. The setlist.fm API does not return them and the attendance page blocks automated downloads (HTTP 202 challenge), so do not scrape it from the Action. During each festival review, read https://www.setlist.fm/attended/ojoaomiguel with WebFetch ("Upcoming Shows" list) and update `upcoming.js` (date, artist, place, url; sorted by date; drop past shows).

@@ -104,6 +104,7 @@
   .next-date { flex: none; width: 52px; text-align: center; border: 1px solid var(--line-2); border-radius: 8px; padding: 4px 0 5px; line-height: 1; }
   .next-date .m { display: block; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
   .next-date .d { display: block; font: 500 24px/1.1 var(--display); }
+  .next-date .y { display: block; font-size: 10px; color: var(--muted); margin-top: 1px; }
   .next-when { flex: none; font-size: 13px; color: var(--muted); white-space: nowrap; }
   .next-when.soon { color: var(--accent); font-weight: 600; }
   .otd-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
@@ -188,6 +189,7 @@
 })();
 </script>
 <script src="data/data.js?v=__BUILD__"></script>
+<script src="upcoming.js?v=__BUILD__"></script>
 <script>
 (function () {
   "use strict";
@@ -521,22 +523,24 @@
   const countryCities = (country) => new Set(concerts.filter((c) => c.country === country).map((c) => c.city)).size;
   const mmdd = (d) => String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
 
-  // Upcoming shows come from the public attendance page of setlist.fm (see export.ps1)
+  // Upcoming shows come from upcoming.js (copied from the attendance page of setlist.fm)
   function nextUp() {
     const today = new Date().toISOString().slice(0, 10);
-    const list = (DATA.upcoming || []).filter((u) => u.date >= today);
+    const list = ((window.LONG_ROAD_UPCOMING || {}).shows || []).filter((u) => u.date >= today);
     if (!list.length) return "";
     const days = (d) => Math.round((Date.parse(d) - Date.parse(today)) / DAY);
     const when = (n) => n === 0 ? "Tonight" : n === 1 ? "Tomorrow" : n < 60 ? "in " + n + " days" : "in " + Math.round(n / 30) + " months";
     const place = (p) => { const parts = String(p || "").split(", "); return esc(parts.length >= 3 ? parts.slice(0, -2).join(", ") + " · " + parts[parts.length - 2] : p || ""); };
     return '<section class="card" aria-labelledby="h-next"><div class="card-head"><h2 id="h-next">Next up</h2><span class="muted">' + plural(list.length, "show", "shows") + " booked</span></div>" +
-      '<ol class="otd-list">' + list.map((u) => {
+      '<ol class="otd-list">' + list.slice(0, state.nextAll ? list.length : 4).map((u) => {
         const d = new Date(u.date + "T12:00:00"), n = days(u.date);
         return '<li><a class="next-item" href="' + esc(u.url) + '" target="_blank" rel="noopener">' +
-          '<span class="next-date"><span class="m">' + d.toLocaleDateString("en-GB", { month: "short" }) + '</span><span class="d">' + d.getDate() + "</span></span>" +
-          '<span class="otd-main"><strong>' + esc(u.artist || "") + '</strong><span class="muted">' + place(u.place) + (d.getFullYear() !== new Date().getFullYear() && !String(u.place).includes(d.getFullYear()) ? " · " + d.getFullYear() : "") + "</span></span>" +
+          '<span class="next-date"><span class="m">' + d.toLocaleDateString("en-GB", { month: "short" }) + '</span><span class="d">' + d.getDate() + "</span>" + (d.getFullYear() !== new Date().getFullYear() ? '<span class="y">' + d.getFullYear() + "</span>" : "") + "</span>" +
+          '<span class="otd-main"><strong>' + esc(u.artist || "") + '</strong><span class="muted">' + place(u.place) + "" + "</span></span>" +
           '<span class="next-when' + (n <= 7 ? " soon" : "") + '">' + when(n) + "</span></a></li>";
-      }).join("") + "</ol></section>";
+      }).join("") + "</ol>" +
+      (list.length > 4 ? '<button type="button" class="link" id="nextAll" style="margin-top:10px">' + (state.nextAll ? "Show less" : "Show all " + list.length) + "</button>" : "") +
+      "</section>";
   }
 
   function onThisDay() {
@@ -880,6 +884,7 @@
       render();
     }
     else if (d.more) { state.limits[d.more] = limitOf(d.more, 100) + 200; render(); }
+    else if (t.id === "nextAll") { state.nextAll = !state.nextAll; render(); }
     else if (t.id === "clearf") { state.filter = null; state.limits.concerts = 0; render(); }
     else if (t.id === "back") { if (depth() > 0) history.back(); else go(() => { state.detail = null; }); }
     else if (t.id === "backArtists") go(() => { state.artist = null; });
