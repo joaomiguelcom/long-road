@@ -88,7 +88,7 @@
   table { width: 100%; min-width: 760px; border-collapse: collapse; font-size: 14px; }
   th.num, td.num { width: 1%; white-space: nowrap; }
   th { text-align: left; font-weight: 500; color: var(--muted); background: var(--surface); padding: 12px 16px; }
-  td { padding: 10px 16px; border-top: 1px solid var(--line); vertical-align: top; }
+  td { padding: 10px 16px; border-top: 1px solid var(--line); vertical-align: middle; }
   td .open { background: none; border: 0; color: var(--text); font-weight: 600; cursor: pointer; padding: 4px 0; text-align: left; }
   td .open:hover { color: var(--accent); }
   .toolbar { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 12px; }
@@ -141,7 +141,7 @@
     nav button { padding: 12px 12px; }
     .kpis { grid-template-columns: 1fr 1fr; gap: 12px; }
     .kpis .card { padding: 16px; }
-    .kpis > :last-child:nth-child(odd) { grid-column: 1 / -1; }
+    .kpis > :first-child:nth-last-child(odd) { grid-column: 1 / -1; }
   }
 </style>
 </head>
