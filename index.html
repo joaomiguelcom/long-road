@@ -69,6 +69,9 @@
   .year .b { width: 100%; background: var(--accent); border-radius: 3px 3px 0 0; min-height: 2px; }
   .year .y { font-size: 11px; color: var(--muted); }
   .fun { display: flex; flex-direction: column; gap: 2px; }
+  button.card { width: 100%; text-align: left; font: inherit; color: inherit; cursor: pointer; transition: border-color .15s; }
+  button.card:hover, button.card:focus-visible { border-color: var(--accent); }
+  .card .go { color: var(--accent); }
   .fun .big { font: 500 26px/1.2 var(--display); color: var(--accent); }
   .fun .small { font-size: 13px; color: var(--muted); }
   label { font-size: 13px; color: var(--muted); display: block; margin-bottom: 4px; }
@@ -353,7 +356,10 @@
   const byYear = countBy(concerts, (c) => c.date.slice(0, 4)).sort((a, b) => a.key.localeCompare(b.key));
   const byMonth = countBy(concerts, (c) => c.date.slice(0, 7));
   const byDay = countBy(concerts, (c) => c.date);
-  const weekdays = countBy(concerts, (c) => new Date(c.date + "T12:00:00").toLocaleDateString("en-GB", { weekday: "long" }));
+  const weekdayOf = (d) => new Date(d + "T12:00:00").toLocaleDateString("en-GB", { weekday: "long" });
+  const weekdays = countBy(concerts, (c) => weekdayOf(c.date));
+  const firstSeen = new Map();   // artist -> date of the first concert
+  for (let i = concerts.length - 1; i >= 0; i--) if (!firstSeen.has(concerts[i].artist)) firstSeen.set(concerts[i].artist, concerts[i].date);
 
   const songMap = new Map();
   let songsHeard = 0;
@@ -412,8 +418,13 @@
       return "<li>" + (at ? '<button type="button" class="barbtn"' + (typeof at === "string" ? at : fattr(...at)) + ">" + inner + "</button>" : '<div class="barbtn static">' + inner + "</div>") + "</li>";
     }).join("") + "</ol>";
   };
-  const kpi = (label, value, extra) => '<div class="card"><div class="kpi-label">' + label + '</div><div class="kpi">' + value + "</div>" + (extra ? '<div class="kpi-label">' + extra + "</div>" : "") + "</div>";
-  const fun = (label, big, small) => '<div class="card fun"><div class="kpi-label">' + label + '</div><div class="big">' + big + '</div><div class="small">' + (small || "") + "</div></div>";
+  // act: optional click attributes (fattr, aattr, data-tab, data-open, data-yr); the whole card becomes a button
+  const box = (cls, act, inner) => act ? '<button type="button" class="' + cls + '"' + act + ">" + inner + "</button>" : '<div class="' + cls + '">' + inner + "</div>";
+  const kpi = (label, value, extra, act) => box("card", act, '<div class="kpi-label">' + label + '</div><div class="kpi">' + value + "</div>" + (extra ? '<div class="kpi-label">' + extra + "</div>" : ""));
+  const fun = (label, big, small, act) => box("card fun", act, '<div class="kpi-label">' + label + '</div><div class="big">' + big + '</div><div class="small">' + (small || "") + "</div>");
+  const tabAttr = (t) => ' data-tab="' + t + '"';
+  const openAttr = (c) => ' data-open="' + esc(c.id) + '"';
+  const yrAttr = (y) => ' data-yr="' + esc(y) + '"';
   const searchBox = (id, label, placeholder, value) => '<div class="search"><label for="' + id + '" class="sr-only">' + label + "</label>" +
     '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8A9099" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>' +
     '<input id="' + id + '" type="search" placeholder="' + placeholder + '" value="' + esc(value) + '"></div>';
@@ -458,7 +469,15 @@
     festival: { label: "Festival", test: (c, v) => c.festival === v, show: (v) => v },
     country: { label: "Country", test: (c, v) => c.country === v, show: (v) => v },
     city: { label: "City", test: (c, v) => c.city === v, show: (v) => v },
-    year: { label: "Year", test: (c, v) => c.date.startsWith(v), show: (v) => v }
+    year: { label: "Year", test: (c, v) => c.date.startsWith(v), show: (v) => v },
+    month: { label: "Month", test: (c, v) => c.date.startsWith(v), show: (v) => new Date(v + "-15").toLocaleDateString("en-GB", { month: "long", year: "numeric" }) },
+    day: { label: "Day", test: (c, v) => c.date === v, show: (v) => fmtDate(v) },
+    range: { label: "Dates", test: (c, v) => { const [a, b] = v.split("|"); return c.date >= a && c.date <= b; }, show: (v) => v.split("|").map(fmtDate).join(" to ") },
+    weekday: { label: "Weekday", test: (c, v) => weekdayOf(c.date) === v, show: (v) => v },
+    song: { label: "Song", test: (c, v) => { const [a, n] = v.split("||"); return c.artist === a && (c.songs || []).some((s) => s.name === n && !s.tape); }, show: (v) => v.split("||").reverse().join(" · ") },
+    newArtists: { label: "First time seen", test: (c, v) => firstSeen.get(c.artist) === c.date && c.date.startsWith(v), show: (v) => v || "All years" },
+    venues: { label: "Venues", test: (c, v) => !c.festival && c.date.startsWith(v), show: (v) => v },
+    festivals: { label: "Festival concerts", test: (c, v) => !!c.festival && c.date.startsWith(v), show: (v) => v }
   };
 
   const state = { tab: "overview", q: "", detail: null, limits: {}, artistQ: "", filter: null, artist: null, year: byYear.length ? byYear[byYear.length - 1].key : null, sorts: {} };
@@ -525,11 +544,11 @@
     const yearsTop = byYear.slice().sort((a, b) => b.count - a.count)[0];
     return '' +
       '<section class="grid" aria-label="Summary">' +
-        kpi("Concerts", '<span class="accent">' + fmtN(concerts.length) + "</span>") +
-        kpi("Different artists", fmtN(artists.length)) +
-        kpi("Songs heard live", fmtN(songsHeard)) +
-        kpi("Venues", fmtN(venues.length), fmtN(cities.length) + " cities · " + plural(countries.length, "country", "countries")) +
-        kpi("Festivals", fmtN(festivals.length), fmtN(festivals.reduce((n, f) => n + f.count, 0)) + " editions · " + fmtN(festivals.reduce((n, f) => n + f.concerts, 0)) + " concerts") +
+        kpi("Concerts", '<span class="accent">' + fmtN(concerts.length) + "</span>", "", tabAttr("concerts")) +
+        kpi("Different artists", fmtN(artists.length), "", tabAttr("artists")) +
+        kpi("Songs heard live", fmtN(songsHeard), "", tabAttr("songs")) +
+        kpi("Venues", fmtN(venues.length), fmtN(cities.length) + " cities · " + plural(countries.length, "country", "countries"), tabAttr("venues")) +
+        kpi("Festivals", fmtN(festivals.length), fmtN(festivals.reduce((n, f) => n + f.count, 0)) + " editions · " + fmtN(festivals.reduce((n, f) => n + f.concerts, 0)) + " concerts", tabAttr("festivals")) +
       "</section>" +
       onThisDay() +
       '<section class="card"><div class="card-head"><h2>Most seen artists</h2><button class="link" data-tab="artists">See all</button></div>' +
@@ -546,18 +565,18 @@
         byYear.map((y) => '<button type="button" class="year"' + fattr("year", y.key) + ' title="' + y.key + ": " + y.count + ' concerts" aria-label="' + y.key + ": " + y.count + ' concerts"><span class="v">' + y.count + '</span><span class="b" style="display:block;height:' + Math.round(y.count / maxYear * 150) + 'px"></span><span class="y">' + "’" + y.key.slice(2) + "</span></button>").join("") +
       "</div></section>" +
       '<section aria-labelledby="h-fun"><h2 id="h-fun" style="margin:0 0 14px;font:500 22px/1.2 var(--display)">Fun facts</h2><div class="grid" style="--min:240px">' +
-        (topSong ? fun("Most heard song live", esc(topSong.name), esc(topSong.artist) + " · " + topSong.count + " times") : "") +
-        (pjSong && pjSong !== topSong ? fun("Top Pearl Jam song live", esc(pjSong.name), pjSong.count + " times") : "") +
-        (yearsTop ? fun("Busiest year", yearsTop.key, yearsTop.count + " concerts") : "") +
-        (byMonth[0] ? fun("Busiest month", new Date(byMonth[0].key + "-15").toLocaleDateString("en-GB", { month: "long", year: "numeric" }), byMonth[0].count + " concerts") : "") +
-        (best.len > 1 ? fun("Longest streak", best.len + " nights in a row", fmtDate(best.start) + " to " + fmtDate(best.end)) : "") +
-        (topDay ? fun("Most concerts in one day", topDay.count, fmtDate(topDay.key)) : "") +
-        (weekdays[0] ? fun("Favourite night out", weekdays[0].key, weekdays[0].count + " concerts") : "") +
-        (gap.days ? fun("Longest break", gap.days + " days", fmtDate(gap.from) + " to " + fmtDate(gap.to)) : "") +
-        (oldest ? fun("Where it all began", esc(oldest.artist), fmtDate(oldest.date) + " · " + esc(oldest.venue)) : "") +
-        (span ? fun("Most loyal to", esc(topArtist.key), "Seen " + topArtist.count + " times, " + span.first.slice(0, 4) + "–" + span.last.slice(0, 4)) : "") +
-        (covers.length ? fun("Covers heard live", fmtN(covers.reduce((n, x) => n + x.count, 0)), "Most heard: " + esc(covers[0].name) + " by " + esc(covers[0].artist)) : "") +
-        (songs.length ? fun("One-time songs", fmtN(heardOnce), "Songs you only heard live once") : "") +
+        (topSong ? fun("Most heard song live", esc(topSong.name), esc(topSong.artist) + " · " + topSong.count + " times", fattr("song", topSong.artist + "||" + topSong.name)) : "") +
+        (pjSong && pjSong !== topSong ? fun("Top Pearl Jam song live", esc(pjSong.name), pjSong.count + " times", fattr("song", pjSong.artist + "||" + pjSong.name)) : "") +
+        (yearsTop ? fun("Busiest year", yearsTop.key, yearsTop.count + " concerts", yrAttr(yearsTop.key)) : "") +
+        (byMonth[0] ? fun("Busiest month", new Date(byMonth[0].key + "-15").toLocaleDateString("en-GB", { month: "long", year: "numeric" }), byMonth[0].count + " concerts", fattr("month", byMonth[0].key)) : "") +
+        (best.len > 1 ? fun("Longest streak", best.len + " nights in a row", fmtDate(best.start) + " to " + fmtDate(best.end), fattr("range", best.start + "|" + best.end)) : "") +
+        (topDay ? fun("Most concerts in one day", topDay.count, fmtDate(topDay.key), fattr("day", topDay.key)) : "") +
+        (weekdays[0] ? fun("Favourite night out", weekdays[0].key, weekdays[0].count + " concerts", fattr("weekday", weekdays[0].key)) : "") +
+        (gap.days ? fun("Longest break", gap.days + " days", fmtDate(gap.from) + " to " + fmtDate(gap.to), fattr("range", gap.from + "|" + gap.to)) : "") +
+        (oldest ? fun("Where it all began", esc(oldest.artist), fmtDate(oldest.date) + " · " + esc(oldest.venue), openAttr(oldest)) : "") +
+        (span ? fun("Most loyal to", esc(topArtist.key), "Seen " + topArtist.count + " times, " + span.first.slice(0, 4) + "–" + span.last.slice(0, 4), aattr(topArtist.key)) : "") +
+        (covers.length ? fun("Covers heard live", fmtN(covers.reduce((n, x) => n + x.count, 0)), "Most heard: " + esc(covers[0].name) + " by " + esc(covers[0].artist), tabAttr("songs")) : "") +
+        (songs.length ? fun("One-time songs", fmtN(heardOnce), "Songs you only heard live once", tabAttr("songs")) : "") +
       "</div></section>" +
       milestones();
   }
@@ -633,7 +652,7 @@
       '<h2 style="margin:4px 0 0;font:600 40px/1.1 var(--display)">' + esc(name) + "</h2>" +
       '<div class="muted">First seen ' + fmtDate(first.date) + " at " + esc(first.festival || first.venue) + (list.length > 1 ? " · last seen " + fmtDate(last.date) + " at " + esc(last.festival || last.venue) : "") + "</div></div>" +
       '<section class="grid" aria-label="Artist summary">' +
-        kpi("Concerts", '<span class="accent">' + a.count + "</span>", aFest ? aFest + " at festivals" : "") +
+        kpi("Concerts", '<span class="accent">' + a.count + "</span>", aFest ? aFest + " at festivals" : "", fattr("artist", name)) +
         kpi("Songs heard", fmtN(heard), fmtN(aSongs.length) + " different") +
         kpi("Years", (+last.date.slice(0, 4) - +first.date.slice(0, 4) + 1) + "", first.date.slice(0, 4) + "–" + last.date.slice(0, 4)) +
         kpi("Countries", aCountries + "") +
@@ -692,17 +711,17 @@
       '<label for="ysel" class="sr-only">Year</label><select id="ysel">' + byYear.slice().reverse().map((x) => '<option value="' + x.key + '"' + (x.key === y ? " selected" : "") + ">" + x.key + "</option>").join("") + "</select>" +
       (next ? '<button class="btn" data-year="' + next.key + '">' + next.key + " →</button>" : "") + "</div></div>" +
       '<section class="grid" aria-label="Year summary">' +
-        kpi("Concerts", '<span class="accent">' + list.length + "</span>", '<button class="link"' + fattr("year", y) + ">See them all</button>") +
-        kpi("Artists", yArtists.length + "", newArtists.length + " seen for the first time") +
-        kpi("Venues", yVenues.length + "", plural(new Set(list.map((c) => c.city)).size, "city", "cities") + " · " + plural(new Set(list.map((c) => c.country)).size, "country", "countries")) +
-        kpi("Festivals", yFest.length + "", list.filter((c) => c.festival).length + " festival concerts") +
-        (ySongs ? kpi("Songs heard", fmtN(ySongs)) : "") +
+        kpi("Concerts", '<span class="accent">' + list.length + "</span>", '<span class="go">See them all</span>', fattr("year", y)) +
+        kpi("Artists", yArtists.length + "", newArtists.length + " seen for the first time", fattr("newArtists", y)) +
+        kpi("Venues", yVenues.length + "", plural(new Set(list.map((c) => c.city)).size, "city", "cities") + " · " + plural(new Set(list.map((c) => c.country)).size, "country", "countries"), fattr("venues", y)) +
+        kpi("Festivals", yFest.length + "", list.filter((c) => c.festival).length + " festival concerts", fattr("festivals", y)) +
+        (ySongs ? kpi("Songs heard", fmtN(ySongs), "", fattr("year", y)) : "") +
       "</section>" +
       '<div class="grid" style="--min:240px">' +
-        fun("First concert", esc(first.artist), fmtDate(first.date) + " · " + esc(first.festival || first.venue)) +
-        fun("Last concert", esc(last.artist), fmtDate(last.date) + " · " + esc(last.festival || last.venue)) +
-        (yMonths[0] ? fun("Busiest month", new Date(yMonths[0].key + "-15").toLocaleDateString("en-GB", { month: "long" }), yMonths[0].count + " concerts") : "") +
-        (newArtists.length ? fun("New discoveries", newArtists.length + "", newArtists.slice(0, 3).map((a) => esc(a.key)).join(", ") + (newArtists.length > 3 ? "…" : "")) : "") +
+        fun("First concert", esc(first.artist), fmtDate(first.date) + " · " + esc(first.festival || first.venue), openAttr(first)) +
+        fun("Last concert", esc(last.artist), fmtDate(last.date) + " · " + esc(last.festival || last.venue), openAttr(last)) +
+        (yMonths[0] ? fun("Busiest month", new Date(yMonths[0].key + "-15").toLocaleDateString("en-GB", { month: "long" }), yMonths[0].count + " concerts", fattr("month", yMonths[0].key)) : "") +
+        (newArtists.length ? fun("New discoveries", newArtists.length + "", newArtists.slice(0, 3).map((a) => esc(a.key)).join(", ") + (newArtists.length > 3 ? "…" : ""), fattr("newArtists", y)) : "") +
       "</div>" +
       '<section class="card"><h2>Top artists</h2>' + bars(yArtists.slice(0, 10), (a) => esc(a.key), (a) => ["artist", a.key, y]) + "</section>" +
       (yVenues.length ? '<section class="card"><h2>Venues</h2>' + bars(yVenues.slice(0, 10), (v) => esc(v.name) + ' <span class="muted">· ' + esc(v.city) + "</span>", (v) => ["venue", v.key, y]) + "</section>" : "") +
@@ -798,6 +817,7 @@
     else if (d.artist) go(() => { state.tab = "artists"; state.artist = d.artist; state.detail = null; });
     else if (d.f) go(() => { state.tab = "concerts"; state.detail = null; state.filter = { f: d.f, v: d.v, y: d.y || null }; state.q = ""; state.limits.concerts = 0; });
     else if (d.year) go(() => { state.year = d.year; });
+    else if (d.yr) go(() => { state.tab = "years"; state.year = d.yr; state.detail = null; state.filter = null; state.artist = null; });
     else if (d.sort) {
       const [id, col, num] = d.sort.split("|");
       const cur = state.sorts[id];
