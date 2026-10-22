@@ -297,15 +297,15 @@
     c.festival = ed ? ed.name : null;
   }
 
-  // One venue under several names (old names, rooms): stats use the main name, the concert keeps its original one
+  // One venue under several names (old names, rooms): stats use the main name, the concert also shows its original one unless hideAka
   const VENUE_ALIASES = [
-    { name: "Coliseu Porto Ageas", city: "Porto", aka: ["Coliseu do Porto"] },
+    { name: "Coliseu do Porto", city: "Porto", aka: ["Coliseu Porto Ageas"], hideAka: true },
     { name: "MEO Arena", city: "Lisbon", aka: ["Altice Arena", "Pavilhão Atlântico"] },
     { name: "Casa da Música", city: "Porto", aka: ["Sala 2"] }
   ];
   for (const c of concerts) {
     const r = VENUE_ALIASES.find((r) => plain(r.city) === plain(c.city) && r.aka.some((w) => plain(w) === plain(c.venue)));
-    if (r) { c.venueThen = c.venue; c.venue = r.name; }
+    if (r) { if (!r.hideAka) c.venueThen = c.venue; c.venue = r.name; }
   }
   document.getElementById("sync").innerHTML =
     '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7BC67E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>' +
