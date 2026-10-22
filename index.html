@@ -142,7 +142,23 @@
 <main class="wrap" id="app"></main>
 <footer><div class="wrap">Concert data from <a href="https://www.setlist.fm/concerts/ojoaomiguel">setlist.fm</a>. Long Road is a personal, non-commercial backup.</div></footer>
 
-<script src="data/data.js"></script>
+<script>
+// The iPhone home-screen app resumes from cache, so check for a newer deploy on open and when it comes back to the foreground
+(function () {
+  const BUILD = "__BUILD__";   // replaced by the GitHub Action on every deploy
+  if (BUILD.indexOf("__") === 0 || location.protocol === "file:") return;
+  function check() {
+    fetch("version.txt?t=" + Date.now(), { cache: "no-store" })
+      .then((r) => (r.ok ? r.text() : ""))
+      .then((v) => { v = v.trim(); if (v && v !== BUILD && location.search !== "?v=" + v) location.replace(location.pathname + "?v=" + v + location.hash); })
+      .catch(() => {});
+  }
+  check();
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") check(); });
+  window.addEventListener("pageshow", (e) => { if (e.persisted) check(); });
+})();
+</script>
+<script src="data/data.js?v=__BUILD__"></script>
 <script>
 (function () {
   "use strict";
