@@ -749,15 +749,15 @@
       : '<p class="tag" style="margin:0">No setlist yet. <a href="' + esc(c.url) + '" target="_blank" rel="noopener">Add it on setlist.fm</a></p>';
     // same night
     const sameNight = chrono.filter((x) => x.date === c.date && x.id !== c.id);
-    const night = sameNight.length ? '<section><h3 class="sec-title">Same night</h3><ul class="otd-list">' + sameNight.map((x) =>
-      '<li><button type="button" class="otd-item" data-open="' + esc(x.id) + '"><span class="otd-main"><strong>' + esc(x.artist) + '</strong><span class="muted">' + esc(x.festival || x.venue) + " · " + esc(x.city) + "</span></span></button></li>").join("") + "</ul></section>" : "";
+    const night = sameNight.length ? '<div class="history"><span class="muted">Also that night</span><div class="history-list">' + sameNight.map((x) =>
+      '<button type="button" class="hist" data-open="' + esc(x.id) + '">' + esc(x.artist) + ((x.festival || x.venue) !== (c.festival || c.venue) ? " · " + esc(x.festival || x.venue) : "") + "</button>").join("") + "</div></div>" : "";
     const navBtn = (x, dir) => x ? '<button type="button" class="icon-btn" data-swap="' + esc(x.id) + '" aria-label="' + (dir < 0 ? "Previous" : "Next") + " concert: " + esc(x.artist) + '" title="' + esc(x.artist + " · " + fmtDate(x.date)) + '">' + (dir < 0 ? "‹" : "›") + "</button>" : '<span class="icon-btn off" aria-hidden="true">' + (dir < 0 ? "‹" : "›") + "</span>";
     return '<article class="card detail">' +
       '<div class="detail-top"><button class="icon-btn" id="back" aria-label="Back">←</button><div class="detail-nav">' + navBtn(prev, -1) + navBtn(next, 1) + "</div></div>" +
       '<div class="detail-head"><span class="next-date big"><span class="m">' + d.toLocaleDateString("en-GB", { month: "short" }) + '</span><span class="d">' + d.getDate() + '</span><span class="y">' + d.getFullYear() + "</span></span>" +
         '<div style="min-width:0"><h2 class="detail-title">' + artistBtn(c.artist, "title-link") + '</h2><div class="muted detail-meta">' + meta + "</div></div></div>" +
       '<div class="facts">' + facts.join("") + "</div>" +
-      history + setlist + night +
+      history + night + setlist +
       (c.info ? '<p class="muted" style="margin:0">' + esc(c.info) + "</p>" : "") +
       (groups.length ? '<a class="tag" href="' + esc(c.url) + '" target="_blank" rel="noopener">Open on setlist.fm</a>' : "") +
       "</article>";
