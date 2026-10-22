@@ -132,7 +132,7 @@
   .barbtn.static { cursor: default; }
   .barbtn.static:hover .fill { background: var(--accent); }
   .barbtn.static:hover .row span:first-child { color: inherit; }
-  .ms-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+  .ms-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr)); gap: 2px 16px; }
   .ms-item { width: 100%; display: flex; gap: 14px; align-items: center; background: none; border: 0; border-radius: 8px; padding: 8px; margin: 0 -8px; color: inherit; text-align: left; cursor: pointer; font: inherit; }
   .ms-item:hover { background: var(--line); }
   .ms-n { font: 500 22px/1 var(--display); color: var(--accent); min-width: 64px; }
@@ -578,29 +578,21 @@
   // setlist.fm has no stage times, so the order of same-day concerts is arbitrary.
   // Reached milestones are frozen here by setlist id and never recalculated; add each new one when it is reached.
   const FIXED_MILESTONES = {
-    concerts: { 1: "4beb2b76", 50: "53d473f9", 100: "2bd52cda", 250: "2bd46486", 500: "bc9e5ee", 750: "2bb0a006", 1000: "734cb629" },
-    artists: { 1: "4beb2b76", 100: "43c1577b", 250: "43a54bf7", 500: "13a205ed" }
+    concerts: { 1: "4beb2b76", 50: "53d473f9", 100: "2bd52cda", 250: "2bd46486", 500: "bc9e5ee", 750: "2bb0a006", 1000: "734cb629" }
   };
-  const ARTIST_MARKS = [1, 100, 250, 500, 750, 1000, 1500, 2000];
   function milestones() {
     // oldest first; same-day ties broken by setlist id so the result never depends on the API order
     const asc = concerts.slice().sort((a, b) => a.date.localeCompare(b.date) || a.id.localeCompare(b.id));
     const byId = new Map(concerts.map((c) => [c.id, c]));
     const pick = (fixed, n, list) => (fixed[n] && byId.get(fixed[n])) || list[n - 1];
-    const seen = new Set(), newArtists = [];
-    for (const c of asc) if (!seen.has(c.artist)) { seen.add(c.artist); newArtists.push(c); }
     const item = (n, c, what) => '<li><button type="button" class="ms-item" data-open="' + esc(c.id) + '"><span class="ms-n">' + ordinal(n) + '</span>' +
-      '<span class="ms-main"><span class="kpi-label">' + what + "</span><strong>" + esc(c.artist) + '</strong><span class="muted">' + fmtDate(c.date) + " · " + esc(c.festival || c.venue) + "</span></span></button></li>";
+      '<span class="ms-main"><strong>' + esc(c.artist) + '</strong><span class="muted">' + fmtDate(c.date) + " · " + esc(c.festival || c.venue) + "</span></span></button></li>";
     const nextC = CONCERT_MARKS.find((m) => m > asc.length);
-    const nextA = ARTIST_MARKS.find((m) => m > newArtists.length);
     const progress = (have, next, prevMark, label) => next ? '<div class="ms-next"><div class="row"><span>Next: ' + ordinal(next) + " " + label + '</span><span class="muted">' + (next - have) + " to go</span></div>" +
       '<div class="track"><div class="fill" style="width:' + Math.round((have - prevMark) / (next - prevMark) * 100) + '%"></div></div></div>' : "";
     const lastC = CONCERT_MARKS.filter((m) => m <= asc.length).pop() || 0;
-    const lastA = ARTIST_MARKS.filter((m) => m <= newArtists.length).pop() || 0;
-    return '<section aria-labelledby="h-ms"><h2 id="h-ms" style="margin:0 0 14px;font:500 22px/1.2 var(--display)">Milestones</h2><div class="grid" style="--min:340px">' +
-      '<div class="card"><h2>Concerts</h2><ol class="ms-list">' + CONCERT_MARKS.filter((m) => m <= asc.length).map((m) => item(m, pick(FIXED_MILESTONES.concerts, m, asc), "concert")).join("") + "</ol>" + progress(asc.length, nextC, lastC, "concert") + "</div>" +
-      '<div class="card"><h2>New artists</h2><ol class="ms-list">' + ARTIST_MARKS.filter((m) => m <= newArtists.length).map((m) => item(m, pick(FIXED_MILESTONES.artists, m, newArtists), "artist seen")).join("") + "</ol>" + progress(newArtists.length, nextA, lastA, "artist") + "</div>" +
-      "</div></section>";
+    return '<section aria-labelledby="h-ms"><h2 id="h-ms" style="margin:0 0 14px;font:500 22px/1.2 var(--display)">Milestones</h2><div class="card">' +
+      '<h2 class="sr-only">Concerts</h2><ol class="ms-list">' + CONCERT_MARKS.filter((m) => m <= asc.length).map((m) => item(m, pick(FIXED_MILESTONES.concerts, m, asc), "concert")).join("") + "</ol>" + progress(asc.length, nextC, lastC, "concert") + "</div></section>";
   }
 
   function overview() {
