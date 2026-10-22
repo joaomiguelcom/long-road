@@ -357,7 +357,7 @@
     const r = VENUE_ALIASES.find((r) => plain(r.city) === plain(c.city) && r.aka.some((w) => plain(w) === plain(c.venue)));
     if (r) { if (!r.hideAka) c.venueThen = c.venue; c.venue = r.name; }
   }
-  document.getElementById("foot-line").textContent = concerts.length.toLocaleString("en-GB") + " concerts since " +
+  document.getElementById("foot-line").textContent = "Long Road, like the Pearl Jam song: " + concerts.length.toLocaleString("en-GB") + " concerts since " +
     new Date(concerts[concerts.length - 1].date + "T12:00:00").toLocaleDateString("en-GB", { month: "long", year: "numeric" }) + ", with data";
   document.getElementById("sync").innerHTML =
     '<span class="dot" aria-hidden="true"></span>' +
