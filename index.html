@@ -30,7 +30,10 @@
   h1 { margin: 0; font: 600 40px/1 var(--display); letter-spacing: .01em; }
   .eyebrow { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
   .brand .eyebrow { margin-top: 8px; }
-  .sync { font-size: 12px; color: var(--muted); display: inline-flex; gap: 7px; align-items: center; padding: 6px 12px; border: 1px solid var(--line-2); border-radius: 999px; background: var(--surface); white-space: nowrap; }
+  /* Layout stability: the header ships with its final shape (static tabs, sync pill placeholder)
+     and main reserves a screen of height, so nothing jumps while data.js loads */
+  #app { min-height: 100vh; min-height: 100svh; }
+  .sync { min-width: 190px; min-height: 32px; box-sizing: border-box; font-size: 12px; color: var(--muted); display: inline-flex; gap: 7px; align-items: center; padding: 6px 12px; border: 1px solid var(--line-2); border-radius: 999px; background: var(--surface); white-space: nowrap; }
   .sync .dot { width: 7px; height: 7px; border-radius: 50%; background: #7BC67E; box-shadow: 0 0 0 3px rgba(123,198,126,.18); }
   nav { display: flex; gap: 4px; overflow-x: auto; margin-top: 20px; scrollbar-width: none; }
   nav::-webkit-scrollbar { display: none; }
@@ -222,9 +225,9 @@
           <button type="button" class="eyebrow eyebrow-btn" id="toAbout">João Miguel's concert archive</button>
         </div>
       </div>
-      <div class="sync" id="sync"></div>
+      <div class="sync" id="sync"><span class="dot" aria-hidden="true"></span>Updated …</div>
     </div>
-    <nav aria-label="Sections" id="tabs"></nav>
+    <nav aria-label="Sections" id="tabs"><button type="button" data-tab="overview" aria-current="page">Overview</button><button type="button" data-tab="concerts">Concerts</button><button type="button" data-tab="artists">Artists</button><button type="button" data-tab="venues">Venues</button><button type="button" data-tab="festivals">Festivals</button><button type="button" data-tab="songs">Songs</button><button type="button" data-tab="years">Year in review</button><button type="button" data-tab="map">Map</button></nav>
   </div>
 </header>
 <main class="wrap" id="app"></main>
