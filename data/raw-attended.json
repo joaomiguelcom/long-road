@@ -47258,6 +47258,42 @@
     "url": "https://www.setlist.fm/setlist/deep-dish/2015/forte-santiago-da-barra-viana-do-castelo-portugal-3343d8d9.html"
   },
   {
+    "id": "137c751d",
+    "versionId": "g4b36f362",
+    "eventDate": "12-08-2015",
+    "lastUpdated": "2026-10-23T18:36:18.479+00:00",
+    "artist": {
+      "mbid": "f34ea031-bbe9-4bec-9e7c-91b1d93f213f",
+      "name": "Mr. Herbert Quain",
+      "sortName": "Mr. Herbert Quain",
+      "disambiguation": "Manuel Bogalheiro",
+      "url": "https://www.setlist.fm/setlists/mr-herbert-quain-6386026b.html"
+    },
+    "venue": {
+      "id": "73d3fe69",
+      "name": "Forte Santiago da Barra",
+      "city": {
+        "id": "2732773",
+        "name": "Viana do Castelo",
+        "state": "Viana do Castelo",
+        "stateCode": "20",
+        "coords": {
+          "lat": 41.7,
+          "long": -8.8333333
+        },
+        "country": {
+          "code": "PT",
+          "name": "Portugal"
+        }
+      },
+      "url": "https://www.setlist.fm/venue/forte-santiago-da-barra-viana-do-castelo-portugal-73d3fe69.html"
+    },
+    "sets": {
+      "set": []
+    },
+    "url": "https://www.setlist.fm/setlist/mr-herbert-quain/2015/forte-santiago-da-barra-viana-do-castelo-portugal-137c751d.html"
+  },
+  {
     "id": "5bf6cf9c",
     "versionId": "23b3642f",
     "eventDate": "18-07-2015",
@@ -57486,6 +57522,42 @@
     "url": "https://www.setlist.fm/setlist/gogol-bordello/2012/praia-do-cabedelo-do-douro-vila-nova-de-gaia-portugal-6bdc9a52.html"
   },
   {
+    "id": "37c751f",
+    "versionId": "g4336f36b",
+    "eventDate": "20-07-2012",
+    "lastUpdated": "2026-10-23T18:34:17.142+00:00",
+    "artist": {
+      "mbid": "81670e3b-0de5-496d-bfc3-51020b4545d2",
+      "name": "Virgem Suta",
+      "sortName": "Virgem Suta",
+      "disambiguation": "",
+      "url": "https://www.setlist.fm/setlists/virgem-suta-7bd56624.html"
+    },
+    "venue": {
+      "id": "4bd07332",
+      "name": "Praia do Cabedelo do Douro",
+      "city": {
+        "id": "2732543",
+        "name": "Vila Nova de Gaia",
+        "state": "Viana do Castelo",
+        "stateCode": "20",
+        "coords": {
+          "lat": 41.75,
+          "long": -8.5666667
+        },
+        "country": {
+          "code": "PT",
+          "name": "Portugal"
+        }
+      },
+      "url": "https://www.setlist.fm/venue/praia-do-cabedelo-do-douro-vila-nova-de-gaia-portugal-4bd07332.html"
+    },
+    "sets": {
+      "set": []
+    },
+    "url": "https://www.setlist.fm/setlist/virgem-suta/2012/praia-do-cabedelo-do-douro-vila-nova-de-gaia-portugal-37c751f.html"
+  },
+  {
     "id": "13ce85b9",
     "versionId": "g6bffea12",
     "eventDate": "20-07-2012",
@@ -64454,6 +64526,42 @@
     "url": "https://www.setlist.fm/setlist/lamb/2011/coliseu-do-porto-porto-portugal-3d31d93.html"
   },
   {
+    "id": "1b7c7510",
+    "versionId": "g4336f353",
+    "eventDate": "12-06-2011",
+    "lastUpdated": "2026-10-23T18:38:40.478+00:00",
+    "artist": {
+      "mbid": "6fa6df45-75e7-4752-ba09-c960122f86b2",
+      "name": "Jay Leighton",
+      "sortName": "Leighton, Jay",
+      "disambiguation": "",
+      "url": "https://www.setlist.fm/setlists/jay-leighton-3c0c1a3.html"
+    },
+    "venue": {
+      "id": "3d66507",
+      "name": "Coliseu do Porto",
+      "city": {
+        "id": "6458924",
+        "name": "Porto",
+        "state": "Porto",
+        "stateCode": "17",
+        "coords": {
+          "lat": 41.158,
+          "long": -8.636
+        },
+        "country": {
+          "code": "PT",
+          "name": "Portugal"
+        }
+      },
+      "url": "https://www.setlist.fm/venue/coliseu-do-porto-porto-portugal-3d66507.html"
+    },
+    "sets": {
+      "set": []
+    },
+    "url": "https://www.setlist.fm/setlist/jay-leighton/2011/coliseu-do-porto-porto-portugal-1b7c7510.html"
+  },
+  {
     "id": "5ba54b0c",
     "versionId": "g398c96f",
     "eventDate": "25-05-2011",
@@ -64608,6 +64716,78 @@
       ]
     },
     "url": "https://www.setlist.fm/setlist/the-national/2011/coliseu-do-porto-porto-portugal-33d3cc9d.html"
+  },
+  {
+    "id": "37c751b",
+    "versionId": "g4336f373",
+    "eventDate": "10-05-2011",
+    "lastUpdated": "2026-10-23T18:32:44.394+00:00",
+    "artist": {
+      "mbid": "917e448b-fbed-4062-b563-67566a3b3bb1",
+      "name": "Natiruts",
+      "sortName": "Natiruts",
+      "disambiguation": "",
+      "url": "https://www.setlist.fm/setlists/natiruts-bd6599a.html"
+    },
+    "venue": {
+      "id": "53d4b321",
+      "name": "Gatódromo",
+      "city": {
+        "id": "2742032",
+        "name": "Braga",
+        "state": "Braga",
+        "stateCode": "04",
+        "coords": {
+          "lat": 41.55,
+          "long": -8.4333333
+        },
+        "country": {
+          "code": "PT",
+          "name": "Portugal"
+        }
+      },
+      "url": "https://www.setlist.fm/venue/gatodromo-braga-portugal-53d4b321.html"
+    },
+    "sets": {
+      "set": []
+    },
+    "url": "https://www.setlist.fm/setlist/natiruts/2011/gatodromo-braga-portugal-37c751b.html"
+  },
+  {
+    "id": "1b7c7524",
+    "versionId": "g5b36f378",
+    "eventDate": "10-05-2011",
+    "lastUpdated": "2026-10-23T18:31:33.713+00:00",
+    "artist": {
+      "mbid": "4e022787-f495-4729-8892-67203a2641d0",
+      "name": "Mercado Negro",
+      "sortName": "Mercado Negro",
+      "disambiguation": "",
+      "url": "https://www.setlist.fm/setlists/mercado-negro-1bd0d1f0.html"
+    },
+    "venue": {
+      "id": "53d4b321",
+      "name": "Gatódromo",
+      "city": {
+        "id": "2742032",
+        "name": "Braga",
+        "state": "Braga",
+        "stateCode": "04",
+        "coords": {
+          "lat": 41.55,
+          "long": -8.4333333
+        },
+        "country": {
+          "code": "PT",
+          "name": "Portugal"
+        }
+      },
+      "url": "https://www.setlist.fm/venue/gatodromo-braga-portugal-53d4b321.html"
+    },
+    "sets": {
+      "set": []
+    },
+    "url": "https://www.setlist.fm/setlist/mercado-negro/2011/gatodromo-braga-portugal-1b7c7524.html"
   },
   {
     "id": "4bd3f736",
@@ -64965,6 +65145,42 @@
       ]
     },
     "url": "https://www.setlist.fm/setlist/john-is-gone/2011/plano-b-porto-portugal-63a26223.html"
+  },
+  {
+    "id": "137c7561",
+    "versionId": "g3336f009",
+    "eventDate": "02-04-2011",
+    "lastUpdated": "2026-10-23T18:04:13.699+00:00",
+    "artist": {
+      "mbid": "ff711332-b409-44dd-ad1d-f7714f8906db",
+      "name": "Crookers",
+      "sortName": "Crookers",
+      "disambiguation": "Italian DJ/producer project",
+      "url": "https://www.setlist.fm/setlists/crookers-5bd62b3c.html"
+    },
+    "venue": {
+      "id": "33d67cad",
+      "name": "Teatro Sá da Bandeira",
+      "city": {
+        "id": "6458924",
+        "name": "Porto",
+        "state": "Porto",
+        "stateCode": "17",
+        "coords": {
+          "lat": 41.158,
+          "long": -8.636
+        },
+        "country": {
+          "code": "PT",
+          "name": "Portugal"
+        }
+      },
+      "url": "https://www.setlist.fm/venue/teatro-sa-da-bandeira-porto-portugal-33d67cad.html"
+    },
+    "sets": {
+      "set": []
+    },
+    "url": "https://www.setlist.fm/setlist/crookers/2011/teatro-sa-da-bandeira-porto-portugal-137c7561.html"
   },
   {
     "id": "63d266bf",
@@ -69842,42 +70058,6 @@
       "set": []
     },
     "url": "https://www.setlist.fm/setlist/john-is-gone/2010/amica-bar-chaves-portugal-6ba2622a.html"
-  },
-  {
-    "id": "23d23893",
-    "versionId": "2bdd44be",
-    "eventDate": "30-04-2010",
-    "lastUpdated": "2011-02-07T18:33:34+00:00",
-    "artist": {
-      "mbid": "ff711332-b409-44dd-ad1d-f7714f8906db",
-      "name": "Crookers",
-      "sortName": "Crookers",
-      "disambiguation": "Italian DJ/producer project",
-      "url": "https://www.setlist.fm/setlists/crookers-5bd62b3c.html"
-    },
-    "venue": {
-      "id": "33d67cad",
-      "name": "Teatro Sá da Bandeira",
-      "city": {
-        "id": "6458924",
-        "name": "Porto",
-        "state": "Porto",
-        "stateCode": "17",
-        "coords": {
-          "lat": 41.158,
-          "long": -8.636
-        },
-        "country": {
-          "code": "PT",
-          "name": "Portugal"
-        }
-      },
-      "url": "https://www.setlist.fm/venue/teatro-sa-da-bandeira-porto-portugal-33d67cad.html"
-    },
-    "sets": {
-      "set": []
-    },
-    "url": "https://www.setlist.fm/setlist/crookers/2010/teatro-sa-da-bandeira-porto-portugal-23d23893.html"
   },
   {
     "id": "23d4f03f",
@@ -75722,6 +75902,42 @@
       ]
     },
     "url": "https://www.setlist.fm/setlist/the-lemonheads/2008/praia-fluvial-do-taboao-paredes-de-coura-portugal-23d6e067.html"
+  },
+  {
+    "id": "1b7c752c",
+    "versionId": "g3b36f090",
+    "eventDate": "03-08-2008",
+    "lastUpdated": "2026-10-23T18:26:38.353+00:00",
+    "artist": {
+      "mbid": "6eefe171-74e4-447d-8094-0034c0d6cad1",
+      "name": "KOMODO WAGON",
+      "sortName": "KOMODO WAGON",
+      "disambiguation": "",
+      "url": "https://www.setlist.fm/setlists/komodo-wagon-3bd84018.html"
+    },
+    "venue": {
+      "id": "33d3ecc1",
+      "name": "Praia Fluvial do Taboão",
+      "city": {
+        "id": "2736643",
+        "name": "Paredes de Coura",
+        "state": "Viana do Castelo",
+        "stateCode": "20",
+        "coords": {
+          "lat": 41.9,
+          "long": -8.5666667
+        },
+        "country": {
+          "code": "PT",
+          "name": "Portugal"
+        }
+      },
+      "url": "https://www.setlist.fm/venue/praia-fluvial-do-taboao-paredes-de-coura-portugal-33d3ecc1.html"
+    },
+    "sets": {
+      "set": []
+    },
+    "url": "https://www.setlist.fm/setlist/komodo-wagon/2008/praia-fluvial-do-taboao-paredes-de-coura-portugal-1b7c752c.html"
   },
   {
     "id": "bd6513e",
