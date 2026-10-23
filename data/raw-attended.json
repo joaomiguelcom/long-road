@@ -7314,9 +7314,9 @@
   },
   {
     "id": "13406dcd",
-    "versionId": "g2313f83f",
+    "versionId": "g2b3680fe",
     "eventDate": "19-03-2026",
-    "lastUpdated": "2026-04-05T15:14:09.199+00:00",
+    "lastUpdated": "2026-10-23T04:27:09.927+00:00",
     "artist": {
       "mbid": "a55c2f1b-3f3f-4d6a-aa30-5e186dbadce6",
       "name": "Suede",
@@ -7414,7 +7414,7 @@
           "encore": 1,
           "song": [
             {
-              "name": "Dancing with the Europeans"
+              "name": "Dancing With the Europeans"
             },
             {
               "name": "100%",
