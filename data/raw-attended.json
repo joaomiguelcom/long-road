@@ -181,8 +181,8 @@
     "lastUpdated": "2026-09-10T21:25:31.592+00:00",
     "artist": {
       "mbid": "9ab35d11-c05b-4cc1-983e-faf08490bfaf",
-      "name": "MAQUINA.",
-      "sortName": "MAQUINA.",
+      "name": "Maquina.",
+      "sortName": "Maquina.",
       "disambiguation": "Portuguese psychedelic band",
       "url": "https://www.setlist.fm/setlists/maquina-4bfbc3de.html"
     },
@@ -1052,7 +1052,7 @@
       "mbid": "f2393e49-b791-46da-a6d7-1e9e60743405",
       "name": "Cate Le Bon",
       "sortName": "Le Bon, Cate",
-      "disambiguation": "",
+      "disambiguation": "Welsh singer-songwriter",
       "url": "https://www.setlist.fm/setlists/cate-le-bon-23d4c4f7.html"
     },
     "venue": {
@@ -8216,8 +8216,8 @@
     "lastUpdated": "2026-01-24T20:22:53.245+00:00",
     "artist": {
       "mbid": "9ab35d11-c05b-4cc1-983e-faf08490bfaf",
-      "name": "MAQUINA.",
-      "sortName": "MAQUINA.",
+      "name": "Maquina.",
+      "sortName": "Maquina.",
       "disambiguation": "Portuguese psychedelic band",
       "url": "https://www.setlist.fm/setlists/maquina-4bfbc3de.html"
     },
@@ -11200,8 +11200,8 @@
     "lastUpdated": "2025-08-10T18:47:05.487+00:00",
     "artist": {
       "mbid": "9ab35d11-c05b-4cc1-983e-faf08490bfaf",
-      "name": "MAQUINA.",
-      "sortName": "MAQUINA.",
+      "name": "Maquina.",
+      "sortName": "Maquina.",
       "disambiguation": "Portuguese psychedelic band",
       "url": "https://www.setlist.fm/setlists/maquina-4bfbc3de.html"
     },
@@ -13890,8 +13890,8 @@
     "lastUpdated": "2025-01-31T12:10:36.954+00:00",
     "artist": {
       "mbid": "9ab35d11-c05b-4cc1-983e-faf08490bfaf",
-      "name": "MAQUINA.",
-      "sortName": "MAQUINA.",
+      "name": "Maquina.",
+      "sortName": "Maquina.",
       "disambiguation": "Portuguese psychedelic band",
       "url": "https://www.setlist.fm/setlists/maquina-4bfbc3de.html"
     },
@@ -30835,6 +30835,42 @@
     "url": "https://www.setlist.fm/setlist/linda-martini/2022/centro-de-congressos-da-alfandega-porto-portugal-6bb4b68a.html"
   },
   {
+    "id": "7bb72e04",
+    "versionId": "g73c87295",
+    "eventDate": "13-05-2022",
+    "lastUpdated": "2022-05-15T00:11:32.19+00:00",
+    "artist": {
+      "mbid": "5f500588-8682-4553-ab07-9c4d9f49d660",
+      "name": "Oh Hiroshima",
+      "sortName": "Oh Hiroshima",
+      "disambiguation": "",
+      "url": "https://www.setlist.fm/setlists/oh-hiroshima-4bdaeb66.html"
+    },
+    "venue": {
+      "id": "3bd67cac",
+      "name": "Casa da Música",
+      "city": {
+        "id": "6458924",
+        "name": "Porto",
+        "state": "Porto",
+        "stateCode": "17",
+        "coords": {
+          "lat": 41.158,
+          "long": -8.636
+        },
+        "country": {
+          "code": "PT",
+          "name": "Portugal"
+        }
+      },
+      "url": "https://www.setlist.fm/venue/casa-da-musica-porto-portugal-3bd67cac.html"
+    },
+    "sets": {
+      "set": []
+    },
+    "url": "https://www.setlist.fm/setlist/oh-hiroshima/2022/casa-da-musica-porto-portugal-7bb72e04.html"
+  },
+  {
     "id": "43b73b13",
     "versionId": "g6bf1563a",
     "eventDate": "13-05-2022",
@@ -44118,6 +44154,80 @@
     "url": "https://www.setlist.fm/setlist/dj-ride/2016/praca-da-republica-viana-do-castelo-portugal-4ba54bd2.html"
   },
   {
+    "id": "5bfcd77c",
+    "versionId": "g53933f71",
+    "eventDate": "18-08-2016",
+    "lastUpdated": "2023-06-13T11:48:40.027+00:00",
+    "artist": {
+      "mbid": "194272cc-dcc8-4640-a4a6-66da7d250d5c",
+      "name": "Osees",
+      "sortName": "Osees",
+      "disambiguation": "use also for Thee Oh Sees and Oh Sees",
+      "url": "https://www.setlist.fm/setlists/osees-6bd7f23a.html"
+    },
+    "venue": {
+      "id": "33d3ecc1",
+      "name": "Praia Fluvial do Taboão",
+      "city": {
+        "id": "2736643",
+        "name": "Paredes de Coura",
+        "state": "Viana do Castelo",
+        "stateCode": "20",
+        "coords": {
+          "lat": 41.9,
+          "long": -8.5666667
+        },
+        "country": {
+          "code": "PT",
+          "name": "Portugal"
+        }
+      },
+      "url": "https://www.setlist.fm/venue/praia-fluvial-do-taboao-paredes-de-coura-portugal-33d3ecc1.html"
+    },
+    "sets": {
+      "set": [
+        {
+          "song": [
+            {
+              "name": "The Dream"
+            },
+            {
+              "name": "Plastic Plant"
+            },
+            {
+              "name": "Toe Cutter - Thumb Buster"
+            },
+            {
+              "name": "Withered Hand"
+            },
+            {
+              "name": "Dead Energy"
+            },
+            {
+              "name": "Sticky Hulks"
+            },
+            {
+              "name": "Web"
+            },
+            {
+              "name": "Gelatinous Cube"
+            },
+            {
+              "name": "I Come From the Mountain"
+            },
+            {
+              "name": "Encrypted Bounce"
+            },
+            {
+              "name": "Contraption / Soul Desert"
+            }
+          ]
+        }
+      ]
+    },
+    "url": "https://www.setlist.fm/setlist/osees/2016/praia-fluvial-do-taboao-paredes-de-coura-portugal-5bfcd77c.html"
+  },
+  {
     "id": "53fcd779",
     "versionId": "gbdbd10e",
     "eventDate": "18-08-2016",
@@ -46682,6 +46792,42 @@
       "set": []
     },
     "url": "https://www.setlist.fm/setlist/the-cat-empire/2015/hard-club-porto-portugal-3bf5dcfc.html"
+  },
+  {
+    "id": "13f53d75",
+    "versionId": "137e01ad",
+    "eventDate": "30-10-2015",
+    "lastUpdated": "2018-05-19T18:48:06.596+00:00",
+    "artist": {
+      "mbid": "b94fd691-cace-4b33-8218-3d5fb9eaf01f",
+      "name": "Pierce Brothers",
+      "sortName": "Pierce Brothers",
+      "disambiguation": "Australian country music duo",
+      "url": "https://www.setlist.fm/setlists/pierce-brothers-4bd827d6.html"
+    },
+    "venue": {
+      "id": "7bd2f2bc",
+      "name": "Hard Club",
+      "city": {
+        "id": "6458924",
+        "name": "Porto",
+        "state": "Porto",
+        "stateCode": "17",
+        "coords": {
+          "lat": 41.158,
+          "long": -8.636
+        },
+        "country": {
+          "code": "PT",
+          "name": "Portugal"
+        }
+      },
+      "url": "https://www.setlist.fm/venue/hard-club-porto-portugal-7bd2f2bc.html"
+    },
+    "sets": {
+      "set": []
+    },
+    "url": "https://www.setlist.fm/setlist/pierce-brothers/2015/hard-club-porto-portugal-13f53d75.html"
   },
   {
     "id": "2bf47c5e",
@@ -55169,6 +55315,82 @@
     "url": "https://www.setlist.fm/setlist/school-of-seven-bells/2012/praia-fluvial-do-taboao-paredes-de-coura-portugal-73dc1a39.html"
   },
   {
+    "id": "43dc1bb3",
+    "versionId": "3b03541c",
+    "eventDate": "16-08-2012",
+    "lastUpdated": "2019-09-10T14:46:29.499+00:00",
+    "artist": {
+      "mbid": "309ec98f-3066-4501-8761-1db9fb0c7a83",
+      "name": "Crystal Fighters",
+      "sortName": "Crystal Fighters",
+      "disambiguation": "",
+      "url": "https://www.setlist.fm/setlists/crystal-fighters-4bd40bca.html"
+    },
+    "venue": {
+      "id": "33d3ecc1",
+      "name": "Praia Fluvial do Taboão",
+      "city": {
+        "id": "2736643",
+        "name": "Paredes de Coura",
+        "state": "Viana do Castelo",
+        "stateCode": "20",
+        "coords": {
+          "lat": 41.9,
+          "long": -8.5666667
+        },
+        "country": {
+          "code": "PT",
+          "name": "Portugal"
+        }
+      },
+      "url": "https://www.setlist.fm/venue/praia-fluvial-do-taboao-paredes-de-coura-portugal-33d3ecc1.html"
+    },
+    "sets": {
+      "set": [
+        {
+          "song": [
+            {
+              "name": "Solar System"
+            },
+            {
+              "name": "Champion Sound"
+            },
+            {
+              "name": "I Love London"
+            },
+            {
+              "name": "Plage"
+            },
+            {
+              "name": "Follow"
+            },
+            {
+              "name": "Swallow"
+            },
+            {
+              "name": "In the Summer"
+            },
+            {
+              "name": "At Home"
+            },
+            {
+              "name": "I Do This Everyday"
+            }
+          ]
+        },
+        {
+          "encore": 1,
+          "song": [
+            {
+              "name": "Xtatic Truth"
+            }
+          ]
+        }
+      ]
+    },
+    "url": "https://www.setlist.fm/setlist/crystal-fighters/2012/praia-fluvial-do-taboao-paredes-de-coura-portugal-43dc1bb3.html"
+  },
+  {
     "id": "3bdc20fc",
     "versionId": "2b03541e",
     "eventDate": "16-08-2012",
@@ -55525,6 +55747,42 @@
       ]
     },
     "url": "https://www.setlist.fm/setlist/kasabian/2012/praia-fluvial-do-taboao-paredes-de-coura-portugal-1bdc21ec.html"
+  },
+  {
+    "id": "537c7b21",
+    "versionId": "g5336f711",
+    "eventDate": "15-08-2012",
+    "lastUpdated": "2026-10-23T16:16:48.802+00:00",
+    "artist": {
+      "mbid": "eb6de5f6-98f8-4b5a-bfdc-f87fa4936baa",
+      "name": "Kavinsky",
+      "sortName": "Kavinsky",
+      "disambiguation": "",
+      "url": "https://www.setlist.fm/setlists/kavinsky-3bd68808.html"
+    },
+    "venue": {
+      "id": "33d3ecc1",
+      "name": "Praia Fluvial do Taboão",
+      "city": {
+        "id": "2736643",
+        "name": "Paredes de Coura",
+        "state": "Viana do Castelo",
+        "stateCode": "20",
+        "coords": {
+          "lat": 41.9,
+          "long": -8.5666667
+        },
+        "country": {
+          "code": "PT",
+          "name": "Portugal"
+        }
+      },
+      "url": "https://www.setlist.fm/venue/praia-fluvial-do-taboao-paredes-de-coura-portugal-33d3ecc1.html"
+    },
+    "sets": {
+      "set": []
+    },
+    "url": "https://www.setlist.fm/setlist/kavinsky/2012/praia-fluvial-do-taboao-paredes-de-coura-portugal-537c7b21.html"
   },
   {
     "id": "3bdc20d4",
@@ -56019,6 +56277,42 @@
       ]
     },
     "url": "https://www.setlist.fm/setlist/two-door-cinema-club/2012/herdade-da-casa-branca-zambujeira-do-mar-portugal-53dcdb61.html"
+  },
+  {
+    "id": "537c7b1d",
+    "versionId": "g5b36f700",
+    "eventDate": "05-08-2012",
+    "lastUpdated": "2026-10-23T16:19:09.119+00:00",
+    "artist": {
+      "mbid": "ec853694-30a1-4c7e-84e6-4ca87ee3c314",
+      "name": "Andy C",
+      "sortName": "C, Andy",
+      "disambiguation": "UK drum & bass DJ/producer",
+      "url": "https://www.setlist.fm/setlists/andy-c-73d6764d.html"
+    },
+    "venue": {
+      "id": "43d6d333",
+      "name": "Herdade da Casa Branca",
+      "city": {
+        "id": "2261486",
+        "name": "Zambujeira do Mar",
+        "state": "Beja",
+        "stateCode": "03",
+        "coords": {
+          "lat": 37.5166667,
+          "long": -8.7833333
+        },
+        "country": {
+          "code": "PT",
+          "name": "Portugal"
+        }
+      },
+      "url": "https://www.setlist.fm/venue/herdade-da-casa-branca-zambujeira-do-mar-portugal-43d6d333.html"
+    },
+    "sets": {
+      "set": []
+    },
+    "url": "https://www.setlist.fm/setlist/andy-c/2012/herdade-da-casa-branca-zambujeira-do-mar-portugal-537c7b1d.html"
   },
   {
     "id": "3bdbc060",
@@ -60403,6 +60697,42 @@
     "url": "https://www.setlist.fm/setlist/feist/2012/coliseu-do-porto-porto-portugal-5bde3730.html"
   },
   {
+    "id": "4b7c7b2a",
+    "versionId": "g4336f727",
+    "eventDate": "19-03-2012",
+    "lastUpdated": "2026-10-23T16:15:30.469+00:00",
+    "artist": {
+      "mbid": "1a74972b-82b9-49ba-9dcf-ca7cdaee4fa5",
+      "name": "Fionn Regan",
+      "sortName": "Regan, Fionn",
+      "disambiguation": "",
+      "url": "https://www.setlist.fm/setlists/fionn-regan-2bd650a6.html"
+    },
+    "venue": {
+      "id": "3d66507",
+      "name": "Coliseu do Porto",
+      "city": {
+        "id": "6458924",
+        "name": "Porto",
+        "state": "Porto",
+        "stateCode": "17",
+        "coords": {
+          "lat": 41.158,
+          "long": -8.636
+        },
+        "country": {
+          "code": "PT",
+          "name": "Portugal"
+        }
+      },
+      "url": "https://www.setlist.fm/venue/coliseu-do-porto-porto-portugal-3d66507.html"
+    },
+    "sets": {
+      "set": []
+    },
+    "url": "https://www.setlist.fm/setlist/fionn-regan/2012/coliseu-do-porto-porto-portugal-4b7c7b2a.html"
+  },
+  {
     "id": "53de3755",
     "versionId": "237e00cb",
     "eventDate": "11-03-2012",
@@ -60569,6 +60899,42 @@
       "set": []
     },
     "url": "https://www.setlist.fm/setlist/fatboy-slim/2012/pacha-ofir-porto-portugal-348ddaf.html"
+  },
+  {
+    "id": "4b7c7b3a",
+    "versionId": "g4336f73b",
+    "eventDate": "15-11-2011",
+    "lastUpdated": "2026-10-23T16:12:39.651+00:00",
+    "artist": {
+      "mbid": "b5a6ea29-3065-4869-ac66-a44002e55d4d",
+      "name": "Jazzanova",
+      "sortName": "Jazzanova",
+      "disambiguation": "",
+      "url": "https://www.setlist.fm/setlists/jazzanova-4bd6ab32.html"
+    },
+    "venue": {
+      "id": "3bd67cac",
+      "name": "Casa da Música",
+      "city": {
+        "id": "6458924",
+        "name": "Porto",
+        "state": "Porto",
+        "stateCode": "17",
+        "coords": {
+          "lat": 41.158,
+          "long": -8.636
+        },
+        "country": {
+          "code": "PT",
+          "name": "Portugal"
+        }
+      },
+      "url": "https://www.setlist.fm/venue/casa-da-musica-porto-portugal-3bd67cac.html"
+    },
+    "sets": {
+      "set": []
+    },
+    "url": "https://www.setlist.fm/setlist/jazzanova/2011/casa-da-musica-porto-portugal-4b7c7b3a.html"
   },
   {
     "id": "53a54be1",
@@ -65706,6 +66072,42 @@
     "url": "https://www.setlist.fm/setlist/diabo-na-cruz/2010/jardins-do-palacio-de-cristal-porto-portugal-53a54b19.html"
   },
   {
+    "id": "1355dd6d",
+    "versionId": "g73ae0e89",
+    "eventDate": "14-08-2010",
+    "lastUpdated": "2024-08-05T21:32:17.299+00:00",
+    "artist": {
+      "mbid": "826dc91a-6dd3-4279-ae8d-bb710db646bb",
+      "name": "Patrice",
+      "sortName": "Patrice",
+      "disambiguation": "German reggae singer",
+      "url": "https://www.setlist.fm/setlists/patrice-3bd6d010.html"
+    },
+    "venue": {
+      "id": "33d218e9",
+      "name": "Praia de Ofir",
+      "city": {
+        "id": "2739849",
+        "name": "Esposende",
+        "state": "Braga",
+        "stateCode": "04",
+        "coords": {
+          "lat": 41.5333333,
+          "long": -8.7833333
+        },
+        "country": {
+          "code": "PT",
+          "name": "Portugal"
+        }
+      },
+      "url": "https://www.setlist.fm/venue/praia-de-ofir-esposende-portugal-33d218e9.html"
+    },
+    "sets": {
+      "set": []
+    },
+    "url": "https://www.setlist.fm/setlist/patrice/2010/praia-de-ofir-esposende-portugal-1355dd6d.html"
+  },
+  {
     "id": "3c44523",
     "versionId": "g2b9f345e",
     "eventDate": "08-08-2010",
@@ -65945,6 +66347,42 @@
       "set": []
     },
     "url": "https://www.setlist.fm/setlist/bajofondo/2010/herdade-da-casa-branca-zambujeira-do-mar-portugal-4ba54b26.html"
+  },
+  {
+    "id": "33a628d5",
+    "versionId": "gb930d12",
+    "eventDate": "07-08-2010",
+    "lastUpdated": "2023-06-15T07:26:52.704+00:00",
+    "artist": {
+      "mbid": "3010655f-9ff2-4753-b4f7-803c4118f450",
+      "name": "Zion Train",
+      "sortName": "Zion Train",
+      "disambiguation": "",
+      "url": "https://www.setlist.fm/setlists/zion-train-3bd6281c.html"
+    },
+    "venue": {
+      "id": "43d6d333",
+      "name": "Herdade da Casa Branca",
+      "city": {
+        "id": "2261486",
+        "name": "Zambujeira do Mar",
+        "state": "Beja",
+        "stateCode": "03",
+        "coords": {
+          "lat": 37.5166667,
+          "long": -8.7833333
+        },
+        "country": {
+          "code": "PT",
+          "name": "Portugal"
+        }
+      },
+      "url": "https://www.setlist.fm/venue/herdade-da-casa-branca-zambujeira-do-mar-portugal-43d6d333.html"
+    },
+    "sets": {
+      "set": []
+    },
+    "url": "https://www.setlist.fm/setlist/zion-train/2010/herdade-da-casa-branca-zambujeira-do-mar-portugal-33a628d5.html"
   },
   {
     "id": "2bea840e",
@@ -69564,6 +70002,78 @@
       ]
     },
     "url": "https://www.setlist.fm/setlist/blood-red-shoes/2010/casa-da-musica-porto-portugal-6bd486f6.html"
+  },
+  {
+    "id": "437c7b3b",
+    "versionId": "g5b36f740",
+    "eventDate": "11-04-2010",
+    "lastUpdated": "2026-10-23T16:11:34.043+00:00",
+    "artist": {
+      "mbid": "3b2234ea-2169-41dc-9524-0b896fa69c4c",
+      "name": "Carla Bley",
+      "sortName": "Bley, Carla",
+      "disambiguation": "American jazz pianist and composer",
+      "url": "https://www.setlist.fm/setlists/carla-bley-bd6adbe.html"
+    },
+    "venue": {
+      "id": "3bd67cac",
+      "name": "Casa da Música",
+      "city": {
+        "id": "6458924",
+        "name": "Porto",
+        "state": "Porto",
+        "stateCode": "17",
+        "coords": {
+          "lat": 41.158,
+          "long": -8.636
+        },
+        "country": {
+          "code": "PT",
+          "name": "Portugal"
+        }
+      },
+      "url": "https://www.setlist.fm/venue/casa-da-musica-porto-portugal-3bd67cac.html"
+    },
+    "sets": {
+      "set": []
+    },
+    "url": "https://www.setlist.fm/setlist/carla-bley/2010/casa-da-musica-porto-portugal-437c7b3b.html"
+  },
+  {
+    "id": "6bd5228e",
+    "versionId": "2bdfccd2",
+    "eventDate": "10-04-2010",
+    "lastUpdated": "2010-10-11T14:10:23+00:00",
+    "artist": {
+      "mbid": "0f8bd5a7-c915-4e00-a035-fe3969e9a9b1",
+      "name": "Mystery Jets",
+      "sortName": "Mystery Jets",
+      "disambiguation": "",
+      "url": "https://www.setlist.fm/setlists/mystery-jets-63d6deab.html"
+    },
+    "venue": {
+      "id": "3bd67cac",
+      "name": "Casa da Música",
+      "city": {
+        "id": "6458924",
+        "name": "Porto",
+        "state": "Porto",
+        "stateCode": "17",
+        "coords": {
+          "lat": 41.158,
+          "long": -8.636
+        },
+        "country": {
+          "code": "PT",
+          "name": "Portugal"
+        }
+      },
+      "url": "https://www.setlist.fm/venue/casa-da-musica-porto-portugal-3bd67cac.html"
+    },
+    "sets": {
+      "set": []
+    },
+    "url": "https://www.setlist.fm/setlist/mystery-jets/2010/casa-da-musica-porto-portugal-6bd5228e.html"
   },
   {
     "id": "53a54b3d",
@@ -74549,6 +75059,42 @@
     "url": "https://www.setlist.fm/setlist/bjork/2008/herdade-da-casa-branca-zambujeira-do-mar-portugal-33d69471.html"
   },
   {
+    "id": "537c7b49",
+    "versionId": "g5336f759",
+    "eventDate": "06-08-2008",
+    "lastUpdated": "2026-10-23T16:05:49.695+00:00",
+    "artist": {
+      "mbid": "f9ab44f1-7b19-4ecb-830c-403abcf36cd1",
+      "name": "Bob Sinclar",
+      "sortName": "Sinclar, Bob",
+      "disambiguation": "French record producer, house music DJ & remixer",
+      "url": "https://www.setlist.fm/setlists/bob-sinclar-4bd68f9e.html"
+    },
+    "venue": {
+      "id": "43d6d333",
+      "name": "Herdade da Casa Branca",
+      "city": {
+        "id": "2261486",
+        "name": "Zambujeira do Mar",
+        "state": "Beja",
+        "stateCode": "03",
+        "coords": {
+          "lat": 37.5166667,
+          "long": -8.7833333
+        },
+        "country": {
+          "code": "PT",
+          "name": "Portugal"
+        }
+      },
+      "url": "https://www.setlist.fm/venue/herdade-da-casa-branca-zambujeira-do-mar-portugal-43d6d333.html"
+    },
+    "sets": {
+      "set": []
+    },
+    "url": "https://www.setlist.fm/setlist/bob-sinclar/2008/herdade-da-casa-branca-zambujeira-do-mar-portugal-537c7b49.html"
+  },
+  {
     "id": "33a54881",
     "versionId": "g7b98ce4c",
     "eventDate": "06-08-2008",
@@ -76875,6 +77421,42 @@
       "set": []
     },
     "url": "https://www.setlist.fm/setlist/feist/2008/coliseu-do-porto-porto-portugal-4bdca74e.html"
+  },
+  {
+    "id": "4b7c7b42",
+    "versionId": "g4b36f756",
+    "eventDate": "10-06-2008",
+    "lastUpdated": "2026-10-23T16:09:31.761+00:00",
+    "artist": {
+      "mbid": "40113d78-145b-46f0-8394-5b1550c88d9d",
+      "name": "Lawrence Arabia",
+      "sortName": "Lawrence Arabia",
+      "disambiguation": "",
+      "url": "https://www.setlist.fm/setlists/lawrence-arabia-7bd4429c.html"
+    },
+    "venue": {
+      "id": "3d66507",
+      "name": "Coliseu do Porto",
+      "city": {
+        "id": "6458924",
+        "name": "Porto",
+        "state": "Porto",
+        "stateCode": "17",
+        "coords": {
+          "lat": 41.158,
+          "long": -8.636
+        },
+        "country": {
+          "code": "PT",
+          "name": "Portugal"
+        }
+      },
+      "url": "https://www.setlist.fm/venue/coliseu-do-porto-porto-portugal-3d66507.html"
+    },
+    "sets": {
+      "set": []
+    },
+    "url": "https://www.setlist.fm/setlist/lawrence-arabia/2008/coliseu-do-porto-porto-portugal-4b7c7b42.html"
   },
   {
     "id": "1ba51df0",
