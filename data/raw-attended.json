@@ -49262,6 +49262,42 @@
     "url": "https://www.setlist.fm/setlist/god-is-an-astronaut/2015/hard-club-porto-portugal-bc8211a.html"
   },
   {
+    "id": "53aae7d9",
+    "versionId": "g53b24735",
+    "eventDate": "03-05-2015",
+    "lastUpdated": "2024-03-12T16:37:36.674+00:00",
+    "artist": {
+      "mbid": "b6b8d172-07a9-41de-b086-08d40da90e74",
+      "name": "Quelle Dead Gazelle",
+      "sortName": "Quelle Dead Gazelle",
+      "disambiguation": "Portuguese rock/post-rock",
+      "url": "https://www.setlist.fm/setlists/quelle-dead-gazelle-6bc67ef6.html"
+    },
+    "venue": {
+      "id": "7bd2f2bc",
+      "name": "Hard Club",
+      "city": {
+        "id": "6458924",
+        "name": "Porto",
+        "state": "Porto",
+        "stateCode": "17",
+        "coords": {
+          "lat": 41.158,
+          "long": -8.636
+        },
+        "country": {
+          "code": "PT",
+          "name": "Portugal"
+        }
+      },
+      "url": "https://www.setlist.fm/venue/hard-club-porto-portugal-7bd2f2bc.html"
+    },
+    "sets": {
+      "set": []
+    },
+    "url": "https://www.setlist.fm/setlist/quelle-dead-gazelle/2015/hard-club-porto-portugal-53aae7d9.html"
+  },
+  {
     "id": "3cdeda3",
     "versionId": "384e977",
     "eventDate": "27-11-2014",
@@ -70433,6 +70469,42 @@
       ]
     },
     "url": "https://www.setlist.fm/setlist/blood-red-shoes/2010/casa-da-musica-porto-portugal-6bd486f6.html"
+  },
+  {
+    "id": "37c7507",
+    "versionId": "g4b36f32a",
+    "eventDate": "12-04-2010",
+    "lastUpdated": "2026-10-23T18:46:48.541+00:00",
+    "artist": {
+      "mbid": "f3558864-d9d3-4063-ae7d-4338b29eac3a",
+      "name": "Sizo",
+      "sortName": "Sizo",
+      "disambiguation": "Portuguese band",
+      "url": "https://www.setlist.fm/setlists/sizo-7bdc0284.html"
+    },
+    "venue": {
+      "id": "73dfb645",
+      "name": "Sala 2",
+      "city": {
+        "id": "6458924",
+        "name": "Porto",
+        "state": "Porto",
+        "stateCode": "17",
+        "coords": {
+          "lat": 41.158,
+          "long": -8.636
+        },
+        "country": {
+          "code": "PT",
+          "name": "Portugal"
+        }
+      },
+      "url": "https://www.setlist.fm/venue/sala-2-porto-portugal-73dfb645.html"
+    },
+    "sets": {
+      "set": []
+    },
+    "url": "https://www.setlist.fm/setlist/sizo/2010/sala-2-porto-portugal-37c7507.html"
   },
   {
     "id": "437c7b3b",
