@@ -65,6 +65,7 @@ $concerts = foreach ($s in $raw) {
         name  = $song.name
         set   = $label
         cover = $(if ($song.cover) { $song.cover.name } else { $null })
+        with  = $(if ($song.with) { $song.with.name } else { $null })
         tape  = [bool]$song.tape
         info  = $song.info
       })

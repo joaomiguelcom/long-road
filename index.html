@@ -787,6 +787,7 @@
         g.songs.map((x) => "<li>" + esc(x.name) +
           (nth > 1 && isNew(x) ? ' <span class="badge">new for you</span>' : "") +
           (x.cover ? ' <span class="badge cover">' + esc(x.cover) + " cover</span>" : "") +
+          (x.with ? ' <span class="tag">· with ' + esc(x.with) + "</span>" : "") +
           (x.tape ? ' <span class="tag">(tape)</span>' : "") + (x.info ? ' <span class="tag">· ' + esc(x.info) + "</span>" : "") + "</li>").join("") + "</ol></div>").join("") +
       "</section>"
       : '<p class="tag" style="margin:0">No setlist yet. <a href="' + esc(c.url) + '" target="_blank" rel="noopener">Add it on setlist.fm</a></p>';
