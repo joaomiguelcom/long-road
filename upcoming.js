@@ -2,7 +2,7 @@
 // The API does not return them and the page blocks automated downloads, so Claude refreshes this file
 // during each festival review (and whenever João asks).
 window.LONG_ROAD_UPCOMING = {
-  "updatedAt": "2026-10-22",
+  "updatedAt": "2026-10-23",
   "source": "https://www.setlist.fm/attended/ojoaomiguel",
   "shows": [
     {
@@ -10,6 +10,12 @@ window.LONG_ROAD_UPCOMING = {
       "artist": "Gurriers",
       "place": "Mouco, Porto, Portugal",
       "url": "https://www.setlist.fm/show/2026-11-07/mouco-porto-portugal-7bb71ab4.html?setlist=33747c51"
+    },
+    {
+      "date": "2026-11-11",
+      "artist": "Linda Martini",
+      "place": "Coliseu do Porto, Porto, Portugal",
+      "url": "https://www.setlist.fm/show/2026-11-11/coliseu-porto-ageas-porto-portugal-63b066c3.html?setlist=637c7e9f"
     },
     {
       "date": "2026-11-27",
