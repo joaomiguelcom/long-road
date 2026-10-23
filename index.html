@@ -430,10 +430,11 @@
     "Updated " + esc((() => { const d = new Date(DATA.generatedAt); return d.getDate() + " " + mon(d) + " " + d.getFullYear() + ", " + d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }); })());
 
   // ---------- aggregations ----------
+  // concerts are newest first, so every Map below is filled in order of last seen; the sorts are stable and keep that order on ties
   const countBy = (list, keyFn) => {
     const m = new Map();
     for (const x of list) { const k = keyFn(x); if (k == null || k === "") continue; m.set(k, (m.get(k) || 0) + 1); }
-    return [...m.entries()].map(([key, count]) => ({ key, count })).sort((a, b) => b.count - a.count || String(a.key).localeCompare(String(b.key)));
+    return [...m.entries()].map(([key, count]) => ({ key, count })).sort((a, b) => b.count - a.count);
   };
   const artists = countBy(concerts, (c) => c.artist);
   const venueKey = (c) => c.venue + "||" + (c.city || "");
@@ -445,7 +446,7 @@
       f.concerts++; f.days.add(c.date); f.years.add(c.date.slice(0, 4)); m.set(c.festival, f);
     }
     return [...m.values()].map((f) => ({ name: f.name, concerts: f.concerts, days: f.days.size, count: f.years.size, years: [...f.years].sort() }))
-      .sort((a, b) => b.count - a.count || b.concerts - a.concerts || a.name.localeCompare(b.name));
+      .sort((a, b) => b.count - a.count);
   })();
   const cities = countBy(concerts, (c) => c.city);
   const countries = countBy(concerts, (c) => c.country);
@@ -476,7 +477,7 @@
     const e = songMap.get(k) || { name: s.name, artist: c.artist, count: 0 };
     e.count++; songMap.set(k, e);
   }
-  const songs = [...songMap.values()].sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+  const songs = [...songMap.values()].sort((a, b) => b.count - a.count);
 
   // oldest first, same-day ties by setlist id (stable whatever order the API returns)
   // setlist.fm has no stage times, so the order of same-day concerts is arbitrary.
@@ -524,7 +525,7 @@
     }
     if (s.info && /debut|first time (ever|live)|live premiere|premiere/i.test(s.info)) debuts.push({ name: s.name, artist: c.artist, date: c.date, id: c.id, info: s.info });
   }
-  const covers = [...coverMap.values()].sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+  const covers = [...coverMap.values()].sort((a, b) => b.count - a.count);
   const heardOnce = songs.filter((s) => s.count === 1).length;
 
   // ---------- rendering helpers ----------
