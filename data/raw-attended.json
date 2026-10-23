@@ -49321,6 +49321,42 @@
     "url": "https://www.setlist.fm/setlist/mau/2014/plano-b-porto-portugal-3a25d17.html"
   },
   {
+    "id": "537c7b05",
+    "versionId": "g5336f7d9",
+    "eventDate": "16-10-2014",
+    "lastUpdated": "2026-10-23T16:25:55.948+00:00",
+    "artist": {
+      "mbid": "9c515db7-5d58-4b84-8594-825b4c45d0dd",
+      "name": "Frankie Chavez",
+      "sortName": "Chavez, Frankie",
+      "disambiguation": "",
+      "url": "https://www.setlist.fm/setlists/frankie-chavez-43d56fa7.html"
+    },
+    "venue": {
+      "id": "3bd67cac",
+      "name": "Casa da Música",
+      "city": {
+        "id": "6458924",
+        "name": "Porto",
+        "state": "Porto",
+        "stateCode": "17",
+        "coords": {
+          "lat": 41.158,
+          "long": -8.636
+        },
+        "country": {
+          "code": "PT",
+          "name": "Portugal"
+        }
+      },
+      "url": "https://www.setlist.fm/venue/casa-da-musica-porto-portugal-3bd67cac.html"
+    },
+    "sets": {
+      "set": []
+    },
+    "url": "https://www.setlist.fm/setlist/frankie-chavez/2014/casa-da-musica-porto-portugal-537c7b05.html"
+  },
+  {
     "id": "335aa8d1",
     "versionId": "g1358e509",
     "eventDate": "14-08-2014",
@@ -67831,6 +67867,42 @@
     "url": "https://www.setlist.fm/setlist/placebo/2010/praia-do-cabedelo-do-douro-vila-nova-de-gaia-portugal-5bd5b3c4.html"
   },
   {
+    "id": "4b7c7b02",
+    "versionId": "g5b36f7e0",
+    "eventDate": "16-07-2010",
+    "lastUpdated": "2026-10-23T16:24:59.994+00:00",
+    "artist": {
+      "mbid": "ac74ec38-3857-403f-af49-cb2d56e11b7c",
+      "name": "Os Azeitonas",
+      "sortName": "Azeitonas, Os",
+      "disambiguation": "",
+      "url": "https://www.setlist.fm/setlists/os-azeitonas-4bdf8f22.html"
+    },
+    "venue": {
+      "id": "4bd07332",
+      "name": "Praia do Cabedelo do Douro",
+      "city": {
+        "id": "2732543",
+        "name": "Vila Nova de Gaia",
+        "state": "Viana do Castelo",
+        "stateCode": "20",
+        "coords": {
+          "lat": 41.75,
+          "long": -8.5666667
+        },
+        "country": {
+          "code": "PT",
+          "name": "Portugal"
+        }
+      },
+      "url": "https://www.setlist.fm/venue/praia-do-cabedelo-do-douro-vila-nova-de-gaia-portugal-4bd07332.html"
+    },
+    "sets": {
+      "set": []
+    },
+    "url": "https://www.setlist.fm/setlist/os-azeitonas/2010/praia-do-cabedelo-do-douro-vila-nova-de-gaia-portugal-4b7c7b02.html"
+  },
+  {
     "id": "33d46485",
     "versionId": "g73ffeaf9",
     "eventDate": "16-07-2010",
@@ -69911,6 +69983,185 @@
       ]
     },
     "url": "https://www.setlist.fm/setlist/sonic-youth/2010/coliseu-do-porto-porto-portugal-23d4f03f.html"
+  },
+  {
+    "id": "23d5746f",
+    "versionId": "4b3caf7e",
+    "eventDate": "16-04-2010",
+    "lastUpdated": "2020-05-01T13:29:02.974+00:00",
+    "artist": {
+      "mbid": "65aaf08a-c92b-4000-9fa9-8f19670ac370",
+      "name": "David Fonseca",
+      "sortName": "Fonseca, David",
+      "disambiguation": "",
+      "url": "https://www.setlist.fm/setlists/david-fonseca-4bd64386.html"
+    },
+    "venue": {
+      "id": "3d66507",
+      "name": "Coliseu do Porto",
+      "city": {
+        "id": "6458924",
+        "name": "Porto",
+        "state": "Porto",
+        "stateCode": "17",
+        "coords": {
+          "lat": 41.158,
+          "long": -8.636
+        },
+        "country": {
+          "code": "PT",
+          "name": "Portugal"
+        }
+      },
+      "url": "https://www.setlist.fm/venue/coliseu-do-porto-porto-portugal-3d66507.html"
+    },
+    "tour": {
+      "name": "Between waves tour"
+    },
+    "sets": {
+      "set": [
+        {
+          "song": [
+            {
+              "name": "Walk Away When You're Winning",
+              "info": "With \"I Want To Break Free\" snippet by Queen"
+            },
+            {
+              "name": "Owner of Her Heart"
+            },
+            {
+              "name": "Everybody's Got to Learn Sometime",
+              "cover": {
+                "mbid": "6f49184a-8757-48d7-9145-f773ea572188",
+                "name": "The Korgis",
+                "sortName": "Korgis, The",
+                "disambiguation": "British pop band",
+                "url": "https://www.setlist.fm/setlists/the-korgis-63d26e8b.html"
+              }
+            },
+            {
+              "name": "A Cry 4 Love"
+            },
+            {
+              "name": "Morning Tide (I Just Can't Remember)"
+            },
+            {
+              "name": "Kiss Me, Oh Kiss Me"
+            },
+            {
+              "name": "Someone That Cannot Love",
+              "info": "With \"Time After Time\" snippet by Cyndi Lauper"
+            },
+            {
+              "name": "Gelado de verão",
+              "cover": {
+                "mbid": "f5a21d30-7369-42fe-92b8-ef711f520d72",
+                "name": "António Variações",
+                "sortName": "Variações, António",
+                "disambiguation": "",
+                "url": "https://www.setlist.fm/setlists/antonio-variacoes-73d72285.html"
+              }
+            },
+            {
+              "name": "Our Hearts Will Beat as One"
+            },
+            {
+              "name": "Stop 4 a Minute",
+              "info": "With \"The Roof Is On Fire\" snippet by Bloodhung Gang"
+            },
+            {
+              "name": "There's Nothing Wrong With Us"
+            },
+            {
+              "name": "Superstars II"
+            },
+            {
+              "name": "Handle With Care",
+              "cover": {
+                "mbid": "4387b544-e4d0-4f18-b74e-d4a5ba1582ab",
+                "name": "Traveling Wilburys",
+                "sortName": "Traveling Wilburys",
+                "disambiguation": "",
+                "url": "https://www.setlist.fm/setlists/traveling-wilburys-7bd6a2bc.html"
+              },
+              "with": {
+                "mbid": "8c029aeb-6ecc-4b7e-a127-34265b95929e",
+                "name": "Sean Riley & The Slowriders",
+                "sortName": "Sean Riley & The Slowriders",
+                "disambiguation": "",
+                "url": "https://www.setlist.fm/setlists/sean-riley-and-the-slowriders-7bd24614.html"
+              }
+            },
+            {
+              "name": "Houses and Wives",
+              "cover": {
+                "mbid": "8c029aeb-6ecc-4b7e-a127-34265b95929e",
+                "name": "Sean Riley & The Slowriders",
+                "sortName": "Sean Riley & The Slowriders",
+                "disambiguation": "",
+                "url": "https://www.setlist.fm/setlists/sean-riley-and-the-slowriders-7bd24614.html"
+              },
+              "with": {
+                "mbid": "8c029aeb-6ecc-4b7e-a127-34265b95929e",
+                "name": "Sean Riley & The Slowriders",
+                "sortName": "Sean Riley & The Slowriders",
+                "disambiguation": "",
+                "url": "https://www.setlist.fm/setlists/sean-riley-and-the-slowriders-7bd24614.html"
+              }
+            },
+            {
+              "name": "Girls Just Want to Have Fun",
+              "cover": {
+                "mbid": "7bd9e20e-74b9-446a-a2ed-a223f82a36e7",
+                "name": "Cyndi Lauper",
+                "sortName": "Lauper, Cyndi",
+                "disambiguation": "",
+                "url": "https://www.setlist.fm/setlists/cyndi-lauper-1bd6b9e8.html"
+              }
+            },
+            {
+              "name": "The 80's"
+            },
+            {
+              "name": "It's Just a Dream II"
+            }
+          ]
+        },
+        {
+          "encore": 1,
+          "song": [
+            {
+              "name": "Angel Song",
+              "cover": {
+                "mbid": "30c20e80-ed6b-4505-ba38-a4b6166add7a",
+                "name": "Silence 4",
+                "sortName": "Silence 4",
+                "disambiguation": "",
+                "url": "https://www.setlist.fm/setlists/silence-4-4bd7f7b2.html"
+              }
+            },
+            {
+              "name": "U Know Who I Am"
+            },
+            {
+              "name": "This One's So Different"
+            }
+          ]
+        },
+        {
+          "encore": 2,
+          "song": [
+            {
+              "name": "This Raging Light"
+            },
+            {
+              "name": "Silent Void"
+            }
+          ]
+        }
+      ]
+    },
+    "url": "https://www.setlist.fm/setlist/david-fonseca/2010/coliseu-do-porto-porto-portugal-23d5746f.html"
   },
   {
     "id": "6bd486f6",
