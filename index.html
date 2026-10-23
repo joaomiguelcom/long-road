@@ -81,7 +81,7 @@
   .fun .big { font: 500 26px/1.2 var(--display); color: var(--accent); }
   .fun .small { font-size: 13px; color: var(--muted); }
   label { font-size: 13px; color: var(--muted); display: block; margin-bottom: 4px; }
-  input[type=search] { width: 100%; max-width: 360px; background: var(--surface); border: 1px solid var(--line-2); border-radius: 8px; color: var(--text); padding: 10px 12px; font-size: 15px; min-height: 44px; }
+  input[type=search] { width: 100%; max-width: 360px; background: var(--surface); border: 1px solid var(--line-2); border-radius: 8px; color: var(--text); padding: 10px 12px; font-size: 16px; min-height: 44px; }
   input::placeholder { color: #8A9099; }
   input:focus-visible, button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   .table-box { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; }
@@ -165,7 +165,7 @@
   .section-title { margin: 16px 0 0; font: 500 26px/1.2 var(--display); }
   .year-nav { display: flex; gap: 8px; align-items: center; }
   .year-nav .btn { align-self: auto; }
-  select { -webkit-appearance: none; appearance: none; background: var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23F2A541' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 14px center; color: var(--text); border: 1px solid var(--line-2); border-radius: 8px; padding: 10px 42px 10px 16px; min-height: 44px; font: inherit; cursor: pointer; }
+  select { -webkit-appearance: none; appearance: none; background: var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23F2A541' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 14px center; color: var(--text); border: 1px solid var(--line-2); border-radius: 8px; padding: 10px 42px 10px 16px; min-height: 44px; font: inherit; font-size: 16px; cursor: pointer; }
   #map { height: min(70vh, 640px); border-radius: 12px; border: 1px solid var(--line); background: #1b1d22; }
   .leaflet-popup-content-wrapper, .leaflet-popup-tip { background: var(--surface); color: var(--text); }
   .leaflet-popup-content { font: 14px/1.45 Inter, system-ui, sans-serif; }
@@ -551,7 +551,7 @@
   const yrAttr = (y) => ' data-yr="' + esc(y) + '"';
   const searchBox = (id, label, placeholder, value) => '<div class="search"><label for="' + id + '" class="sr-only">' + label + "</label>" +
     '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8A9099" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>' +
-    '<input id="' + id + '" type="search" placeholder="' + placeholder + '" value="' + esc(value) + '"></div>';
+    '<input id="' + id + '" type="search" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" enterkeyhint="search" placeholder="' + placeholder + '" value="' + esc(value) + '"></div>';
   const artistBtn = (name, cls) => '<button type="button" class="' + (cls || "open") + '"' + aattr(name) + ">" + esc(name) + "</button>";
   const notes = (c) => (c.festival ? '<span class="accent">' + esc(c.festival) + "</span>" : "") + (c.festival && c.tour ? "<br>" : "") + (c.tour ? '<span class="tag">' + esc(c.tour) + "</span>" : "");
   const plural = (n, one, many) => fmtN(n) + " " + (n === 1 ? one : many);
@@ -1021,11 +1021,29 @@
     });
   }
 
+  const viewHtml = () => ({ overview, concerts: concertList, artists: artistList, venues: venueList, festivals: festivalList, songs: songList, years: yearReview, map: mapView })[state.tab]();
+  // re-render around the search box without touching it: replacing a focused input resets the iPhone keyboard to letters
+  function renderKeeping(id) {
+    const live = document.getElementById(id), fresh = document.createElement("div");
+    fresh.innerHTML = viewHtml();
+    let k = live && live.closest(".search"), f = fresh.querySelector("#" + id);
+    f = f && f.closest(".search");
+    if (!k || !f) return render();
+    while (k !== app) {
+      const before = [], after = [];
+      for (let s = f.previousSibling; s; s = s.previousSibling) before.unshift(s);
+      for (let s = f.nextSibling; s; s = s.nextSibling) after.push(s);
+      while (k.previousSibling) k.previousSibling.remove();
+      while (k.nextSibling) k.nextSibling.remove();
+      before.forEach((n) => k.parentNode.insertBefore(n, k));
+      after.forEach((n) => k.parentNode.appendChild(n));
+      k = k.parentNode; f = f.parentNode;
+    }
+  }
   function render() {
     if (map) { map.remove(); map = null; }
     renderTabs();
-    const views = { overview, concerts: concertList, artists: artistList, venues: venueList, festivals: festivalList, songs: songList, years: yearReview, map: mapView };
-    app.innerHTML = views[state.tab]();
+    app.innerHTML = viewHtml();
     if (state.tab === "map") initMap();
     // years chart scrolls sideways on phones: start at the most recent years
     app.querySelectorAll(".years").forEach((el) => { el.scrollLeft = el.scrollWidth; });
@@ -1094,10 +1112,9 @@
   });
   document.addEventListener("input", (e) => {
     if (e.target.id !== "q" && e.target.id !== "aq") return;
-    const id = e.target.id, pos = e.target.selectionStart;
+    const id = e.target.id;
     if (id === "q") { state.q = e.target.value; state.limits.concerts = 0; } else { state.artistQ = e.target.value; state.limits.artists = 0; }
-    render();
-    const el = document.getElementById(id); el.focus(); el.setSelectionRange(pos, pos);
+    renderKeeping(id);
   });
 
   render();
