@@ -133,7 +133,7 @@
   .set-label { margin: 12px 0 4px; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
   .tag { font-size: 12px; color: var(--muted); }
   .more { text-align: center; }
-  .duo { display: grid; gap: 16px; } @media (min-width: 900px) { .duo { grid-template-columns: 1fr 1fr; align-items: start; } }
+  .duo { display: grid; gap: 16px; } @media (min-width: 900px) { .duo { grid-template-columns: 1fr 1fr; } .duo > :only-child { grid-column: 1 / -1; } }
   button.next-item { width: calc(100% + 16px); background: none; border: 0; font: inherit; text-align: left; cursor: pointer; }
   .next-item { display: flex; align-items: center; gap: 14px; padding: 8px; margin: 0 -8px; border-radius: 8px; color: inherit; text-decoration: none; }
   .next-date { flex: none; width: 52px; text-align: center; border: 1px solid var(--line-2); border-radius: 8px; padding: 4px 0 5px; line-height: 1; }
@@ -248,7 +248,10 @@
   const app = document.getElementById("app");
   const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const fmtN = (n) => n.toLocaleString("en-GB");
-  const fmtDate = (iso) => new Date(iso + "T12:00:00").toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+  // Always three-letter months ("Sep", not the "Sept" that en-GB gives)
+  const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const mon = (d) => MONTHS[d.getMonth()];
+  const fmtDate = (iso) => { const d = new Date(iso + "T12:00:00"); return String(d.getDate()).padStart(2, "0") + " " + mon(d) + " " + d.getFullYear(); };
   const DAY = 86400000;
 
   if (!DATA || !DATA.concerts) {
@@ -413,7 +416,7 @@
   }
   document.getElementById("sync").innerHTML =
     '<span class="dot" aria-hidden="true"></span>' +
-    "Updated " + esc(new Date(DATA.generatedAt).toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" }));
+    "Updated " + esc((() => { const d = new Date(DATA.generatedAt); return d.getDate() + " " + mon(d) + " " + d.getFullYear() + ", " + d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }); })());
 
   // ---------- aggregations ----------
   const countBy = (list, keyFn) => {
@@ -635,7 +638,7 @@
       '<ol class="otd-list">' + list.slice(0, state.nextAll ? list.length : 4).map((u) => {
         const d = new Date(u.date + "T12:00:00"), n = days(u.date);
         return '<li><a class="next-item" href="' + esc(u.url) + '" target="_blank" rel="noopener">' +
-          '<span class="next-date"><span class="m">' + d.toLocaleDateString("en-GB", { month: "short" }) + '</span><span class="d">' + d.getDate() + "</span>" + (d.getFullYear() !== new Date().getFullYear() ? '<span class="y">' + d.getFullYear() + "</span>" : "") + "</span>" +
+          '<span class="next-date"><span class="m">' + mon(d) + '</span><span class="d">' + d.getDate() + "</span>" + (d.getFullYear() !== new Date().getFullYear() ? '<span class="y">' + d.getFullYear() + "</span>" : "") + "</span>" +
           '<span class="otd-main"><strong>' + esc(u.artist || "") + '</strong><span class="muted">' + place(u.place) + "" + "</span></span>" +
           '<span class="next-when' + (n <= 7 ? " soon" : "") + '">' + when(n) + "</span></a></li>";
       }).join("") + "</ol>" +
@@ -648,14 +651,15 @@
     const list = chrono.slice(-4).reverse();
     const ago = (d) => { const n = Math.round((Date.parse(today) - Date.parse(d)) / DAY);
       return n <= 0 ? "Today" : n === 1 ? "Yesterday" : n < 60 ? n + " days ago" : n < 730 ? Math.round(n / 30) + " months ago" : Math.round(n / 365) + " years ago"; };
-    return '<section class="card" aria-labelledby="h-last"><div class="card-head"><h2 id="h-last">Last seen</h2><button class="link" data-tab="concerts">See all</button></div>' +
+    return '<section class="card" aria-labelledby="h-last"><div class="card-head"><h2 id="h-last">Last seen</h2><span class="muted">' + plural(chrono.length, "concert", "concerts") + " so far</span></div>" +
       '<ol class="otd-list">' + list.map((c) => {
         const d = new Date(c.date + "T12:00:00");
         return '<li><button type="button" class="next-item" data-open="' + esc(c.id) + '">' +
-          '<span class="next-date"><span class="m">' + d.toLocaleDateString("en-GB", { month: "short" }) + '</span><span class="d">' + d.getDate() + "</span>" + (d.getFullYear() !== new Date().getFullYear() ? '<span class="y">' + d.getFullYear() + "</span>" : "") + "</span>" +
+          '<span class="next-date"><span class="m">' + mon(d) + '</span><span class="d">' + d.getDate() + "</span>" + (d.getFullYear() !== new Date().getFullYear() ? '<span class="y">' + d.getFullYear() + "</span>" : "") + "</span>" +
           '<span class="otd-main"><strong>' + esc(c.artist) + '</strong><span class="muted">' + esc(c.festival || c.venue) + " · " + esc(c.city) + "</span></span>" +
           '<span class="next-when">' + ago(c.date) + "</span></button></li>";
-      }).join("") + "</ol></section>";
+      }).join("") + "</ol>" +
+      '<button type="button" class="link" data-tab="concerts" style="margin-top:10px">Show all ' + fmtN(chrono.length) + "</button></section>";
   }
 
   function onThisDay() {
@@ -815,7 +819,7 @@
     const navBtn = (x, dir) => x ? '<button type="button" class="icon-btn" data-swap="' + esc(x.id) + '" aria-label="' + (dir < 0 ? "Previous" : "Next") + " concert: " + esc(x.artist) + '" title="' + esc(x.artist + " · " + fmtDate(x.date)) + '">' + (dir < 0 ? "‹" : "›") + "</button>" : '<span class="icon-btn off" aria-hidden="true">' + (dir < 0 ? "‹" : "›") + "</span>";
     return '<article class="card detail">' +
       '<div class="detail-top"><button class="icon-btn" id="back" aria-label="Back">←</button><div class="detail-nav">' + navBtn(prev, -1) + navBtn(next, 1) + "</div></div>" +
-      '<div class="detail-head"><span class="next-date big"><span class="m">' + d.toLocaleDateString("en-GB", { month: "short" }) + '</span><span class="d">' + d.getDate() + '</span><span class="y">' + d.getFullYear() + "</span></span>" +
+      '<div class="detail-head"><span class="next-date big"><span class="m">' + mon(d) + '</span><span class="d">' + d.getDate() + '</span><span class="y">' + d.getFullYear() + "</span></span>" +
         '<div style="min-width:0"><h2 class="detail-title">' + artistBtn(c.artist, "title-link") + '</h2><div class="muted detail-meta">' + meta + "</div></div></div>" +
       '<div class="facts">' + facts.join("") + "</div>" +
       history + night + setlist +
