@@ -133,6 +133,13 @@
   .set-label { margin: 12px 0 4px; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
   .tag { font-size: 12px; color: var(--muted); }
   .more { text-align: center; }
+  .about { display: flex; gap: 20px; align-items: flex-start; }
+  .about img { flex: none; width: 96px; height: 96px; border-radius: 50%; object-fit: cover; border: 2px solid var(--line-2); filter: saturate(.9); }
+  .about h2 { margin: 0 0 6px; }
+  .about p { margin: 0 0 14px; color: var(--muted); max-width: 62ch; }
+  .about .btn { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text); }
+  .eyebrow-btn { background: none; border: 0; padding: 0; font: inherit; color: inherit; letter-spacing: inherit; text-transform: inherit; cursor: pointer; text-align: left; }
+  @media (max-width: 600px) { .about { flex-direction: column; align-items: center; text-align: center; } .about p { margin-inline: auto; } }
   .duo { display: grid; gap: 16px; } @media (min-width: 900px) { .duo { grid-template-columns: 1fr 1fr; } .duo > :only-child { grid-column: 1 / -1; } }
   button.next-item { width: calc(100% + 16px); background: none; border: 0; font: inherit; text-align: left; cursor: pointer; }
   .next-item { display: flex; align-items: center; gap: 14px; padding: 8px; margin: 0 -8px; border-radius: 8px; color: inherit; text-decoration: none; }
@@ -212,7 +219,7 @@
         <svg viewBox="6 8 52 52" aria-hidden="true"><circle cx="32" cy="19" r="9" fill="#F2A541" opacity=".35"/><path fill-rule="evenodd" d="M29.5 19h5L54 58H10zM31.4 23h1.2l.3 5h-1.8zM31 33h2l.5 8h-3zM30.3 46h3.4l.6 12h-4.6z" fill="#F2A541"/></svg>
         <div>
           <h1>Long Road</h1>
-          <div class="eyebrow">João Miguel's concert archive</div>
+          <button type="button" class="eyebrow eyebrow-btn" id="toAbout">João Miguel's concert archive</button>
         </div>
       </div>
       <div class="sync" id="sync"></div>
@@ -745,7 +752,19 @@
         (reunion ? fun("Longest wait for an encore", esc(reunion.artist), Math.floor(reunion.days / 365.25) + " years between " + fmtDate(reunion.from) + " and " + fmtDate(reunion.to), aattr(reunion.artist)) : "") +
         (songs.length ? fun("One-time songs", fmtN(heardOnce), "Songs you only heard live once", tabAttr("songs")) : "") +
       "</div></section>" +
-      milestones();
+      milestones() + about();
+  }
+
+  function about() {
+    const first = chrono[0].date.slice(0, 4);
+    return '<section class="card about" id="about" aria-labelledby="h-about">' +
+      '<img src="img/me.jpg" alt="João Miguel" width="96" height="96">' +
+      '<div><h2 id="h-about">About me</h2>' +
+      "<p>Hi, I'm João Miguel. I've been going to concerts since " + first + ", " + fmtN(chrono.length) + " so far, from tiny clubs to muddy festival fields. " +
+      "Pearl Jam is the reason this archive is called Long Road. When I'm not at a show, I'm probably at home spinning records.</p>" +
+      '<a class="btn" href="https://www.discogs.com/user/ojoaomiguel" target="_blank" rel="noopener">' +
+      '<svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10.8" fill="#050608" stroke="#8A9099" stroke-width="1"/><circle cx="12" cy="12" r="8.4" fill="none" stroke="#5A606A" stroke-width=".7"/><circle cx="12" cy="12" r="6.4" fill="none" stroke="#5A606A" stroke-width=".7"/><circle cx="12" cy="12" r="3.4" fill="#F2A541"/><circle cx="12" cy="12" r=".9" fill="#0F1115"/></svg>' +
+      "My record collection on Discogs</a></div></section>";
   }
 
   // ---------- concerts ----------
@@ -1051,6 +1070,10 @@
     else if (t.id === "nextAll") { state.nextAll = !state.nextAll; render(); }
     else if (t.id === "clearf") { state.filter = null; state.limits.concerts = 0; render(); }
     else if (t.id === "back") { if (depth() > 0) goBack(); else go(() => { state.detail = null; }); }
+    else if (t.id === "toAbout") {
+      if (state.tab !== "overview" || state.detail || state.artist) go(() => { state.tab = "overview"; state.detail = null; state.filter = null; state.artist = null; });
+      const el = document.getElementById("about"); if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
     else if (t.id === "backArtists") go(() => { state.artist = null; });
   }, true);
   document.addEventListener("change", (e) => {
