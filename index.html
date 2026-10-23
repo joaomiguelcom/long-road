@@ -133,6 +133,8 @@
   .set-label { margin: 12px 0 4px; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
   .tag { font-size: 12px; color: var(--muted); }
   .more { text-align: center; }
+  .duo { display: grid; gap: 16px; } @media (min-width: 900px) { .duo { grid-template-columns: 1fr 1fr; align-items: start; } }
+  button.next-item { width: calc(100% + 16px); background: none; border: 0; font: inherit; text-align: left; cursor: pointer; }
   .next-item { display: flex; align-items: center; gap: 14px; padding: 8px; margin: 0 -8px; border-radius: 8px; color: inherit; text-decoration: none; }
   .next-date { flex: none; width: 52px; text-align: center; border: 1px solid var(--line-2); border-radius: 8px; padding: 4px 0 5px; line-height: 1; }
   .next-date .m { display: block; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
@@ -641,6 +643,21 @@
       "</section>";
   }
 
+  function lastSeen() {
+    const today = new Date().toISOString().slice(0, 10);
+    const list = chrono.slice(-4).reverse();
+    const ago = (d) => { const n = Math.round((Date.parse(today) - Date.parse(d)) / DAY);
+      return n <= 0 ? "Today" : n === 1 ? "Yesterday" : n < 60 ? n + " days ago" : n < 730 ? Math.round(n / 30) + " months ago" : Math.round(n / 365) + " years ago"; };
+    return '<section class="card" aria-labelledby="h-last"><div class="card-head"><h2 id="h-last">Last seen</h2><button class="link" data-tab="concerts">See all</button></div>' +
+      '<ol class="otd-list">' + list.map((c) => {
+        const d = new Date(c.date + "T12:00:00");
+        return '<li><button type="button" class="next-item" data-open="' + esc(c.id) + '">' +
+          '<span class="next-date"><span class="m">' + d.toLocaleDateString("en-GB", { month: "short" }) + '</span><span class="d">' + d.getDate() + "</span>" + (d.getFullYear() !== new Date().getFullYear() ? '<span class="y">' + d.getFullYear() + "</span>" : "") + "</span>" +
+          '<span class="otd-main"><strong>' + esc(c.artist) + '</strong><span class="muted">' + esc(c.festival || c.venue) + " · " + esc(c.city) + "</span></span>" +
+          '<span class="next-when">' + ago(c.date) + "</span></button></li>";
+      }).join("") + "</ol></section>";
+  }
+
   function onThisDay() {
     const today = new Date();
     let day = today, list = [];
@@ -687,7 +704,7 @@
     const maxYear = Math.max(...byYear.map((y) => y.count));
     const yearsTop = byYear.slice().sort((a, b) => b.count - a.count)[0];
     return '' +
-      nextUp() +
+      '<div class="duo">' + nextUp() + lastSeen() + "</div>" +
       '<section class="grid kpis" aria-label="Summary">' +
         kpi("Concerts", '<span class="accent">' + fmtN(concerts.length) + "</span>", "", tabAttr("concerts")) +
         kpi("Different artists", fmtN(artists.length), "", tabAttr("artists")) +
