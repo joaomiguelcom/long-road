@@ -60937,42 +60937,6 @@
     "url": "https://www.setlist.fm/setlist/fatboy-slim/2012/pacha-ofir-porto-portugal-348ddaf.html"
   },
   {
-    "id": "4b7c7b3a",
-    "versionId": "g4336f73b",
-    "eventDate": "15-11-2011",
-    "lastUpdated": "2026-10-23T16:12:39.651+00:00",
-    "artist": {
-      "mbid": "b5a6ea29-3065-4869-ac66-a44002e55d4d",
-      "name": "Jazzanova",
-      "sortName": "Jazzanova",
-      "disambiguation": "",
-      "url": "https://www.setlist.fm/setlists/jazzanova-4bd6ab32.html"
-    },
-    "venue": {
-      "id": "3bd67cac",
-      "name": "Casa da Música",
-      "city": {
-        "id": "6458924",
-        "name": "Porto",
-        "state": "Porto",
-        "stateCode": "17",
-        "coords": {
-          "lat": 41.158,
-          "long": -8.636
-        },
-        "country": {
-          "code": "PT",
-          "name": "Portugal"
-        }
-      },
-      "url": "https://www.setlist.fm/venue/casa-da-musica-porto-portugal-3bd67cac.html"
-    },
-    "sets": {
-      "set": []
-    },
-    "url": "https://www.setlist.fm/setlist/jazzanova/2011/casa-da-musica-porto-portugal-4b7c7b3a.html"
-  },
-  {
     "id": "53a54be1",
     "versionId": "gb98c922",
     "eventDate": "31-10-2011",
@@ -65403,6 +65367,42 @@
       "set": []
     },
     "url": "https://www.setlist.fm/setlist/orquesta-buena-vista-social-club/2011/coliseu-do-porto-porto-portugal-43a54b0f.html"
+  },
+  {
+    "id": "4b7c7b3a",
+    "versionId": "g4336f79f",
+    "eventDate": "15-01-2011",
+    "lastUpdated": "2026-10-23T16:34:55.829+00:00",
+    "artist": {
+      "mbid": "b5a6ea29-3065-4869-ac66-a44002e55d4d",
+      "name": "Jazzanova",
+      "sortName": "Jazzanova",
+      "disambiguation": "",
+      "url": "https://www.setlist.fm/setlists/jazzanova-4bd6ab32.html"
+    },
+    "venue": {
+      "id": "3bd67cac",
+      "name": "Casa da Música",
+      "city": {
+        "id": "6458924",
+        "name": "Porto",
+        "state": "Porto",
+        "stateCode": "17",
+        "coords": {
+          "lat": 41.158,
+          "long": -8.636
+        },
+        "country": {
+          "code": "PT",
+          "name": "Portugal"
+        }
+      },
+      "url": "https://www.setlist.fm/venue/casa-da-musica-porto-portugal-3bd67cac.html"
+    },
+    "sets": {
+      "set": []
+    },
+    "url": "https://www.setlist.fm/setlist/jazzanova/2011/casa-da-musica-porto-portugal-4b7c7b3a.html"
   },
   {
     "id": "5ba54b88",
