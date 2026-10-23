@@ -1023,12 +1023,13 @@
   }
 
   const viewHtml = () => ({ overview, concerts: concertList, artists: artistList, venues: venueList, festivals: festivalList, songs: songList, years: yearReview, map: mapView })[state.tab]();
-  // re-render around the search box without touching it: replacing a focused input resets the iPhone keyboard to letters
-  function renderKeeping(id) {
+  // re-render around a focused control without touching it: replacing a search box resets the iPhone keyboard to letters,
+  // and focusing a fresh select reopens its picker
+  function renderKeeping(id, wrap) {
     const live = document.getElementById(id), fresh = document.createElement("div");
     fresh.innerHTML = viewHtml();
-    let k = live && live.closest(".search"), f = fresh.querySelector("#" + id);
-    f = f && f.closest(".search");
+    let k = live && (wrap ? live.closest(wrap) : live), f = fresh.querySelector("#" + id);
+    f = f && (wrap ? f.closest(wrap) : f);
     if (!k || !f) return render();
     while (k !== app) {
       const before = [], after = [];
@@ -1108,14 +1109,14 @@
       const v = e.target.value, opt = e.target.options[e.target.selectedIndex];
       if (v === "") delete state.sorts[ss];
       else state.sorts[ss] = { col: +v, dir: opt.dataset.num === "1" ? -1 : 1 };
-      render(); const el = document.getElementById("ms-" + ss); if (el) el.focus();
+      renderKeeping("ms-" + ss);
     }
   });
   document.addEventListener("input", (e) => {
     if (e.target.id !== "q" && e.target.id !== "aq") return;
     const id = e.target.id;
     if (id === "q") { state.q = e.target.value; state.limits.concerts = 0; } else { state.artistQ = e.target.value; state.limits.artists = 0; }
-    renderKeeping(id);
+    renderKeeping(id, ".search");
   });
 
   render();
