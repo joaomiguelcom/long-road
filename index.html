@@ -166,8 +166,8 @@
   @media (max-width: 600px) { .pj-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
   .facts-list { margin: 0; padding-left: 18px; display: grid; gap: 6px; }
   .on-shelf { display: inline-flex; vertical-align: -2px; margin-left: 4px; }
-  .chip { font: inherit; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; background: var(--line); border: 1px solid transparent; border-radius: 999px; padding: 4px 11px; color: var(--muted); cursor: pointer; }
-  .chip.on { border-color: var(--accent); color: var(--text); }
+  .toggle { font: inherit; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; background: var(--line); border: 1px solid transparent; border-radius: 999px; padding: 4px 11px; color: var(--muted); cursor: pointer; }
+  .toggle.on { border-color: var(--accent); color: var(--text); }
   .records { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 8px; }
   .records a { display: flex; gap: 10px; align-items: center; padding: 8px 10px; border-radius: 8px; background: var(--line); color: inherit; text-decoration: none; }
   .records a > span { display: flex; flex-direction: column; min-width: 0; }
@@ -798,7 +798,7 @@
     return '<section class="card"><div class="card-head"><h2>Seen live & on the shelf</h2><button class="link" data-shelf="1">See all</button></div>' +
       '<p class="muted" style="margin:0 0 12px">' + both.length + " artists you saw live are also in the record collection, with " + plural(recs, "record", "records") + " between them.</p>" +
       bars(both.slice(0, 10), (a) => esc(a.key) + ' <span class="muted">· ' + plural(onShelf(a.key).length, "record", "records") + "</span>", (a) => aattr(a.key)) +
-      '<p class="tag" style="margin:12px 0 0">Bars show concerts seen.</p></section>";
+      '<p class="tag" style="margin:12px 0 0">Bars show concerts seen.</p></section>';
   }
 
   // the band behind the name gets a card of its own
@@ -919,7 +919,7 @@
     const rows = list.map((a) => { const s = artistSpan(a.key); return [
       cell(String(a.rank), a.rank), cell(artistBtn(a.key) + mark(a.key), a.key), cell(String(a.count), a.count),
       cell(fmtDate(s.first), s.first), cell(fmtDate(s.last), s.last)]; });
-    const toggle = shelf.size ? '<button type="button" class="chip' + (state.shelfOnly ? " on" : "") + '" data-shelf="' + (state.shelfOnly ? "0" : "1") + '" aria-pressed="' + !!state.shelfOnly + '">' + VINYL(14) + " On the shelf</button>" : "";
+    const toggle = shelf.size ? '<button type="button" class="toggle' + (state.shelfOnly ? " on" : "") + '" data-shelf="' + (state.shelfOnly ? "0" : "1") + '" aria-pressed="' + !!state.shelfOnly + '">' + VINYL(14) + " On the shelf</button>" : "";
     return '<div class="list-head"><div class="list-title"><h2>' + plural(list.length, "artist", "artists") + "</h2>" + toggle + "</div>" + searchBox("aq", "Search artist", "Search artist", state.artistQ) + "</div>" +
       table("artists", [{ label: "#", num: true, cls: "num" }, { label: "Artist" }, { label: "Concerts", num: true, cls: "num" }, { label: "First seen", cls: "muted" }, { label: "Last seen", cls: "muted" }], rows, limitOf("artists", 100),
         (r) => ({ rank: r[0].h, title: r[1].h, sub: [r[3].s.slice(0, 4) === r[4].s.slice(0, 4) ? r[3].s.slice(0, 4) : r[3].s.slice(0, 4) + " – " + r[4].s.slice(0, 4)], value: r[2].h, unit: r[2].s === 1 ? "concert" : "concerts" }));
@@ -1041,7 +1041,8 @@
       '<span class="muted">' + plural(list.length, "concert", "concerts") + "</span></div>" +
       '<div class="year-nav">' + (prev ? '<button class="btn" data-year="' + prev.key + '">← ' + prev.key + "</button>" : "") +
       '<label for="ysel" class="sr-only">Year</label><select id="ysel">' + byYear.slice().reverse().map((x) => '<option value="' + x.key + '"' + (x.key === y ? " selected" : "") + ">" + x.key + "</option>").join("") + "</select>" +
-      (next ? '<button class="btn" data-year="' + next.key + '">' + next.key + " →</button>" : "") + "</div></div>" +
+      (next ? '<button class="btn" data-year="' + next.key + '">' + next.key + " →</button>" : "") +
+      '<button class="btn" id="shareYear">Share image</button>' + "</div></div>" +
       '<section class="grid kpis" aria-label="Year summary">' +
         kpi("Concerts", '<span class="accent">' + list.length + "</span>", '<span class="go">See them all</span>', fattr("year", y)) +
         kpi("Artists", yArtists.length + "", newArtists.length + " seen for the first time", fattr("newArtists", y)) +
@@ -1058,6 +1059,65 @@
       '<section class="card"><h2>Top artists</h2>' + bars(yArtists.slice(0, 10), (a) => esc(a.key), (a) => ["artist", a.key, y]) + "</section>" +
       (yVenues.length ? '<section class="card"><h2>Venues</h2>' + bars(yVenues.slice(0, 10), (v) => esc(v.name) + ' <span class="muted">· ' + esc(v.city) + "</span>", (v) => ["venue", v.key, y]) + "</section>" : "") +
       (yFest.length ? '<section class="card"><h2>Festivals</h2>' + bars(yFest, (f) => esc(f.key), (f) => ["festival", f.key, y]) + "</section>" : "");
+  }
+
+  // a 1080×1350 image of the year, to share on a phone or save on desktop
+  async function shareYear(y) {
+    const list = concerts.filter((c) => c.date.startsWith(y));
+    const yArtists = withRank(countBy(list, (c) => c.artist));
+    const nVenues = new Set(list.filter((c) => !c.festival).map(venueKey)).size;
+    const nFest = new Set(list.map((c) => c.festival).filter(Boolean)).size;
+    const nSongs = list.reduce((n, c) => n + (c.songs || []).filter((s) => !s.tape).length, 0);
+    const nCities = new Set(list.map((c) => c.city)).size;
+    try { await document.fonts.ready; } catch (e) {}
+    const W = 1080, H = 1350, cv = document.createElement("canvas");
+    cv.width = W; cv.height = H;
+    const g = cv.getContext("2d");
+    const DISP = 'Oswald, "Arial Narrow", sans-serif', BODY = "Inter, system-ui, sans-serif";
+    const fit = (t, max) => { if (g.measureText(t).width <= max) return t; while (t.length > 1 && g.measureText(t + "…").width > max) t = t.slice(0, -1); return t + "…"; };
+    g.fillStyle = "#0F1115"; g.fillRect(0, 0, W, H);
+    const glow = g.createRadialGradient(W - 120, 120, 0, W - 120, 120, 700);
+    glow.addColorStop(0, "rgba(242,165,65,.22)"); glow.addColorStop(1, "rgba(242,165,65,0)");
+    g.fillStyle = glow; g.fillRect(0, 0, W, H);
+    // road logo
+    g.save(); g.translate(80, 80); g.scale(1.6, 1.6); g.translate(-6, -8);
+    g.fillStyle = "rgba(242,165,65,.35)"; g.beginPath(); g.arc(32, 19, 9, 0, Math.PI * 2); g.fill();
+    g.fillStyle = "#F2A541"; g.fill(new Path2D("M29.5 19h5L54 58H10zM31.4 23h1.2l.3 5h-1.8zM31 33h2l.5 8h-3zM30.3 46h3.4l.6 12h-4.6z"), "evenodd");
+    g.restore();
+    g.textBaseline = "alphabetic";
+    g.fillStyle = "#ECEDEE"; g.font = "600 46px " + DISP; g.fillText("Long Road", 180, 128);
+    g.fillStyle = "#9AA0A6"; g.font = "400 26px " + BODY; g.fillText("João Miguel's year in concerts", 180, 168);
+    g.fillStyle = "#F2A541"; g.font = "600 220px " + DISP; g.fillText(y, 72, 440);
+    // KPIs, two rows of three
+    const kp = [[list.length, "concerts"], [yArtists.length, "artists"], [nVenues, nVenues === 1 ? "venue" : "venues"], [nFest, nFest === 1 ? "festival" : "festivals"], [nCities, nCities === 1 ? "city" : "cities"], [nSongs, "songs heard"]];
+    kp.forEach(([v, l], i) => {
+      const x = 80 + (i % 3) * 320, top = 510 + Math.floor(i / 3) * 150;
+      g.fillStyle = "#ECEDEE"; g.font = "600 76px " + DISP; g.fillText(fmtN(v), x, top + 70);
+      g.fillStyle = "#9AA0A6"; g.font = "400 26px " + BODY; g.fillText(l, x, top + 108);
+    });
+    // top artists
+    g.fillStyle = "#F2A541"; g.font = "500 22px " + BODY; g.fillText("TOP ARTISTS", 80, 860);
+    const top = yArtists.slice(0, 5), max = top.length ? top[0].count : 1;
+    top.forEach((a, i) => {
+      const yy = 910 + i * 62;
+      g.fillStyle = "#9AA0A6"; g.font = "500 28px " + BODY; g.fillText(String(a.rank), 80, yy);
+      g.fillStyle = "#ECEDEE"; g.font = "500 32px " + BODY; g.fillText(fit(a.key, 720), 130, yy);
+      g.fillStyle = "#ECEDEE"; g.textAlign = "right"; g.fillText(String(a.count), W - 80, yy); g.textAlign = "left";
+      g.fillStyle = "#262A31"; g.fillRect(130, yy + 14, W - 210, 6);
+      g.fillStyle = "#F2A541"; g.fillRect(130, yy + 14, Math.max(8, (W - 210) * a.count / max), 6);
+    });
+    g.fillStyle = "#262A31"; g.fillRect(80, H - 110, W - 160, 2);
+    g.fillStyle = "#9AA0A6"; g.font = "400 24px " + BODY; g.fillText("joaomiguelcom.github.io/long-road", 80, H - 62);
+    const blob = await new Promise((r) => cv.toBlob(r, "image/png"));
+    const file = new File([blob], "long-road-" + y + ".png", { type: "image/png" });
+    if (navigator.canShare && navigator.canShare({ files: [file] }) && window.matchMedia("(pointer: coarse)").matches) {
+      try { await navigator.share({ files: [file], title: "Long Road " + y }); } catch (e) {}
+      return;
+    }
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob); a.download = file.name;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 4000);
   }
 
   // ---------- map ----------
@@ -1194,6 +1254,7 @@
       const el = document.getElementById("about"); if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
     }
     else if (t.id === "backArtists") go(() => { state.artist = null; });
+    else if (t.id === "shareYear") shareYear(state.year);
   }, true);
   document.addEventListener("change", (e) => {
     if (e.target.id === "ysel") go(() => { state.year = e.target.value; });
