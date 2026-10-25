@@ -189,7 +189,7 @@
   .ms-main { display: flex; flex-direction: column; min-width: 0; }
   .ms-next { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--line); font-size: 14px; }
   .ms-next .row { display: flex; justify-content: space-between; gap: 8px; }
-  footer { border-top: 1px solid var(--line); padding: 24px 0 max(32px, env(safe-area-inset-bottom)); font-size: 13px; color: var(--muted); }
+  footer { border-top: 1px solid var(--line); padding: 14px 0 max(24px, env(safe-area-inset-bottom)); font-size: 13px; color: var(--muted); text-align: center; }
   footer a { color: inherit; }
   .empty { padding: 48px 0; color: var(--muted); }
   @media (max-width: 600px) {
@@ -1100,7 +1100,7 @@
     label("MOST SEEN", 1490);
     yArtists.slice(0, 5).forEach((a, i) => {
       const yy = 1552 + i * 56;
-      g.fillStyle = i ? MUT : ACC; g.font = "600 36px " + DISP; g.fillText(String(a.rank), X, yy);
+      g.fillStyle = a.rank === 1 ? ACC : MUT; g.font = "600 36px " + DISP; g.fillText(String(a.rank), X, yy);
       g.fillStyle = TXT; g.font = "500 36px " + BODY; g.fillText(fit(a.key, R - X - 160), X + 60, yy);
       g.fillStyle = MUT; g.font = "400 30px " + BODY; g.textAlign = "right"; g.fillText(a.count + "×", R, yy); g.textAlign = "left";
     });
