@@ -123,7 +123,7 @@
   .detail-title { margin: 0; font: 600 34px/1.1 var(--display); overflow-wrap: anywhere; }
   .detail-meta { margin-top: 4px; line-height: 1.35; }
   .card h2.detail-title { margin: 0; } /* .card h2 adds a 14px bottom margin */
-  .inline-link { background: none; border: 0; padding: 0; font: inherit; color: inherit; cursor: pointer; text-decoration: underline; text-decoration-color: var(--line-2); text-underline-offset: 3px; }
+  .inline-link { background: none; border: 0; padding: 0; font: inherit; color: inherit; cursor: pointer; display: inline; text-decoration: underline; text-decoration-color: var(--line-2); text-underline-offset: 3px; }
   .facts { display: flex; flex-wrap: wrap; gap: 8px; }
   .fact { font-size: 12px; color: var(--muted); border: 1px solid var(--line-2); border-radius: 999px; padding: 4px 10px; }
   .history { display: flex; flex-direction: column; gap: 8px; }
@@ -839,7 +839,8 @@
     }
     const idx = chronoIdx.get(c.id), prev = chrono[idx - 1], next = chrono[idx + 1];
     const d = new Date(c.date + "T12:00:00");
-    const link = (label, attr) => '<button type="button" class="inline-link"' + attr + ">" + label + "</button>";
+    // a span, not a button: Safari keeps buttons as one block, so a long festival name broke the line apart
+    const link = (label, attr) => '<span role="button" tabindex="0" class="inline-link"' + attr + ">" + label + "</span>";
     // header meta: festival / venue / city, each opening the filtered list
     const meta = [
       c.festival ? link(esc(c.festival), fattr("festival", c.festival)) : null,
@@ -1234,8 +1235,12 @@
 
   // ---------- events ----------
   // capture phase: map popups stop click propagation, so listen before they do
+  // span links act like buttons from the keyboard too
+  document.addEventListener("keydown", (e) => {
+    if ((e.key === "Enter" || e.key === " ") && e.target.matches && e.target.matches('[role="button"]')) { e.preventDefault(); e.target.click(); }
+  });
   document.addEventListener("click", (e) => {
-    const t = e.target.closest("button");
+    const t = e.target.closest('button, [role="button"]');
     if (!t) return;
     const d = t.dataset;
     if (d.tab) go(() => { state.tab = d.tab; state.detail = null; state.filter = null; state.artist = null; });
