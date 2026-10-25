@@ -1046,7 +1046,6 @@
     const nNew = yArtists.filter((a) => firstEver.get(a.key).startsWith(y)).length;
     const nVenues = new Set(list.filter((c) => !c.festival).map(venueKey)).size;
     const nFest = new Set(list.map((c) => c.festival).filter(Boolean)).size;
-    const nSongs = list.reduce((n, c) => n + (c.songs || []).filter((s) => !s.tape).length, 0);
     const nCities = new Set(list.map((c) => c.city)).size;
     const nCountries = new Set(list.map((c) => c.country)).size;
     const months = Array.from({ length: 12 }, (_, m) => list.filter((c) => +c.date.slice(5, 7) === m + 1).length);
@@ -1070,26 +1069,25 @@
     g.textBaseline = "alphabetic";
     g.fillStyle = TXT; g.font = "600 40px " + DISP; g.fillText("LONG ROAD", X + 92, 302);
     g.fillStyle = MUT; g.font = "400 24px " + BODY; g.fillText("João Miguel's year in concerts", X + 92, 338);
-    // the year, with the concert count beside it
-    g.fillStyle = ACC; g.font = "600 250px " + DISP; g.fillText(y, X - 6, 620);
-
-    g.fillStyle = TXT; g.font = "600 110px " + DISP; g.textAlign = "right"; g.fillText(fmtN(list.length), R, 532);
-    g.fillStyle = MUT; g.font = "400 28px " + BODY; g.fillText(list.length === 1 ? "concert" : "concerts", R, 578); g.textAlign = "left";
-
-    // numbers: two rows of four
-    const kp = [[yArtists.length, "artists"], [nNew, "first time"], [nVenues, nVenues === 1 ? "venue" : "venues"], [nFest, nFest === 1 ? "festival" : "festivals"],
-      [nCities, nCities === 1 ? "city" : "cities"], [nCountries, nCountries === 1 ? "country" : "countries"], [nSongs, "songs heard"]];
-    g.fillStyle = LINE; g.fillRect(X, 670, R - X, 2);
+    // the year, then the concert count as big as the year
+    g.fillStyle = ACC; g.font = "600 190px " + DISP; g.fillText(y, X - 4, 570);
+    g.fillStyle = TXT; g.font = "600 250px " + DISP; g.fillText(fmtN(list.length), X - 6, 830);
+    const cw0 = g.measureText(fmtN(list.length)).width;
+    g.fillStyle = MUT; g.font = "400 46px " + BODY; g.fillText(list.length === 1 ? "concert" : "concerts", X + cw0 + 24, 830);
+    // numbers: two rows of three
+    const kp = [[yArtists.length, "artists"], [nNew, "seen for the first time"], [nVenues, nVenues === 1 ? "venue" : "venues"],
+      [nFest, nFest === 1 ? "festival" : "festivals"], [nCities, nCities === 1 ? "city" : "cities"], [nCountries, nCountries === 1 ? "country" : "countries"]];
+    g.fillStyle = LINE; g.fillRect(X, 880, R - X, 2);
     kp.forEach(([v, l], i) => {
-      const cw = (R - X) / 4, x = X + (i % 4) * cw, top = 720 + Math.floor(i / 4) * 150;
-      g.fillStyle = TXT; g.font = "600 68px " + DISP; g.fillText(fmtN(v), x, top + 62);
-      g.fillStyle = MUT; g.font = "400 24px " + BODY; g.fillText(l, x, top + 98);
+      const cw = (R - X) / 3, x = X + (i % 3) * cw, top = 910 + Math.floor(i / 3) * 130;
+      g.fillStyle = TXT; g.font = "600 64px " + DISP; g.fillText(fmtN(v), x, top + 60);
+      g.fillStyle = MUT; g.font = "400 24px " + BODY; g.fillText(l, x, top + 94);
     });
     // concerts per month
-    label("MONTH BY MONTH", 1060);
-    const mMax = Math.max(1, ...months), bw = (R - X) / 12, base = 1250;
+    label("MONTH BY MONTH", 1200);
+    const mMax = Math.max(1, ...months), bw = (R - X) / 12, base = 1360;
     months.forEach((n, m) => {
-      const h = n ? Math.max(6, 150 * n / mMax) : 3, x = X + m * bw + 6;
+      const h = n ? Math.max(6, 120 * n / mMax) : 3, x = X + m * bw + 6;
       g.fillStyle = n === mMax ? ACC : n ? "rgba(242,165,65,.45)" : LINE; g.fillRect(x, base - h, bw - 12, h);
       g.fillStyle = MUT; g.font = "500 20px " + BODY; g.textAlign = "center";
       g.fillText("JFMAMJJASOND"[m], x + (bw - 12) / 2, base + 32);
@@ -1097,14 +1095,14 @@
       g.textAlign = "left";
     });
     // top artists
-    label("MOST SEEN", 1360);
-    yArtists.slice(0, 4).forEach((a, i) => {
-      const yy = 1418 + i * 56;
+    label("MOST SEEN", 1445);
+    yArtists.slice(0, 3).forEach((a, i) => {
+      const yy = 1497 + i * 50;
       g.fillStyle = i ? MUT : ACC; g.font = "600 32px " + DISP; g.fillText(String(a.rank), X, yy);
       g.fillStyle = TXT; g.font = "500 32px " + BODY; g.fillText(fit(a.key, R - X - 160), X + 56, yy);
       g.fillStyle = MUT; g.font = "400 28px " + BODY; g.textAlign = "right"; g.fillText(a.count + "×", R, yy); g.textAlign = "left";
     });
-    g.fillStyle = MUT; g.font = "400 24px " + BODY; g.fillText("joaomiguelcom.github.io/long-road", X, 1660);
+    g.fillStyle = MUT; g.font = "400 24px " + BODY; g.fillText("joaomiguelcom.github.io/long-road", X, 1680);
     const blob = await new Promise((r) => cv.toBlob(r, "image/png"));
     const file = new File([blob], "long-road-" + y + ".png", { type: "image/png" });
     if (navigator.canShare && navigator.canShare({ files: [file] }) && window.matchMedia("(pointer: coarse)").matches) {
