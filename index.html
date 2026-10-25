@@ -866,7 +866,7 @@
           (x.with ? ' <span class="tag">· with ' + esc(x.with) + "</span>" : "") +
           (x.tape ? ' <span class="tag">(tape)</span>' : "") + (x.info ? ' <span class="tag">· ' + esc(x.info) + "</span>" : "") + "</li>").join("") + "</ol></div>").join("") +
       "</section>"
-      : c.extra ? '<p class="tag" style="margin:0">Not on setlist.fm: the artist is not in its database.' + (c.note ? " " + esc(c.note) : "") + (c.source ? ' <a href="' + esc(c.source) + '" target="_blank" rel="noopener">Source</a>' : "") + "</p>"
+      : c.extra ? '<p class="tag" style="margin:0">Not on setlist.fm: ' + esc(c.reason || "the artist is not in its database.") + (c.note ? " " + esc(c.note) : "") + (c.source ? ' <a href="' + esc(c.source) + '" target="_blank" rel="noopener">Source</a>' : "") + "</p>"
       : '<p class="tag" style="margin:0">No setlist yet. <a href="' + esc(c.url) + '" target="_blank" rel="noopener">Add it on setlist.fm</a></p>';
     // same night
     const sameNight = chrono.filter((x) => x.date === c.date && x.id !== c.id);
