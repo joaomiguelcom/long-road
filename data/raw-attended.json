@@ -73739,6 +73739,42 @@
     "url": "https://www.setlist.fm/setlist/god-is-an-astronaut/2009/passos-manuel-porto-portugal-5bd5b3b4.html"
   },
   {
+    "id": "737c6205",
+    "versionId": "g53362ba5",
+    "eventDate": "15-05-2009",
+    "lastUpdated": "2026-10-25T20:14:26.715+00:00",
+    "artist": {
+      "mbid": "fcc14977-e172-4613-95d7-8e9943c462fe",
+      "name": "GNR",
+      "sortName": "GNR",
+      "disambiguation": "Portuguese band",
+      "url": "https://www.setlist.fm/setlists/gnr-bd731d2.html"
+    },
+    "venue": {
+      "id": "7bd3c2a4",
+      "name": "Praia Norte",
+      "city": {
+        "id": "2732773",
+        "name": "Viana do Castelo",
+        "state": "Viana do Castelo",
+        "stateCode": "20",
+        "coords": {
+          "lat": 41.7,
+          "long": -8.8333333
+        },
+        "country": {
+          "code": "PT",
+          "name": "Portugal"
+        }
+      },
+      "url": "https://www.setlist.fm/venue/praia-norte-viana-do-castelo-portugal-7bd3c2a4.html"
+    },
+    "sets": {
+      "set": []
+    },
+    "url": "https://www.setlist.fm/setlist/gnr/2009/praia-norte-viana-do-castelo-portugal-737c6205.html"
+  },
+  {
     "id": "2ba25c96",
     "versionId": "g3b866434",
     "eventDate": "08-05-2009",
