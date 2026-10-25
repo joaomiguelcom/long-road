@@ -1000,9 +1000,13 @@
   function songList() {
     const q = plain(state.songQ);
     // songs whose title matches come first, then songs by matching artists
-    const list = q ? songs.filter((s) => plain(s.name).includes(q)).concat(songs.filter((s) => !plain(s.name).includes(q) && plain(s.artist).includes(q))) : songs;
-    const rows = list.map((s) => [cell(String(s.rank), s.rank), cell(esc(s.name), s.name), cell((artists.some((a) => a.key === s.artist) ? artistBtn(s.artist, "open muted-btn") : '<span class="muted">' + esc(s.artist) + "</span>") +
-      (s.by.size ? ' <span class="tag">· also by ' + [...s.by].map(esc).join(", ") + "</span>" : ""), s.artist), cell(String(s.count), s.count)]);
+    const list = q ? songs.filter((s) => plain(s.name).includes(q)).concat(songs.filter((s) => !plain(s.name).includes(q) && [s.artist, ...s.by].some((a) => plain(a).includes(q)))) : songs;
+    // an original by an artist João never saw is shown as a cover of whoever played it, so it does not look like he saw them
+    const seen = (a) => artists.some((x) => x.key === a);
+    const songArtist = (s) => seen(s.artist)
+      ? artistBtn(s.artist, "open muted-btn") + (s.by.size ? ' <span class="tag">· also by ' + [...s.by].map(esc).join(", ") + "</span>" : "")
+      : [...s.by].map((a) => artistBtn(a, "open muted-btn")).join(", ") + ' <span class="tag">· ' + esc(s.artist) + " cover</span>";
+    const rows = list.map((s) => [cell(String(s.rank), s.rank), cell(esc(s.name), s.name), cell(songArtist(s), seen(s.artist) ? s.artist : [...s.by][0]), cell(String(s.count), s.count)]);
     const coverRows = covers.map((x) => [cell(esc(x.name), x.name), cell(esc(x.original), x.original), cell(artistBtn(x.artist, "open muted-btn"), x.artist), cell(String(x.count), x.count)]);
     const debutRows = debuts.slice().sort((a, b) => b.date.localeCompare(a.date)).map((d) => [cell('<button type="button" class="open muted-btn" data-open="' + esc(d.id) + '">' + fmtDate(d.date) + "</button>", d.date), cell(esc(d.name), d.name), cell(esc(d.artist), d.artist), cell(esc(d.info), d.info)]);
     return '<div class="list-head"><div class="list-title"><h2>Songs you heard most</h2><span class="muted">' + fmtN(songs.length) + " different songs, " + fmtN(songsHeard) + " in total, " + fmtN(heardOnce) + " heard only once</span></div>" + searchBox("sq", "Search songs", "Search song or artist", state.songQ) + "</div>" +
