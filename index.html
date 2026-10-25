@@ -97,7 +97,7 @@
   .m-title .open, .m-title .open.muted-btn { background: none; border: 0; padding: 0; font: inherit; color: var(--text); font-weight: 600; text-align: left; cursor: pointer; }
   .m-title .open::after { content: ""; position: absolute; inset: 0; }
   .m-sub { margin-top: 2px; font-size: 13px; color: var(--muted); overflow-wrap: anywhere; }
-  .m-sub button { position: relative; z-index: 1; background: none; border: 0; padding: 0; font: inherit; color: inherit; text-decoration: underline; text-decoration-color: var(--line-2); text-underline-offset: 3px; cursor: pointer; }
+  .m-sub button, .m-sub [role="button"] { position: relative; z-index: 1; background: none; border: 0; padding: 0; font: inherit; color: inherit; text-decoration: underline; text-decoration-color: var(--line-2); text-underline-offset: 3px; cursor: pointer; }
   .m-sub span[style] { white-space: normal !important; }
   .m-tag { margin-top: 4px; font-size: 12px; } .m-tag br { display: none; } .m-tag .accent ~ .tag::before { content: " · "; white-space: pre; }
   .m-val { flex: none; text-align: right; font: 600 18px/1 var(--display); font-variant-numeric: tabular-nums; }
@@ -619,7 +619,8 @@
       cols.map((c, i) => c.label === "#" ? "" : '<option value="' + i + '" data-num="' + (c.num ? 1 : 0) + '"' + (st && st.col === i ? " selected" : "") + ">" + c.label + "</option>").join("") + "</select>" +
       (st ? '<button type="button" class="icon-btn" data-sortdir="' + id + '" aria-label="' + (st.dir > 0 ? "Ascending, switch to descending" : "Descending, switch to ascending") + '">' + (st.dir > 0 ? "↑" : "↓") + "</button>" : "") + "</div>" : "";
     const mlist = m ? '<ul class="mlist">' + shown.map((r) => {
-      const x = m(r), sub = (x.sub || []).filter(Boolean);
+      // links in the second line are spans: Safari keeps a button as one block, so a long name broke the line apart
+      const x = m(r), sub = (x.sub || []).filter(Boolean).map((h) => h.replace(/<button type="button"/g, '<span role="button" tabindex="0"').replace(/<\/button>/g, "</span>"));
       return '<li>' + (x.rank !== undefined ? '<span class="m-rank">' + x.rank + "</span>" : "") +
         '<div class="m-main"><div class="m-title">' + x.title + "</div>" +
         (sub.length ? '<div class="m-sub">' + sub.join(" · ") + "</div>" : "") + (x.tag ? '<div class="m-tag">' + x.tag + "</div>" : "") + "</div>" +
@@ -633,7 +634,7 @@
     }).join("") + "</tr></thead><tbody>" +
       shown.map((r) => "<tr>" + r.map((c, i) => "<td" + (cols[i].cls ? ' class="' + cols[i].cls + '"' : "") + ">" + c.h + "</td>").join("") + "</tr>").join("") +
       "</tbody></table></div>" +
-      (limit && rows.length > limit ? '<div class="more"><button class="btn" data-more="' + id + '">Show more</button></div>' : "");
+      (limit && rows.length > limit ? '<div class="more"><button class="btn" data-more="' + id + '" data-shown="' + limit + '">Show more</button></div>' : "");
   }
   const concertRows = (list) => list.map((c) => [
     cell('<span style="white-space:nowrap">' + fmtDate(c.date) + "</span>", c.date),
@@ -1014,9 +1015,9 @@
       table("songs", [{ label: "#", num: true, cls: "num" }, { label: "Song" }, { label: "Artist" }, { label: "Times", num: true, cls: "num" }], rows, limitOf("songs", 100),
         (r) => ({ rank: r[0].h, title: r[1].h, sub: [r[2].h], value: r[3].h, unit: r[3].s === 1 ? "time" : "times" })) +
       '<h2 class="section-title">Rarities</h2>' +
-      '<section class="card"><h2>Covers heard live</h2>' + (coverRows.length ? table("covers", [{ label: "Song" }, { label: "Original by", cls: "muted" }, { label: "Played by" }, { label: "Times", num: true, cls: "num" }], coverRows, limitOf("covers", 50),
+      '<section class="card"><h2>Covers heard live</h2>' + (coverRows.length ? table("covers", [{ label: "Song" }, { label: "Original by", cls: "muted" }, { label: "Played by" }, { label: "Times", num: true, cls: "num" }], coverRows, limitOf("covers", 10),
         (r) => ({ title: r[0].h, sub: [r[1].h + " → " + r[2].h], value: r[3].h, unit: r[3].s === 1 ? "time" : "times" })) : '<p class="muted" style="margin:0">None found yet.</p>') + "</section>" +
-      '<section class="card"><h2>Live debuts you saw</h2>' + (debutRows.length ? table("debuts", [{ label: "Date", cls: "muted" }, { label: "Song" }, { label: "Artist" }, { label: "Note", cls: "muted" }], debutRows, limitOf("debuts", 50),
+      '<section class="card"><h2>Live debuts you saw</h2>' + (debutRows.length ? table("debuts", [{ label: "Date", cls: "muted" }, { label: "Song" }, { label: "Artist" }, { label: "Note", cls: "muted" }], debutRows, limitOf("debuts", 10),
         (r) => ({ title: r[1].h, sub: [r[0].h, esc(r[2].s), r[3].h] })) : '<p class="muted" style="margin:0">No songs marked as a live debut on setlist.fm yet.</p>') + "</section>";
   }
 
@@ -1271,7 +1272,7 @@
       render();
     }
     else if (d.sortdir) { const st = state.sorts[d.sortdir]; if (st) { st.dir = -st.dir; render(); } }
-    else if (d.more) { state.limits[d.more] = limitOf(d.more, 100) + 200; render(); }
+    else if (d.more) { const n = +d.shown; state.limits[d.more] = n < 100 ? n * 3 : n + 200; render(); }
     else if (t.id === "nextAll") { state.nextAll = !state.nextAll; render(); }
     else if (t.id === "clearf") { state.filter = null; state.limits.concerts = 0; render(); }
     else if (t.id === "back") { if (depth() > 0) goBack(); else go(() => { state.detail = null; }); }
