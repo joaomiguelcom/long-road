@@ -145,6 +145,7 @@
   .set-label { margin: 12px 0 4px; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
   .tag { font-size: 12px; color: var(--muted); }
   .more { text-align: center; }
+  .card .more { margin-top: 16px; }
   .about { display: flex; gap: 20px; align-items: flex-start; }
   .about img { flex: none; width: 96px; height: 96px; border-radius: 50%; object-fit: cover; border: 2px solid var(--line-2); filter: saturate(.9); }
   .about h2 { margin: 0 0 6px; }
@@ -1012,13 +1013,12 @@
     const debutRows = debuts.slice().sort((a, b) => b.date.localeCompare(a.date)).map((d) => [cell('<button type="button" class="open muted-btn" data-open="' + esc(d.id) + '">' + fmtDate(d.date) + "</button>", d.date), cell(esc(d.name), d.name), cell(esc(d.artist), d.artist), cell(esc(d.info), d.info)]);
     return '<div class="list-head"><div class="list-title"><h2>Songs you heard most</h2><span class="muted">' + fmtN(songs.length) + " different songs, " + fmtN(songsHeard) + " in total, " + fmtN(heardOnce) + " heard only once</span></div>" + searchBox("sq", "Search songs", "Search song or artist", state.songQ) + "</div>" +
       (q && !list.length ? '<div class="empty">No songs match.</div>' : "") +
-      table("songs", [{ label: "#", num: true, cls: "num" }, { label: "Song" }, { label: "Artist" }, { label: "Times", num: true, cls: "num" }], rows, limitOf("songs", 100),
+      table("songs", [{ label: "#", num: true, cls: "num" }, { label: "Song" }, { label: "Artist" }, { label: "Times", num: true, cls: "num" }], rows, limitOf("songs", 25),
         (r) => ({ rank: r[0].h, title: r[1].h, sub: [r[2].h], value: r[3].h, unit: r[3].s === 1 ? "time" : "times" })) +
-      '<h2 class="section-title">Rarities</h2>' +
-      '<section class="card"><h2>Covers heard live</h2>' + (coverRows.length ? table("covers", [{ label: "Song" }, { label: "Original by", cls: "muted" }, { label: "Played by" }, { label: "Times", num: true, cls: "num" }], coverRows, limitOf("covers", 10),
-        (r) => ({ title: r[0].h, sub: [r[1].h + " → " + r[2].h], value: r[3].h, unit: r[3].s === 1 ? "time" : "times" })) : '<p class="muted" style="margin:0">None found yet.</p>') + "</section>" +
-      '<section class="card"><h2>Live debuts you saw</h2>' + (debutRows.length ? table("debuts", [{ label: "Date", cls: "muted" }, { label: "Song" }, { label: "Artist" }, { label: "Note", cls: "muted" }], debutRows, limitOf("debuts", 10),
-        (r) => ({ title: r[1].h, sub: [r[0].h, esc(r[2].s), r[3].h] })) : '<p class="muted" style="margin:0">No songs marked as a live debut on setlist.fm yet.</p>') + "</section>";
+      '<div class="list-head"><div class="list-title"><h2>Covers heard live</h2></div></div>' + (coverRows.length ? table("covers", [{ label: "Song" }, { label: "Original by", cls: "muted" }, { label: "Played by" }, { label: "Times", num: true, cls: "num" }], coverRows, limitOf("covers", 10),
+        (r) => ({ title: r[0].h, sub: [r[1].h + " → " + r[2].h], value: r[3].h, unit: r[3].s === 1 ? "time" : "times" })) : '<p class="muted" style="margin:0">None found yet.</p>') +
+      '<div class="list-head"><div class="list-title"><h2>Live debuts you saw</h2></div></div>' + (debutRows.length ? table("debuts", [{ label: "Date", cls: "muted" }, { label: "Song" }, { label: "Artist" }, { label: "Note", cls: "muted" }], debutRows, limitOf("debuts", 10),
+        (r) => ({ title: r[1].h, sub: [r[0].h, esc(r[2].s), r[3].h] })) : '<p class="muted" style="margin:0">No songs marked as a live debut on setlist.fm yet.</p>');
   }
 
   // ---------- year in review ----------
