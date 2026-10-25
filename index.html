@@ -161,6 +161,11 @@
   .th-btn .arrow { font-size: 11px; opacity: .5; }
   th[aria-sort] .th-btn { color: var(--text); } th[aria-sort] .arrow { opacity: 1; color: var(--accent); }
   td .muted-btn { font-weight: 400; color: var(--muted); }
+  .pj-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+  .pj-stats > div { display: flex; flex-direction: column; }
+  @media (max-width: 600px) { .pj-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .facts-list { margin: 0; padding-left: 18px; display: grid; gap: 6px; }
+  .text-link { background: none; border: 0; padding: 0; font: inherit; color: var(--accent); cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
   .title-link { background: none; border: 0; padding: 0; color: inherit; font: inherit; cursor: pointer; text-align: left; }
   .detail-wide { display: flex; flex-direction: column; gap: 24px; }
   .section-title { margin: 16px 0 0; font: 500 26px/1.2 var(--display); }
@@ -252,6 +257,7 @@
 </script>
 <script src="data/data.js?v=__BUILD__"></script>
 <script src="upcoming.js?v=__BUILD__"></script>
+<script src="extra.js?v=__BUILD__"></script>
 <script>
 (function () {
   "use strict";
@@ -270,7 +276,9 @@
     return;
   }
 
-  const concerts = DATA.concerts.slice().sort((a, b) => b.date.localeCompare(a.date));
+  // extra.js: concerts that cannot be added to setlist.fm (artist missing from its database), each with a source
+  const EXTRA = ((window.LONG_ROAD_EXTRA && window.LONG_ROAD_EXTRA.concerts) || []).map((c) => ({ tour: null, info: null, songs: [], ...c, extra: true }));
+  const concerts = DATA.concerts.concat(EXTRA).sort((a, b) => b.date.localeCompare(a.date));
 
   // ---------- festivals ----------
   // The API has no festival field. Each festival edition is listed here with its venue and dates
@@ -485,7 +493,7 @@
   // setlist.fm has no stage times, so the order of same-day concerts is arbitrary.
   // Reached milestones are frozen here by setlist id and never recalculated; add each new one when it is reached.
   const FIXED_MILESTONES = {
-    concerts: { 1: "4beb2b76", 50: "53d473f9", 100: "3bd3606c", 250: "3b4f593", 500: "3bc1b44c", 750: "6bb52a46", 1000: "3342f8b9" }
+    concerts: { 1: "4beb2b76", 50: "53d473f9", 100: "3bd3606c", 250: "7bd47658", 500: "63a26203", 750: "4bb437fa", 1000: "4350abfb" }
   };
   // oldest first; same-day ties broken by setlist id, then each frozen milestone is moved to its number within its day
   const chrono = concerts.slice().sort((a, b) => a.date.localeCompare(b.date) || a.id.localeCompare(b.id));
@@ -516,6 +524,8 @@
   const artistSpan = (name) => { const l = concerts.filter((c) => c.artist === name); return { first: l[l.length - 1].date, last: l[0].date }; };
 
   // rarities: covers heard live and songs seen on their live debut
+  // real live debuts only: "tour debut" or "first time live since 2017" are not
+  const LIVE_DEBUT = /live debut|first time ever|first time live(?! since)|live premiere|world premiere/i;
   const coverMap = new Map();
   const debuts = [];
   for (const c of concerts) for (const s of c.songs || []) {
@@ -525,7 +535,7 @@
       const e = coverMap.get(k) || { name: s.name, original: s.cover, artist: c.artist, count: 0 };
       e.count++; coverMap.set(k, e);
     }
-    if (s.info && /debut|first time (ever|live)|live premiere|premiere/i.test(s.info)) debuts.push({ name: s.name, artist: c.artist, date: c.date, id: c.id, info: s.info });
+    if (s.info && LIVE_DEBUT.test(s.info)) debuts.push({ name: s.name, artist: c.artist, date: c.date, id: c.id, info: s.info });
   }
   const covers = [...coverMap.values()].sort((a, b) => b.count - a.count);
   const heardOnce = songs.filter((s) => s.count === 1).length;
@@ -619,7 +629,7 @@
     festivals: { label: "Festival concerts", test: (c, v) => !!c.festival && c.date.startsWith(v), show: (v) => v }
   };
 
-  const state = { tab: "overview", q: "", detail: null, limits: {}, artistQ: "", filter: null, artist: null, year: byYear.length ? byYear[byYear.length - 1].key : null, sorts: {} };
+  const state = { tab: "overview", q: "", detail: null, limits: {}, artistQ: "", songQ: "", filter: null, artist: null, year: byYear.length ? byYear[byYear.length - 1].key : null, sorts: {} };
   const limitOf = (id, def) => state.limits[id] || def;
   const TABS = [["overview", "Overview"], ["concerts", "Concerts"], ["artists", "Artists"], ["venues", "Venues"], ["festivals", "Festivals"], ["songs", "Songs"], ["years", "Year in review"], ["map", "Map"]];
 
@@ -730,6 +740,7 @@
         kpi("Venues", fmtN(venues.length), fmtN(cities.length) + " cities · " + plural(countries.length, "country", "countries"), tabAttr("venues")) +
         kpi("Festivals", fmtN(festivals.length), fmtN(festivals.reduce((n, f) => n + f.count, 0)) + " editions · " + fmtN(festivals.reduce((n, f) => n + f.concerts, 0)) + " concerts", tabAttr("festivals")) +
       "</section>" +
+      pearlJam() +
       '<section class="card"><div class="card-head"><h2>Most seen artists</h2><button class="link" data-tab="artists">See all</button></div>' +
         bars(artists.slice(0, 10), (a) => esc(a.key), (a) => aattr(a.key)) + "</section>" +
       '<section class="card"><div class="card-head"><h2>Venues</h2><button class="link" data-tab="venues">See all</button></div>' +
@@ -762,13 +773,28 @@
       milestones() + about();
   }
 
+  // the band behind the name gets a card of its own
+  function pearlJam() {
+    const a = artists.find((x) => x.key === "Pearl Jam");
+    if (!a) return "";
+    const list = concerts.filter((c) => c.artist === "Pearl Jam"), first = list[list.length - 1], last = list[0];
+    const pj = songs.filter((s) => s.artist === "Pearl Jam");
+    const cities = new Set(list.map((c) => c.city)).size;
+    return '<section class="card pj"><div class="card-head"><h2>Pearl Jam</h2><button class="link"' + aattr("Pearl Jam") + ">Open</button></div>" +
+      '<p class="muted" style="margin:0 0 12px">The reason this archive is called Long Road.</p>' +
+      '<div class="pj-stats"><div><span class="kpi">' + a.count + '</span><span class="kpi-label">concerts</span></div>' +
+      '<div><span class="kpi">' + fmtN(pj.reduce((n, s) => n + s.count, 0)) + '</span><span class="kpi-label">songs heard</span></div>' +
+      '<div><span class="kpi">' + fmtN(pj.length) + '</span><span class="kpi-label">different songs</span></div>' +
+      '<div><span class="kpi">' + cities + '</span><span class="kpi-label">' + (cities === 1 ? "city" : "cities") + "</span></div></div>" +
+      '<p class="tag" style="margin:12px 0 0">' + first.date.slice(0, 4) + " – " + last.date.slice(0, 4) + (pj[0] ? " · most heard: " + esc(pj[0].name) + " ×" + pj[0].count : "") + "</p></section>";
+  }
   function about() {
     const first = chrono[0].date.slice(0, 4);
     return '<section class="card about" id="about" aria-labelledby="h-about">' +
       '<img src="img/me.jpg" alt="João Miguel" width="96" height="96">' +
       '<div><h2 id="h-about">About me</h2>' +
       "<p>Hi, I'm João Miguel. I've been going to concerts since " + first + ", " + fmtN(chrono.length) + " so far, from tiny clubs to muddy festival fields. " +
-      "Pearl Jam is the reason this archive is called Long Road. When I'm not at a show, I'm probably at home spinning records.</p>" +
+      artistBtn("Pearl Jam", "text-link") + " is the reason this archive is called Long Road. When I'm not at a show, I'm probably at home spinning records.</p>" +
       '<a class="btn" href="https://www.discogs.com/user/ojoaomiguel" target="_blank" rel="noopener">' +
       '<svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10.8" fill="#050608" stroke="#8A9099" stroke-width="1"/><circle cx="12" cy="12" r="8.4" fill="none" stroke="#5A606A" stroke-width=".7"/><circle cx="12" cy="12" r="6.4" fill="none" stroke="#5A606A" stroke-width=".7"/><circle cx="12" cy="12" r="3.4" fill="#F2A541"/><circle cx="12" cy="12" r=".9" fill="#0F1115"/></svg>' +
       "My record collection on Discogs</a></div></section>";
@@ -837,6 +863,7 @@
           (x.with ? ' <span class="tag">· with ' + esc(x.with) + "</span>" : "") +
           (x.tape ? ' <span class="tag">(tape)</span>' : "") + (x.info ? ' <span class="tag">· ' + esc(x.info) + "</span>" : "") + "</li>").join("") + "</ol></div>").join("") +
       "</section>"
+      : c.extra ? '<p class="tag" style="margin:0">Not on setlist.fm: the artist is not in its database. <a href="' + esc(c.source) + '" target="_blank" rel="noopener">Source</a></p>'
       : '<p class="tag" style="margin:0">No setlist yet. <a href="' + esc(c.url) + '" target="_blank" rel="noopener">Add it on setlist.fm</a></p>';
     // same night
     const sameNight = chrono.filter((x) => x.date === c.date && x.id !== c.id);
@@ -868,6 +895,8 @@
         (r) => ({ rank: r[0].h, title: r[1].h, sub: [r[3].s.slice(0, 4) === r[4].s.slice(0, 4) ? r[3].s.slice(0, 4) : r[3].s.slice(0, 4) + " – " + r[4].s.slice(0, 4)], value: r[2].h, unit: r[2].s === 1 ? "concert" : "concerts" }));
   }
 
+  // side projects and solo careers shown on each other's page
+  const RELATED = { "Pearl Jam": ["Eddie Vedder", "Temple of the Dog"], "Eddie Vedder": ["Pearl Jam"] };
   function artistPage(name) {
     const a = artists.find((x) => x.key === name);
     if (!a) return "";
@@ -880,6 +909,24 @@
     const aCountries = new Set(list.map((c) => c.country)).size;
     const aFest = list.filter((c) => c.festival).length;
     const top = withRank(aSongs.map((s) => ({ ...s })));
+    // deeper song stats once there are a few setlists to compare
+    const withSets = list.filter((c) => (c.songs || []).some((s) => !s.tape && s.name)).reverse();
+    const ends = (pick) => withRank(countBy(withSets, (c) => { const p = c.songs.filter((s) => !s.tape && s.name); return pick(p).name; }));
+    const songStats = withSets.length >= 3 ? (() => {
+      const every = aSongs.filter((s) => s.count >= withSets.length);
+      const biggest = withSets.reduce((b, c) => (c.songs.filter((s) => !s.tape && s.name).length > b.n ? { c, n: c.songs.filter((s) => !s.tape && s.name).length } : b), { c: null, n: 0 });
+      const aDebuts = debuts.filter((d) => d.artist === name);
+      const chips = (l) => '<div class="history-list">' + l.map((x) => '<span class="hist">' + esc(x.key) + (x.count > 1 ? " ×" + x.count : "") + "</span>").join("") + "</div>";
+      return '<section class="card"><h2>Openers and closers</h2>' +
+          '<div class="kpi-label">Opened with</div>' + chips(ends((p) => p[0]).slice(0, 8)) +
+          '<div class="kpi-label" style="margin-top:12px">Closed with</div>' + chips(ends((p) => p[p.length - 1]).slice(0, 8)) + "</section>" +
+        '<section class="card"><h2>Setlist facts</h2><ul class="facts-list">' +
+          "<li>" + (every.length ? "Heard at every show with a setlist (" + withSets.length + "): " + every.map((s) => esc(s.name)).join(" · ") : "No song made it into all " + withSets.length + " setlists") + "</li>" +
+          '<li>Longest night: <button type="button" class="text-link" data-open="' + esc(biggest.c.id) + '">' + biggest.n + " songs, " + fmtDate(biggest.c.date) + "</button> at " + esc(biggest.c.festival || biggest.c.venue) + "</li>" +
+          (aDebuts.length ? "<li>Live debuts you saw: " + aDebuts.map((d) => esc(d.name) + " (" + d.date.slice(0, 4) + ")").join(" · ") + "</li>" : "") +
+        "</ul></section>";
+    })() : "";
+    const related = (RELATED[name] || []).map((r) => artists.find((x) => x.key === r)).filter(Boolean);
     return '<div class="detail-wide">' +
       '<button class="btn" id="backArtists">← All artists</button>' +
       '<div><div class="eyebrow">#' + a.rank + " most seen artist</div>" +
@@ -892,6 +939,8 @@
         kpi("Countries", aCountries + "") +
       "</section>" +
       (top.length ? '<section class="card"><h2>Songs you heard most</h2>' + bars(top.slice(0, 15), (s) => esc(s.name)) + "</section>" : "") +
+      (related.length ? '<div class="history"><span class="muted">Also seen</span><div class="history-list">' + related.map((x) => '<button type="button" class="hist"' + aattr(x.key) + ">" + esc(x.key) + " · " + plural(x.count, "concert", "concerts") + "</button>").join("") + "</div></div>" : "") +
+      songStats +
       '<section class="card"><div class="card-head"><h2>Concerts</h2><button class="link"' + fattr("artist", name) + ">Open in concert list</button></div>" +
         table("artist-concerts", CONCERT_COLS, concertRows(list), 0, concertM) + "</section>" +
       (once.length ? '<section class="card"><h2>Heard only once</h2><p class="muted" style="margin:0">' + once.map((s) => esc(s.name)).join(" · ") + "</p></section>" : "") +
@@ -916,10 +965,14 @@
   }
 
   function songList() {
-    const rows = songs.map((s) => [cell(String(s.rank), s.rank), cell(esc(s.name), s.name), cell(artistBtn(s.artist, "open muted-btn"), s.artist), cell(String(s.count), s.count)]);
+    const q = plain(state.songQ);
+    // songs whose title matches come first, then songs by matching artists
+    const list = q ? songs.filter((s) => plain(s.name).includes(q)).concat(songs.filter((s) => !plain(s.name).includes(q) && plain(s.artist).includes(q))) : songs;
+    const rows = list.map((s) => [cell(String(s.rank), s.rank), cell(esc(s.name), s.name), cell(artistBtn(s.artist, "open muted-btn"), s.artist), cell(String(s.count), s.count)]);
     const coverRows = covers.map((x) => [cell(esc(x.name), x.name), cell(esc(x.original), x.original), cell(artistBtn(x.artist, "open muted-btn"), x.artist), cell(String(x.count), x.count)]);
     const debutRows = debuts.slice().sort((a, b) => b.date.localeCompare(a.date)).map((d) => [cell('<button type="button" class="open muted-btn" data-open="' + esc(d.id) + '">' + fmtDate(d.date) + "</button>", d.date), cell(esc(d.name), d.name), cell(esc(d.artist), d.artist), cell(esc(d.info), d.info)]);
-    return '<div class="list-head"><div class="list-title"><h2>Songs you heard most</h2><span class="muted">' + fmtN(songs.length) + " different songs, " + fmtN(songsHeard) + " in total, " + fmtN(heardOnce) + " heard only once</span></div></div>" +
+    return '<div class="list-head"><div class="list-title"><h2>Songs you heard most</h2><span class="muted">' + fmtN(songs.length) + " different songs, " + fmtN(songsHeard) + " in total, " + fmtN(heardOnce) + " heard only once</span></div>" + searchBox("sq", "Search songs", "Search song or artist", state.songQ) + "</div>" +
+      (q && !list.length ? '<div class="empty">No songs match.</div>' : "") +
       table("songs", [{ label: "#", num: true, cls: "num" }, { label: "Song" }, { label: "Artist" }, { label: "Times", num: true, cls: "num" }], rows, limitOf("songs", 100),
         (r) => ({ rank: r[0].h, title: r[1].h, sub: [r[2].h], value: r[3].h, unit: r[3].s === 1 ? "time" : "times" })) +
       '<h2 class="section-title">Rarities</h2>' +
@@ -1113,9 +1166,11 @@
     }
   });
   document.addEventListener("input", (e) => {
-    if (e.target.id !== "q" && e.target.id !== "aq") return;
+    if (e.target.id !== "q" && e.target.id !== "aq" && e.target.id !== "sq") return;
     const id = e.target.id;
-    if (id === "q") { state.q = e.target.value; state.limits.concerts = 0; } else { state.artistQ = e.target.value; state.limits.artists = 0; }
+    if (id === "q") { state.q = e.target.value; state.limits.concerts = 0; }
+    else if (id === "aq") { state.artistQ = e.target.value; state.limits.artists = 0; }
+    else { state.songQ = e.target.value; state.limits.songs = 0; }
     renderKeeping(id, ".search");
   });
 
