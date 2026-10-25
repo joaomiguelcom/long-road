@@ -162,9 +162,6 @@
   .th-btn .arrow { font-size: 11px; opacity: .5; }
   th[aria-sort] .th-btn { color: var(--text); } th[aria-sort] .arrow { opacity: 1; color: var(--accent); }
   td .muted-btn { font-weight: 400; color: var(--muted); }
-  .pj-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
-  .pj-stats > div { display: flex; flex-direction: column; }
-  @media (max-width: 600px) { .pj-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
   .facts-list { margin: 0; padding-left: 18px; display: grid; gap: 6px; }
   .on-shelf { display: inline-flex; vertical-align: -2px; margin-left: 4px; }
   .toggle { font: inherit; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; background: var(--line); border: 1px solid transparent; border-radius: 999px; padding: 4px 11px; color: var(--muted); cursor: pointer; }
@@ -759,7 +756,6 @@
         kpi("Venues", fmtN(venues.length), fmtN(cities.length) + " cities · " + plural(countries.length, "country", "countries"), tabAttr("venues")) +
         kpi("Festivals", fmtN(festivals.length), fmtN(festivals.reduce((n, f) => n + f.count, 0)) + " editions · " + fmtN(festivals.reduce((n, f) => n + f.concerts, 0)) + " concerts", tabAttr("festivals")) +
       "</section>" +
-      pearlJam() + liveAndShelf() +
       '<section class="card"><div class="card-head"><h2>Most seen artists</h2><button class="link" data-tab="artists">See all</button></div>' +
         bars(artists.slice(0, 10), (a) => esc(a.key), (a) => aattr(a.key)) + "</section>" +
       '<section class="card"><div class="card-head"><h2>Venues</h2><button class="link" data-tab="venues">See all</button></div>' +
@@ -792,32 +788,6 @@
       milestones() + about();
   }
 
-  // artists seen live that are also in the record collection
-  function liveAndShelf() {
-    const both = withRank(artists.filter((a) => onShelf(a.key)).map((a) => ({ ...a })));
-    if (!both.length) return "";
-    const recs = new Set(both.flatMap((a) => onShelf(a.key))).size;
-    return '<section class="card"><div class="card-head"><h2>Seen live & on the shelf</h2><button class="link" data-shelf="1">See all</button></div>' +
-      '<p class="muted" style="margin:0 0 12px">' + both.length + " artists you saw live are also in the record collection, with " + plural(recs, "record", "records") + " between them.</p>" +
-      bars(both.slice(0, 10), (a) => esc(a.key) + ' <span class="muted">· ' + plural(onShelf(a.key).length, "record", "records") + "</span>", (a) => aattr(a.key)) +
-      '<p class="tag" style="margin:12px 0 0">Bars show concerts seen.</p></section>';
-  }
-
-  // the band behind the name gets a card of its own
-  function pearlJam() {
-    const a = artists.find((x) => x.key === "Pearl Jam");
-    if (!a) return "";
-    const list = concerts.filter((c) => c.artist === "Pearl Jam"), first = list[list.length - 1], last = list[0];
-    const pj = songs.filter((s) => s.artist === "Pearl Jam");
-    const cities = new Set(list.map((c) => c.city)).size;
-    return '<section class="card pj"><div class="card-head"><h2>Pearl Jam</h2><button class="link"' + aattr("Pearl Jam") + ">Open</button></div>" +
-      '<p class="muted" style="margin:0 0 12px">The reason this archive is called Long Road.</p>' +
-      '<div class="pj-stats"><div><span class="kpi">' + a.count + '</span><span class="kpi-label">concerts</span></div>' +
-      '<div><span class="kpi">' + fmtN(pj.reduce((n, s) => n + s.count, 0)) + '</span><span class="kpi-label">songs heard</span></div>' +
-      '<div><span class="kpi">' + fmtN(pj.length) + '</span><span class="kpi-label">different songs</span></div>' +
-      '<div><span class="kpi">' + cities + '</span><span class="kpi-label">' + (cities === 1 ? "city" : "cities") + "</span></div></div>" +
-      '<p class="tag" style="margin:12px 0 0">' + first.date.slice(0, 4) + " – " + last.date.slice(0, 4) + (pj[0] ? " · most heard: " + esc(pj[0].name) + " ×" + pj[0].count : "") + "</p></section>";
-  }
   function about() {
     const first = chrono[0].date.slice(0, 4);
     return '<section class="card about" id="about" aria-labelledby="h-about">' +
@@ -981,11 +951,12 @@
       "</section>" +
       (top.length ? '<section class="card"><h2>Songs you heard most</h2>' + bars(top.slice(0, 15), (s) => esc(s.name)) + "</section>" : "") +
       (related.length ? '<div class="history"><span class="muted">Also seen</span><div class="history-list">' + related.map((x) => '<button type="button" class="hist"' + aattr(x.key) + ">" + esc(x.key) + " · " + plural(x.count, "concert", "concerts") + "</button>").join("") + "</div></div>" : "") +
-      songStats + shelfCard(name) +
+      songStats +
       '<section class="card"><div class="card-head"><h2>Concerts</h2><button class="link"' + fattr("artist", name) + ">Open in concert list</button></div>" +
         table("artist-concerts", CONCERT_COLS, concertRows(list), 0, concertM) + "</section>" +
       (once.length ? '<section class="card"><h2>Heard only once</h2><p class="muted" style="margin:0">' + once.map((s) => esc(s.name)).join(" · ") + "</p></section>" : "") +
       (aCovers.length ? '<section class="card"><h2>Covers</h2><p class="muted" style="margin:0">' + aCovers.map((x) => esc(x.name) + " (" + esc(x.original) + ")" + (x.count > 1 ? " ×" + x.count : "")).join(" · ") + "</p></section>" : "") +
+      shelfCard(name) +
       "</div>";
   }
 
