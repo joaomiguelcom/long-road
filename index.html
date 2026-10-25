@@ -1064,7 +1064,7 @@
     // everything but the link sits 40px higher (João, 2026-10-25)
     g.save(); g.translate(0, -40);
     // header: road logo and title
-    g.save(); g.translate(X, 190); g.scale(1.5, 1.5); g.translate(-6, -8);
+    g.save(); g.translate(X, 202); g.scale(1.5, 1.5); g.translate(-6, -8);
     g.fillStyle = "rgba(242,165,65,.35)"; g.beginPath(); g.arc(32, 19, 9, 0, Math.PI * 2); g.fill();
     g.fillStyle = ACC; g.fill(new Path2D("M29.5 19h5L54 58H10zM31.4 23h1.2l.3 5h-1.8zM31 33h2l.5 8h-3zM30.3 46h3.4l.6 12h-4.6z"), "evenodd");
     g.restore();
@@ -1077,7 +1077,7 @@
     const cw0 = g.measureText(fmtN(list.length)).width;
     g.fillStyle = MUT; g.font = "400 46px " + BODY; g.fillText(list.length === 1 ? "concert" : "concerts", X + cw0 + 22, 730);
     // numbers: two rows of three
-    const kp = [[yArtists.length, "artists"], [nNew, "seen for the first time"], [nVenues, nVenues === 1 ? "venue" : "venues"],
+    const kp = [[yArtists.length, "artists"], [nNew, "new artists"], [nVenues, nVenues === 1 ? "venue" : "venues"],
       [nFest, nFest === 1 ? "festival" : "festivals"], [nCities, nCities === 1 ? "city" : "cities"], [nCountries, nCountries === 1 ? "country" : "countries"]];
     g.fillStyle = LINE; g.fillRect(X, 790, R - X, 2);
     kp.forEach(([v, l], i) => {
