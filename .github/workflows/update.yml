@@ -55,13 +55,21 @@ jobs:
       - name: Build site
         run: |
           mkdir -p _site
-          cp index.html upcoming.js extra.js _site/
+          cp index.html upcoming.js extra.js manifest.webmanifest sw.js _site/
           if [ -d data ]; then cp -r data _site/; fi
           if [ -d img ]; then cp -r img _site/; fi
           # Build id: lets the home-screen app notice new deploys and skip stale caches
           BUILD="$(date -u +%Y%m%d%H%M%S)-${GITHUB_SHA::7}"
           sed -i "s/__BUILD__/$BUILD/g" _site/index.html
           echo "$BUILD" > _site/version.txt
+
+      # opens the built site in Chrome and stops the deploy if the app breaks
+      - name: Smoke test
+        env:
+          CHROME_PATH: /usr/bin/google-chrome
+        run: |
+          npm install --no-save --no-package-lock --prefix "$RUNNER_TEMP/pw" playwright-core@1.56.1
+          NODE_PATH="$RUNNER_TEMP/pw/node_modules" node tools/smoke.cjs _site
 
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
