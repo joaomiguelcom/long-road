@@ -426,7 +426,8 @@
     { name: "ZigurFest", venue: "Puro Malte", pad: 0, from: "2011-09-02", to: "2011-09-02" },
     { name: "O Salgado Faz Anos... FEST!", venue: "Maus Hábitos", pad: 0, from: "2026-01-31", to: "2026-01-31" },
     { name: "Surf N' Sound", venue: "Praia de Ofir", from: "2010-08-14", to: "2010-08-14" },
-    { name: "Enterro da Gata", venue: "Gatódromo", from: "2011-05-06", to: "2011-05-14" }
+    { name: "Enterro da Gata", venue: "Gatódromo", from: "2011-05-06", to: "2011-05-14" },
+    { name: "Semana Académica de Viana do Castelo", venue: "Praia Norte", from: "2009-05-15", to: "2009-05-15", pad: 0 }
   ];
   const plain = (s) => String(s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
   const shift = (iso, days) => new Date(Date.parse(iso) + days * DAY).toISOString().slice(0, 10);
