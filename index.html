@@ -504,16 +504,24 @@
   const firstSeen = new Map();   // artist -> date of the first concert
   for (let i = concerts.length - 1; i >= 0; i--) if (!firstSeen.has(concerts[i].artist)) firstSeen.set(concerts[i].artist, concerts[i].date);
 
-  const songMap = new Map();
+  // a song belongs to whoever wrote it: Alive played by Eddie Vedder is still Pearl Jam's Alive
+  const songOwner = (s, c) => s.cover || c.artist;
+  const songKey = (s, c) => plain(s.name) + "||" + plain(songOwner(s, c));
+  const songMap = new Map();      // by song, for the Songs tab
+  const playedMap = new Map();    // by the artist on stage, for artist pages
   let songsHeard = 0;
   for (const c of concerts) for (const s of c.songs || []) {
     if (s.tape || !s.name) continue;
     songsHeard++;
-    const k = s.name + "||" + c.artist;
-    const e = songMap.get(k) || { name: s.name, artist: c.artist, count: 0 };
-    e.count++; songMap.set(k, e);
+    const k = songKey(s, c);
+    const e = songMap.get(k) || { name: s.name, artist: songOwner(s, c), count: 0, by: new Set() };
+    e.count++; if (c.artist !== e.artist) e.by.add(c.artist); songMap.set(k, e);
+    const pk = s.name + "||" + c.artist;
+    const p = playedMap.get(pk) || { name: s.name, artist: c.artist, count: 0 };
+    p.count++; playedMap.set(pk, p);
   }
   const songs = [...songMap.values()].sort((a, b) => b.count - a.count);
+  const songsOnStage = [...playedMap.values()].sort((a, b) => b.count - a.count);
 
   // oldest first, same-day ties by setlist id (stable whatever order the API returns)
   // setlist.fm has no stage times, so the order of same-day concerts is arbitrary.
@@ -528,8 +536,8 @@
     if (from >= 0 && chrono[to] && chrono[to].date === chrono[from].date) chrono.splice(to, 0, chrono.splice(from, 1)[0]);
   });
   const chronoIdx = new Map(chrono.map((c, i) => [c.id, i]));
-  const firstHeard = new Map();   // "song||artist" -> id of the concert where João first heard it
-  for (const c of chrono) for (const s of c.songs || []) if (!s.tape && s.name && !firstHeard.has(s.name + "||" + c.artist)) firstHeard.set(s.name + "||" + c.artist, c.id);
+  const firstHeard = new Map();   // songKey -> id of the concert where João first heard the song, whoever played it
+  for (const c of chrono) for (const s of c.songs || []) if (!s.tape && s.name && !firstHeard.has(songKey(s, c))) firstHeard.set(songKey(s, c), c.id);
 
   // competition ranking: ties share a rank (1, 2, 2, 4), like setlist.fm
   const withRank = (list) => { let r = 0; return list.map((x, i) => { if (i === 0 || x.count !== list[i - 1].count) r = i + 1; x.rank = r; return x; }); };
@@ -649,7 +657,7 @@
     day: { label: "Day", test: (c, v) => c.date === v, show: (v) => fmtDate(v) },
     range: { label: "Dates", test: (c, v) => { const [a, b] = v.split("|"); return c.date >= a && c.date <= b; }, show: (v) => v.split("|").map(fmtDate).join(" to ") },
     weekday: { label: "Weekday", test: (c, v) => weekdayOf(c.date) === v, show: (v) => v },
-    song: { label: "Song", test: (c, v) => { const [a, n] = v.split("||"); return c.artist === a && (c.songs || []).some((s) => s.name === n && !s.tape); }, show: (v) => v.split("||").reverse().join(" · ") },
+    song: { label: "Song", test: (c, v) => { const [a, n] = v.split("||"); return (c.songs || []).some((s) => !s.tape && s.name && songKey(s, c) === plain(n) + "||" + plain(a)); }, show: (v) => v.split("||").reverse().join(" · ") },
     newArtists: { label: "First time seen", test: (c, v) => firstSeen.get(c.artist) === c.date && c.date.startsWith(v), show: (v) => v || "All years" },
     venues: { label: "Venues", test: (c, v) => !c.festival && c.date.startsWith(v), show: (v) => v },
     festivals: { label: "Festival concerts", test: (c, v) => !!c.festival && c.date.startsWith(v), show: (v) => v }
@@ -861,7 +869,7 @@
         '<button type="button" class="hist"' + ' data-open="' + esc(x.id) + '" title="' + esc(fmtDate(x.date) + " · " + (x.festival || x.venue)) + '">' + x.date.slice(0, 4) + "</button>").join("") + "</div>" : "") + "</div>";
     // setlist
     const played = (c.songs || []).filter((x) => !x.tape && x.name);
-    const isNew = (x) => !x.tape && x.name && firstHeard.get(x.name + "||" + c.artist) === c.id;
+    const isNew = (x) => !x.tape && x.name && firstHeard.get(songKey(x, c)) === c.id;
     const newCount = played.filter(isNew).length, coverCount = played.filter((x) => x.cover).length;
     const encores = groups.filter((g) => /^Encore/.test(g.set)).length;
     const summary = [plural(played.length, "song", "songs"), encores ? plural(encores, "encore", "encores") : "", coverCount ? plural(coverCount, "cover", "covers") : "", newCount && nth > 1 ? newCount + " new for you" : ""].filter(Boolean).join(" · ");
@@ -926,7 +934,7 @@
     if (!a) return "";
     const list = concerts.filter((c) => c.artist === name);
     const first = list[list.length - 1], last = list[0];
-    const aSongs = songs.filter((s) => s.artist === name);
+    const aSongs = songsOnStage.filter((s) => s.artist === name);
     const heard = aSongs.reduce((n, s) => n + s.count, 0);
     const once = aSongs.filter((s) => s.count === 1);
     const aCovers = covers.filter((x) => x.artist === name);
@@ -993,7 +1001,8 @@
     const q = plain(state.songQ);
     // songs whose title matches come first, then songs by matching artists
     const list = q ? songs.filter((s) => plain(s.name).includes(q)).concat(songs.filter((s) => !plain(s.name).includes(q) && plain(s.artist).includes(q))) : songs;
-    const rows = list.map((s) => [cell(String(s.rank), s.rank), cell(esc(s.name), s.name), cell(artistBtn(s.artist, "open muted-btn"), s.artist), cell(String(s.count), s.count)]);
+    const rows = list.map((s) => [cell(String(s.rank), s.rank), cell(esc(s.name), s.name), cell((artists.some((a) => a.key === s.artist) ? artistBtn(s.artist, "open muted-btn") : '<span class="muted">' + esc(s.artist) + "</span>") +
+      (s.by.size ? ' <span class="tag">· also by ' + [...s.by].map(esc).join(", ") + "</span>" : ""), s.artist), cell(String(s.count), s.count)]);
     const coverRows = covers.map((x) => [cell(esc(x.name), x.name), cell(esc(x.original), x.original), cell(artistBtn(x.artist, "open muted-btn"), x.artist), cell(String(x.count), x.count)]);
     const debutRows = debuts.slice().sort((a, b) => b.date.localeCompare(a.date)).map((d) => [cell('<button type="button" class="open muted-btn" data-open="' + esc(d.id) + '">' + fmtDate(d.date) + "</button>", d.date), cell(esc(d.name), d.name), cell(esc(d.artist), d.artist), cell(esc(d.info), d.info)]);
     return '<div class="list-head"><div class="list-title"><h2>Songs you heard most</h2><span class="muted">' + fmtN(songs.length) + " different songs, " + fmtN(songsHeard) + " in total, " + fmtN(heardOnce) + " heard only once</span></div>" + searchBox("sq", "Search songs", "Search song or artist", state.songQ) + "</div>" +
