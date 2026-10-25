@@ -4,7 +4,7 @@
 import { writeFileSync } from "node:fs";
 
 const user = process.argv[2] || "ojoaomiguel";
-const headers = { "User-Agent": "LongRoad/1.0 +https://joaomiguelcom.github.io/long-road/" };
+const headers = { "User-Agent": "LongRoad/1.0 +https://longroad.joaomiguel.com/" };
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 async function page(n) {
