@@ -136,6 +136,7 @@
   .set-label.encore { color: var(--accent); }
   .btn { align-self: flex-start; background: none; border: 1px solid var(--line-2); border-radius: 8px; color: var(--text); padding: 10px 14px; min-height: 44px; cursor: pointer; }
   ol.setlist { margin: 0; padding-left: 28px; display: flex; flex-direction: column; gap: 4px; }
+  ol.setlist li.tape { list-style: none; color: var(--muted); }
   .set-label { margin: 12px 0 4px; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
   .tag { font-size: 12px; color: var(--muted); }
   .more { text-align: center; }
@@ -858,12 +859,14 @@
     const newCount = played.filter(isNew).length, coverCount = played.filter((x) => x.cover).length;
     const encores = groups.filter((g) => /^Encore/.test(g.set)).length;
     const summary = [plural(played.length, "song", "songs"), encores ? plural(encores, "encore", "encores") : "", coverCount ? plural(coverCount, "cover", "covers") : "", newCount && nth > 1 ? newCount + " new for you" : ""].filter(Boolean).join(" · ");
+    // tapes (intro/outro music) get no number and are not counted
+    let num = 0;
     const setlist = groups.length ?
       '<section><div class="card-head"><h3 class="sec-title">Setlist</h3><span class="muted">' + summary + "</span></div>" +
-      groups.map((g, i) => '<div><div class="set-label' + (/^Encore/.test(g.set) ? " encore" : "") + '">' + esc(g.set) + '</div><ol class="setlist"' + (i ? ' start="' + (groups.slice(0, i).reduce((n, x) => n + x.songs.length, 0) + 1) + '"' : "") + ">" +
-        g.songs.map((x) => "<li>" + esc(x.name) +
+      groups.map((g, i) => '<div><div class="set-label' + (/^Encore/.test(g.set) ? " encore" : "") + '">' + esc(g.set) + '</div><ol class="setlist">' +
+        g.songs.map((x) => (x.tape ? '<li class="tape">' : '<li value="' + (++num) + '">') + esc(x.name) +
           (nth > 1 && isNew(x) ? ' <span class="badge">new for you</span>' : "") +
-          (x.cover ? ' <span class="badge cover">' + esc(x.cover) + " cover</span>" : "") +
+          (x.cover ? ' <span class="badge cover">' + esc(x.cover) + (x.tape ? " song" : " cover") + "</span>" : "") +
           (x.with ? ' <span class="tag">· with ' + esc(x.with) + "</span>" : "") +
           (x.tape ? ' <span class="tag">(tape)</span>' : "") + (x.info ? ' <span class="tag">· ' + esc(x.info) + "</span>" : "") + "</li>").join("") + "</ol></div>").join("") +
       "</section>"
