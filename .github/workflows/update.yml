@@ -34,6 +34,11 @@ jobs:
           SETLISTFM_API_KEY: ${{ secrets.SETLISTFM_API_KEY }}
         run: ./export.ps1
 
+      - name: Export Discogs collection
+        if: github.event_name != 'push'
+        continue-on-error: true   # a Discogs hiccup must not block the concert backup
+        run: node tools/discogs.mjs
+
       - name: Commit backup
         if: github.event_name != 'push'
         run: |
