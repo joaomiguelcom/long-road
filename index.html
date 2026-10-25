@@ -165,6 +165,14 @@
   .pj-stats > div { display: flex; flex-direction: column; }
   @media (max-width: 600px) { .pj-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
   .facts-list { margin: 0; padding-left: 18px; display: grid; gap: 6px; }
+  .on-shelf { display: inline-flex; vertical-align: -2px; margin-left: 4px; }
+  .chip { font: inherit; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; background: var(--line); border: 1px solid transparent; border-radius: 999px; padding: 4px 11px; color: var(--muted); cursor: pointer; }
+  .chip.on { border-color: var(--accent); color: var(--text); }
+  .records { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 8px; }
+  .records a { display: flex; gap: 10px; align-items: center; padding: 8px 10px; border-radius: 8px; background: var(--line); color: inherit; text-decoration: none; }
+  .records a > span { display: flex; flex-direction: column; min-width: 0; }
+  .records .r-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .records .vinyl { flex: none; }
   .text-link { background: none; border: 0; padding: 0; font: inherit; color: var(--accent); cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
   .title-link { background: none; border: 0; padding: 0; color: inherit; font: inherit; cursor: pointer; text-align: left; }
   .detail-wide { display: flex; flex-direction: column; gap: 24px; }
@@ -258,6 +266,7 @@
 <script src="data/data.js?v=__BUILD__"></script>
 <script src="upcoming.js?v=__BUILD__"></script>
 <script src="extra.js?v=__BUILD__"></script>
+<script src="data/discogs.js?v=__BUILD__"></script>
 <script>
 (function () {
   "use strict";
@@ -279,6 +288,14 @@
   // extra.js: concerts that cannot be added to setlist.fm (artist missing from its database), each with a source
   const EXTRA = ((window.LONG_ROAD_EXTRA && window.LONG_ROAD_EXTRA.concerts) || []).map((c) => ({ tour: null, info: null, songs: [], ...c, extra: true }));
   const concerts = DATA.concerts.concat(EXTRA).sort((a, b) => b.date.localeCompare(a.date));
+
+  // Discogs: records João owns, by artist (data/discogs.js, exported by the GitHub Action)
+  const DISCOGS = window.LONG_ROAD_DISCOGS || null;
+  const shelfKey = (s) => String(s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/^the /, "").replace(/&/g, "and").replace(/[^a-z0-9]/g, "");
+  const shelf = new Map();
+  if (DISCOGS) for (const rec of DISCOGS.records) for (const a of rec.artists) { const k = shelfKey(a); if (!shelf.has(k)) shelf.set(k, []); if (!shelf.get(k).includes(rec)) shelf.get(k).push(rec); }
+  const onShelf = (artist) => shelf.get(shelfKey(artist)) || null;
+  const VINYL = (size) => '<svg class="vinyl" width="' + size + '" height="' + size + '" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10.8" fill="#050608" stroke="#8A9099" stroke-width="1"/><circle cx="12" cy="12" r="8.4" fill="none" stroke="#5A606A" stroke-width=".7"/><circle cx="12" cy="12" r="6.4" fill="none" stroke="#5A606A" stroke-width=".7"/><circle cx="12" cy="12" r="3.4" fill="#F2A541"/><circle cx="12" cy="12" r=".9" fill="#0F1115"/></svg>';
 
   // ---------- festivals ----------
   // The API has no festival field. Each festival edition is listed here with its venue and dates
@@ -740,7 +757,7 @@
         kpi("Venues", fmtN(venues.length), fmtN(cities.length) + " cities · " + plural(countries.length, "country", "countries"), tabAttr("venues")) +
         kpi("Festivals", fmtN(festivals.length), fmtN(festivals.reduce((n, f) => n + f.count, 0)) + " editions · " + fmtN(festivals.reduce((n, f) => n + f.concerts, 0)) + " concerts", tabAttr("festivals")) +
       "</section>" +
-      pearlJam() +
+      pearlJam() + liveAndShelf() +
       '<section class="card"><div class="card-head"><h2>Most seen artists</h2><button class="link" data-tab="artists">See all</button></div>' +
         bars(artists.slice(0, 10), (a) => esc(a.key), (a) => aattr(a.key)) + "</section>" +
       '<section class="card"><div class="card-head"><h2>Venues</h2><button class="link" data-tab="venues">See all</button></div>' +
@@ -773,6 +790,17 @@
       milestones() + about();
   }
 
+  // artists seen live that are also in the record collection
+  function liveAndShelf() {
+    const both = withRank(artists.filter((a) => onShelf(a.key)).map((a) => ({ ...a })));
+    if (!both.length) return "";
+    const recs = new Set(both.flatMap((a) => onShelf(a.key))).size;
+    return '<section class="card"><div class="card-head"><h2>Seen live & on the shelf</h2><button class="link" data-shelf="1">See all</button></div>' +
+      '<p class="muted" style="margin:0 0 12px">' + both.length + " artists you saw live are also in the record collection, with " + plural(recs, "record", "records") + " between them.</p>" +
+      bars(both.slice(0, 10), (a) => esc(a.key) + ' <span class="muted">· ' + plural(onShelf(a.key).length, "record", "records") + "</span>", (a) => aattr(a.key)) +
+      '<p class="tag" style="margin:12px 0 0">Bars show concerts seen.</p></section>";
+  }
+
   // the band behind the name gets a card of its own
   function pearlJam() {
     const a = artists.find((x) => x.key === "Pearl Jam");
@@ -796,7 +824,7 @@
       "<p>Hi, I'm João Miguel. I've been going to concerts since " + first + ", " + fmtN(chrono.length) + " so far, from tiny clubs to muddy festival fields. " +
       artistBtn("Pearl Jam", "text-link") + " is the reason this archive is called Long Road. When I'm not at a show, I'm probably at home spinning records.</p>" +
       '<a class="btn" href="https://www.discogs.com/user/ojoaomiguel" target="_blank" rel="noopener">' +
-      '<svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10.8" fill="#050608" stroke="#8A9099" stroke-width="1"/><circle cx="12" cy="12" r="8.4" fill="none" stroke="#5A606A" stroke-width=".7"/><circle cx="12" cy="12" r="6.4" fill="none" stroke="#5A606A" stroke-width=".7"/><circle cx="12" cy="12" r="3.4" fill="#F2A541"/><circle cx="12" cy="12" r=".9" fill="#0F1115"/></svg>' +
+      VINYL(22) +
       "My record collection on Discogs</a></div></section>";
   }
 
@@ -886,13 +914,24 @@
   function artistList() {
     if (state.artist) return artistPage(state.artist);
     const q = state.artistQ.trim().toLowerCase();
-    const list = q ? artists.filter((a) => a.key.toLowerCase().includes(q)) : artists;
+    const list = artists.filter((a) => (!q || a.key.toLowerCase().includes(q)) && (!state.shelfOnly || onShelf(a.key)));
+    const mark = (k) => onShelf(k) ? ' <span class="on-shelf" title="On the record shelf">' + VINYL(14) + "</span>" : "";
     const rows = list.map((a) => { const s = artistSpan(a.key); return [
-      cell(String(a.rank), a.rank), cell(artistBtn(a.key), a.key), cell(String(a.count), a.count),
+      cell(String(a.rank), a.rank), cell(artistBtn(a.key) + mark(a.key), a.key), cell(String(a.count), a.count),
       cell(fmtDate(s.first), s.first), cell(fmtDate(s.last), s.last)]; });
-    return '<div class="list-head"><div class="list-title"><h2>' + plural(list.length, "artist", "artists") + "</h2></div>" + searchBox("aq", "Search artist", "Search artist", state.artistQ) + "</div>" +
+    const toggle = shelf.size ? '<button type="button" class="chip' + (state.shelfOnly ? " on" : "") + '" data-shelf="' + (state.shelfOnly ? "0" : "1") + '" aria-pressed="' + !!state.shelfOnly + '">' + VINYL(14) + " On the shelf</button>" : "";
+    return '<div class="list-head"><div class="list-title"><h2>' + plural(list.length, "artist", "artists") + "</h2>" + toggle + "</div>" + searchBox("aq", "Search artist", "Search artist", state.artistQ) + "</div>" +
       table("artists", [{ label: "#", num: true, cls: "num" }, { label: "Artist" }, { label: "Concerts", num: true, cls: "num" }, { label: "First seen", cls: "muted" }, { label: "Last seen", cls: "muted" }], rows, limitOf("artists", 100),
         (r) => ({ rank: r[0].h, title: r[1].h, sub: [r[3].s.slice(0, 4) === r[4].s.slice(0, 4) ? r[3].s.slice(0, 4) : r[3].s.slice(0, 4) + " – " + r[4].s.slice(0, 4)], value: r[2].h, unit: r[2].s === 1 ? "concert" : "concerts" }));
+  }
+
+  // records by this artist in the Discogs collection
+  function shelfCard(name) {
+    const recs = onShelf(name);
+    if (!recs) return "";
+    const list = recs.slice().sort((a, b) => (a.year || 9999) - (b.year || 9999));
+    return '<section class="card"><div class="card-head"><h2>On the shelf</h2><a class="link" href="https://www.discogs.com/user/' + esc(DISCOGS.user) + '/collection" target="_blank" rel="noopener">Discogs</a></div>' +
+      '<ul class="records">' + list.map((r) => '<li><a href="' + esc(r.url) + '" target="_blank" rel="noopener">' + VINYL(18) + '<span><span class="r-title">' + esc(r.title) + '</span><span class="muted">' + [r.year, r.format.split(", ").filter((f) => f !== "All Media").join(", ")].filter(Boolean).map(esc).join(" · ") + "</span></span></a></li>").join("") + "</ul></section>";
   }
 
   // side projects and solo careers shown on each other's page
@@ -940,7 +979,7 @@
       "</section>" +
       (top.length ? '<section class="card"><h2>Songs you heard most</h2>' + bars(top.slice(0, 15), (s) => esc(s.name)) + "</section>" : "") +
       (related.length ? '<div class="history"><span class="muted">Also seen</span><div class="history-list">' + related.map((x) => '<button type="button" class="hist"' + aattr(x.key) + ">" + esc(x.key) + " · " + plural(x.count, "concert", "concerts") + "</button>").join("") + "</div></div>" : "") +
-      songStats +
+      songStats + shelfCard(name) +
       '<section class="card"><div class="card-head"><h2>Concerts</h2><button class="link"' + fattr("artist", name) + ">Open in concert list</button></div>" +
         table("artist-concerts", CONCERT_COLS, concertRows(list), 0, concertM) + "</section>" +
       (once.length ? '<section class="card"><h2>Heard only once</h2><p class="muted" style="margin:0">' + once.map((s) => esc(s.name)).join(" · ") + "</p></section>" : "") +
@@ -1107,10 +1146,10 @@
   // on touch screens it is an in-app stack, so the iPhone edge swipe does not navigate inside the app.
   const useHistory = !window.matchMedia("(pointer: coarse)").matches;
   const stack = [];
-  const snap = (n) => ({ n, tab: state.tab, detail: state.detail, filter: state.filter, artist: state.artist, year: state.year, q: state.q, scroll: window.scrollY });
+  const snap = (n) => ({ n, tab: state.tab, detail: state.detail, filter: state.filter, artist: state.artist, year: state.year, q: state.q, shelfOnly: state.shelfOnly, scroll: window.scrollY });
   const depth = () => useHistory ? (history.state && history.state.n) || 0 : stack.length;
   const restore = (h) => {
-    Object.assign(state, { tab: h.tab, detail: h.detail, filter: h.filter, artist: h.artist, year: h.year, q: h.q });
+    Object.assign(state, { tab: h.tab, detail: h.detail, filter: h.filter, artist: h.artist, year: h.year, q: h.q, shelfOnly: !!h.shelfOnly });
     render(); window.scrollTo(0, h.scroll || 0);
   };
   const go = (fn) => {
@@ -1136,6 +1175,7 @@
     else if (d.swap) { state.detail = d.swap; if (useHistory) history.replaceState(snap(depth()), ""); render(); window.scrollTo(0, 0); }
     else if (d.artist) go(() => { state.tab = "artists"; state.artist = d.artist; state.detail = null; });
     else if (d.f) go(() => { state.tab = "concerts"; state.detail = null; state.filter = { f: d.f, v: d.v, y: d.y || null }; state.q = ""; state.limits.concerts = 0; });
+    else if (d.shelf) go(() => { state.tab = "artists"; state.artist = null; state.detail = null; state.shelfOnly = d.shelf === "1"; });
     else if (d.year) go(() => { state.year = d.year; });
     else if (d.yr) go(() => { state.tab = "years"; state.year = d.yr; state.detail = null; state.filter = null; state.artist = null; });
     else if (d.sort) {

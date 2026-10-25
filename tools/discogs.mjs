@@ -31,7 +31,7 @@ do {
       artists: b.artists.map((a) => a.name.replace(/\s*\(\d+\)$/, "").replace(/\*$/, "")),
       title: b.title,
       year: b.year || null,
-      format: [...new Set(b.formats.map((f) => f.name))].join(", "),
+      format: [...new Set(b.formats.map((f) => f.name).filter((f) => f !== "All Media"))].join(", "),
       url: `https://www.discogs.com/release/${r.id}`,
     });
   }
