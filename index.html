@@ -1037,7 +1037,7 @@
   }
 
   // a 1080×1920 image of the year (Instagram story size), to share on a phone or save on desktop;
-  // the top and bottom 250px stay clear for the story's own buttons
+  // Instagram covers roughly the top 150px and bottom 120px with its own buttons
   async function shareYear(y) {
     const list = concerts.filter((c) => c.date.startsWith(y));
     const yArtists = withRank(countBy(list, (c) => c.artist));
@@ -1056,53 +1056,53 @@
     const DISP = 'Oswald, "Arial Narrow", sans-serif', BODY = "Inter, system-ui, sans-serif";
     const ACC = "#F2A541", TXT = "#ECEDEE", MUT = "#9AA0A6", LINE = "#262A31";
     const fit = (t, max) => { if (g.measureText(t).width <= max) return t; while (t.length > 1 && g.measureText(t + "…").width > max) t = t.slice(0, -1); return t + "…"; };
-    const label = (t, yy) => { g.fillStyle = ACC; g.font = "600 22px " + BODY; g.letterSpacing = "4px"; g.fillText(t, X, yy); g.letterSpacing = "0px"; };
+    const label = (t, yy) => { g.fillStyle = ACC; g.font = "600 25px " + BODY; g.letterSpacing = "4px"; g.fillText(t, X, yy); g.letterSpacing = "0px"; };
     g.fillStyle = "#0F1115"; g.fillRect(0, 0, W, H);
     const glow = g.createRadialGradient(W - 60, 420, 0, W - 60, 420, 1000);
     glow.addColorStop(0, "rgba(242,165,65,.20)"); glow.addColorStop(1, "rgba(242,165,65,0)");
     g.fillStyle = glow; g.fillRect(0, 0, W, H);
     // header: road logo and title
-    g.save(); g.translate(X, 262); g.scale(1.3, 1.3); g.translate(-6, -8);
+    g.save(); g.translate(X, 190); g.scale(1.5, 1.5); g.translate(-6, -8);
     g.fillStyle = "rgba(242,165,65,.35)"; g.beginPath(); g.arc(32, 19, 9, 0, Math.PI * 2); g.fill();
     g.fillStyle = ACC; g.fill(new Path2D("M29.5 19h5L54 58H10zM31.4 23h1.2l.3 5h-1.8zM31 33h2l.5 8h-3zM30.3 46h3.4l.6 12h-4.6z"), "evenodd");
     g.restore();
     g.textBaseline = "alphabetic";
-    g.fillStyle = TXT; g.font = "600 40px " + DISP; g.fillText("LONG ROAD", X + 92, 302);
-    g.fillStyle = MUT; g.font = "400 24px " + BODY; g.fillText("João Miguel's year in concerts", X + 92, 338);
+    g.fillStyle = TXT; g.font = "600 46px " + DISP; g.fillText("LONG ROAD", X + 104, 236);
+    g.fillStyle = MUT; g.font = "400 27px " + BODY; g.fillText("João Miguel's year in concerts", X + 104, 276);
     // the year, then the concert count
-    g.fillStyle = ACC; g.font = "600 190px " + DISP; g.fillText(y, X - 4, 570);
-    g.fillStyle = TXT; g.font = "600 140px " + DISP; g.fillText(fmtN(list.length), X - 4, 730);
+    g.fillStyle = ACC; g.font = "600 230px " + DISP; g.fillText(y, X - 4, 540);
+    g.fillStyle = TXT; g.font = "600 160px " + DISP; g.fillText(fmtN(list.length), X - 4, 730);
     const cw0 = g.measureText(fmtN(list.length)).width;
-    g.fillStyle = MUT; g.font = "400 40px " + BODY; g.fillText(list.length === 1 ? "concert" : "concerts", X + cw0 + 20, 730);
+    g.fillStyle = MUT; g.font = "400 46px " + BODY; g.fillText(list.length === 1 ? "concert" : "concerts", X + cw0 + 22, 730);
     // numbers: two rows of three
     const kp = [[yArtists.length, "artists"], [nNew, "seen for the first time"], [nVenues, nVenues === 1 ? "venue" : "venues"],
       [nFest, nFest === 1 ? "festival" : "festivals"], [nCities, nCities === 1 ? "city" : "cities"], [nCountries, nCountries === 1 ? "country" : "countries"]];
-    g.fillStyle = LINE; g.fillRect(X, 780, R - X, 2);
+    g.fillStyle = LINE; g.fillRect(X, 790, R - X, 2);
     kp.forEach(([v, l], i) => {
-      const cw = (R - X) / 3, x = X + (i % 3) * cw, top = 810 + Math.floor(i / 3) * 130;
-      g.fillStyle = TXT; g.font = "600 64px " + DISP; g.fillText(fmtN(v), x, top + 60);
-      g.fillStyle = MUT; g.font = "400 24px " + BODY; g.fillText(l, x, top + 94);
+      const cw = (R - X) / 3, x = X + (i % 3) * cw, top = 830 + Math.floor(i / 3) * 150;
+      g.fillStyle = TXT; g.font = "600 76px " + DISP; g.fillText(fmtN(v), x, top + 70);
+      g.fillStyle = MUT; g.font = "400 27px " + BODY; g.fillText(l, x, top + 110);
     });
     // concerts per month
-    label("MONTH BY MONTH", 1100);
-    const mMax = Math.max(1, ...months), bw = (R - X) / 12, base = 1270;
+    label("MONTH BY MONTH", 1170);
+    const mMax = Math.max(1, ...months), bw = (R - X) / 12, base = 1390;
     months.forEach((n, m) => {
-      const h = n ? Math.max(6, 120 * n / mMax) : 3, x = X + m * bw + 6;
+      const h = n ? Math.max(6, 150 * n / mMax) : 3, x = X + m * bw + 6;
       g.fillStyle = n === mMax ? ACC : n ? "rgba(242,165,65,.45)" : LINE; g.fillRect(x, base - h, bw - 12, h);
-      g.fillStyle = MUT; g.font = "500 20px " + BODY; g.textAlign = "center";
-      g.fillText("JFMAMJJASOND"[m], x + (bw - 12) / 2, base + 32);
+      g.fillStyle = MUT; g.font = "500 23px " + BODY; g.textAlign = "center";
+      g.fillText("JFMAMJJASOND"[m], x + (bw - 12) / 2, base + 36);
       if (n) { g.fillStyle = n === mMax ? TXT : MUT; g.fillText(String(n), x + (bw - 12) / 2, base - h - 10); }
       g.textAlign = "left";
     });
     // top artists
-    label("MOST SEEN", 1360);
+    label("MOST SEEN", 1490);
     yArtists.slice(0, 5).forEach((a, i) => {
-      const yy = 1412 + i * 50;
-      g.fillStyle = i ? MUT : ACC; g.font = "600 32px " + DISP; g.fillText(String(a.rank), X, yy);
-      g.fillStyle = TXT; g.font = "500 32px " + BODY; g.fillText(fit(a.key, R - X - 160), X + 56, yy);
-      g.fillStyle = MUT; g.font = "400 28px " + BODY; g.textAlign = "right"; g.fillText(a.count + "×", R, yy); g.textAlign = "left";
+      const yy = 1552 + i * 56;
+      g.fillStyle = i ? MUT : ACC; g.font = "600 36px " + DISP; g.fillText(String(a.rank), X, yy);
+      g.fillStyle = TXT; g.font = "500 36px " + BODY; g.fillText(fit(a.key, R - X - 160), X + 60, yy);
+      g.fillStyle = MUT; g.font = "400 30px " + BODY; g.textAlign = "right"; g.fillText(a.count + "×", R, yy); g.textAlign = "left";
     });
-    g.fillStyle = MUT; g.font = "400 24px " + BODY; g.fillText("joaomiguelcom.github.io/long-road", X, 1680);
+    g.fillStyle = MUT; g.font = "400 26px " + BODY; g.fillText("joaomiguelcom.github.io/long-road", X, 1815);
     const blob = await new Promise((r) => cv.toBlob(r, "image/png"));
     const file = new File([blob], "long-road-" + y + ".png", { type: "image/png" });
     if (navigator.canShare && navigator.canShare({ files: [file] }) && window.matchMedia("(pointer: coarse)").matches) {
