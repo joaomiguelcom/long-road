@@ -511,7 +511,7 @@
   // setlist.fm has no stage times, so the order of same-day concerts is arbitrary.
   // Reached milestones are frozen here by setlist id and never recalculated; add each new one when it is reached.
   const FIXED_MILESTONES = {
-    concerts: { 1: "4beb2b76", 50: "53d473f9", 100: "3bd3606c", 250: "7bd47658", 500: "3ba56c48", 750: "43b4370f", 1000: "6b50aac2" }
+    concerts: { 1: "4beb2b76", 50: "53d473f9", 100: "3bd3606c", 250: "bd059de", 500: "3a25d33", 750: "43b43717", 1000: "3b502018" }
   };
   // oldest first; same-day ties broken by setlist id, then each frozen milestone is moved to its number within its day
   const chrono = concerts.slice().sort((a, b) => a.date.localeCompare(b.date) || a.id.localeCompare(b.id));
