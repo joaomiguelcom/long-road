@@ -1061,6 +1061,8 @@
     const glow = g.createRadialGradient(W - 60, 420, 0, W - 60, 420, 1000);
     glow.addColorStop(0, "rgba(242,165,65,.20)"); glow.addColorStop(1, "rgba(242,165,65,0)");
     g.fillStyle = glow; g.fillRect(0, 0, W, H);
+    // everything but the link sits 40px higher (João, 2026-10-25)
+    g.save(); g.translate(0, -40);
     // header: road logo and title
     g.save(); g.translate(X, 190); g.scale(1.5, 1.5); g.translate(-6, -8);
     g.fillStyle = "rgba(242,165,65,.35)"; g.beginPath(); g.arc(32, 19, 9, 0, Math.PI * 2); g.fill();
@@ -1102,6 +1104,7 @@
       g.fillStyle = TXT; g.font = "500 36px " + BODY; g.fillText(fit(a.key, R - X - 160), X + 60, yy);
       g.fillStyle = MUT; g.font = "400 30px " + BODY; g.textAlign = "right"; g.fillText(a.count + "×", R, yy); g.textAlign = "left";
     });
+    g.restore();
     g.fillStyle = MUT; g.font = "400 26px " + BODY; g.textAlign = "right"; g.fillText("longroad.joaomiguel.com", R, 1815); g.textAlign = "left";
     const blob = await new Promise((r) => cv.toBlob(r, "image/png"));
     const file = new File([blob], "long-road-" + y + ".png", { type: "image/png" });
