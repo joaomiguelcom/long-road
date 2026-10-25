@@ -293,7 +293,9 @@
   const shelfKey = (s) => String(s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/^the /, "").replace(/&/g, "and").replace(/[^a-z0-9]/g, "");
   const shelf = new Map();
   if (DISCOGS) for (const rec of DISCOGS.records) for (const a of rec.artists) { const k = shelfKey(a); if (!shelf.has(k)) shelf.set(k, []); if (!shelf.get(k).includes(rec)) shelf.get(k).push(rec); }
-  const onShelf = (artist) => shelf.get(shelfKey(artist)) || null;
+  // artists Discogs spells differently from setlist.fm (setlist.fm name -> Discogs name)
+  const SHELF_ALIASES = { "Moullinex": "Moulinex" };
+  const onShelf = (artist) => shelf.get(shelfKey(SHELF_ALIASES[artist] || artist)) || null;
   const VINYL = (size) => '<svg class="vinyl" width="' + size + '" height="' + size + '" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10.8" fill="#050608" stroke="#8A9099" stroke-width="1"/><circle cx="12" cy="12" r="8.4" fill="none" stroke="#5A606A" stroke-width=".7"/><circle cx="12" cy="12" r="6.4" fill="none" stroke="#5A606A" stroke-width=".7"/><circle cx="12" cy="12" r="3.4" fill="#F2A541"/><circle cx="12" cy="12" r=".9" fill="#0F1115"/></svg>';
 
   // ---------- festivals ----------
@@ -1015,7 +1017,7 @@
       '<div class="year-nav">' + (prev ? '<button class="btn" data-year="' + prev.key + '">← ' + prev.key + "</button>" : "") +
       '<label for="ysel" class="sr-only">Year</label><select id="ysel">' + byYear.slice().reverse().map((x) => '<option value="' + x.key + '"' + (x.key === y ? " selected" : "") + ">" + x.key + "</option>").join("") + "</select>" +
       (next ? '<button class="btn" data-year="' + next.key + '">' + next.key + " →</button>" : "") +
-      '<button class="btn" id="shareYear">Share image</button>' + "</div></div>" +
+      '<button class="btn" id="shareYear">Share</button>' + "</div></div>" +
       '<section class="grid kpis" aria-label="Year summary">' +
         kpi("Concerts", '<span class="accent">' + list.length + "</span>", '<span class="go">See them all</span>', fattr("year", y)) +
         kpi("Artists", yArtists.length + "", newArtists.length + " seen for the first time", fattr("newArtists", y)) +
@@ -1034,7 +1036,8 @@
       (yFest.length ? '<section class="card"><h2>Festivals</h2>' + bars(yFest, (f) => esc(f.key), (f) => ["festival", f.key, y]) + "</section>" : "");
   }
 
-  // a 1080×1350 image of the year, to share on a phone or save on desktop
+  // a 1080×1920 image of the year (Instagram story size), to share on a phone or save on desktop;
+  // the top and bottom 250px stay clear for the story's own buttons
   async function shareYear(y) {
     const list = concerts.filter((c) => c.date.startsWith(y));
     const yArtists = withRank(countBy(list, (c) => c.artist));
@@ -1043,44 +1046,44 @@
     const nSongs = list.reduce((n, c) => n + (c.songs || []).filter((s) => !s.tape).length, 0);
     const nCities = new Set(list.map((c) => c.city)).size;
     try { await document.fonts.ready; } catch (e) {}
-    const W = 1080, H = 1350, cv = document.createElement("canvas");
+    const W = 1080, H = 1920, cv = document.createElement("canvas");
     cv.width = W; cv.height = H;
     const g = cv.getContext("2d");
     const DISP = 'Oswald, "Arial Narrow", sans-serif', BODY = "Inter, system-ui, sans-serif";
     const fit = (t, max) => { if (g.measureText(t).width <= max) return t; while (t.length > 1 && g.measureText(t + "…").width > max) t = t.slice(0, -1); return t + "…"; };
     g.fillStyle = "#0F1115"; g.fillRect(0, 0, W, H);
-    const glow = g.createRadialGradient(W - 120, 120, 0, W - 120, 120, 700);
+    const glow = g.createRadialGradient(W - 120, 300, 0, W - 120, 300, 900);
     glow.addColorStop(0, "rgba(242,165,65,.22)"); glow.addColorStop(1, "rgba(242,165,65,0)");
     g.fillStyle = glow; g.fillRect(0, 0, W, H);
     // road logo
-    g.save(); g.translate(80, 80); g.scale(1.6, 1.6); g.translate(-6, -8);
+    g.save(); g.translate(80, 270); g.scale(1.6, 1.6); g.translate(-6, -8);
     g.fillStyle = "rgba(242,165,65,.35)"; g.beginPath(); g.arc(32, 19, 9, 0, Math.PI * 2); g.fill();
     g.fillStyle = "#F2A541"; g.fill(new Path2D("M29.5 19h5L54 58H10zM31.4 23h1.2l.3 5h-1.8zM31 33h2l.5 8h-3zM30.3 46h3.4l.6 12h-4.6z"), "evenodd");
     g.restore();
     g.textBaseline = "alphabetic";
-    g.fillStyle = "#ECEDEE"; g.font = "600 46px " + DISP; g.fillText("Long Road", 180, 128);
-    g.fillStyle = "#9AA0A6"; g.font = "400 26px " + BODY; g.fillText("João Miguel's year in concerts", 180, 168);
-    g.fillStyle = "#F2A541"; g.font = "600 220px " + DISP; g.fillText(y, 72, 440);
+    g.fillStyle = "#ECEDEE"; g.font = "600 46px " + DISP; g.fillText("Long Road", 180, 318);
+    g.fillStyle = "#9AA0A6"; g.font = "400 26px " + BODY; g.fillText("João Miguel's year in concerts", 180, 358);
+    g.fillStyle = "#F2A541"; g.font = "600 260px " + DISP; g.fillText(y, 70, 680);
     // KPIs, two rows of three
     const kp = [[list.length, "concerts"], [yArtists.length, "artists"], [nVenues, nVenues === 1 ? "venue" : "venues"], [nFest, nFest === 1 ? "festival" : "festivals"], [nCities, nCities === 1 ? "city" : "cities"], [nSongs, "songs heard"]];
     kp.forEach(([v, l], i) => {
-      const x = 80 + (i % 3) * 320, top = 510 + Math.floor(i / 3) * 150;
+      const x = 80 + (i % 3) * 320, top = 760 + Math.floor(i / 3) * 170;
       g.fillStyle = "#ECEDEE"; g.font = "600 76px " + DISP; g.fillText(fmtN(v), x, top + 70);
       g.fillStyle = "#9AA0A6"; g.font = "400 26px " + BODY; g.fillText(l, x, top + 108);
     });
     // top artists
-    g.fillStyle = "#F2A541"; g.font = "500 22px " + BODY; g.fillText("TOP ARTISTS", 80, 860);
+    g.fillStyle = "#F2A541"; g.font = "500 22px " + BODY; g.fillText("TOP ARTISTS", 80, 1150);
     const top = yArtists.slice(0, 5), max = top.length ? top[0].count : 1;
     top.forEach((a, i) => {
-      const yy = 910 + i * 62;
+      const yy = 1215 + i * 70;
       g.fillStyle = "#9AA0A6"; g.font = "500 28px " + BODY; g.fillText(String(a.rank), 80, yy);
       g.fillStyle = "#ECEDEE"; g.font = "500 32px " + BODY; g.fillText(fit(a.key, 720), 130, yy);
       g.fillStyle = "#ECEDEE"; g.textAlign = "right"; g.fillText(String(a.count), W - 80, yy); g.textAlign = "left";
       g.fillStyle = "#262A31"; g.fillRect(130, yy + 14, W - 210, 6);
       g.fillStyle = "#F2A541"; g.fillRect(130, yy + 14, Math.max(8, (W - 210) * a.count / max), 6);
     });
-    g.fillStyle = "#262A31"; g.fillRect(80, H - 110, W - 160, 2);
-    g.fillStyle = "#9AA0A6"; g.font = "400 24px " + BODY; g.fillText("joaomiguelcom.github.io/long-road", 80, H - 62);
+    g.fillStyle = "#262A31"; g.fillRect(80, H - 320, W - 160, 2);
+    g.fillStyle = "#9AA0A6"; g.font = "400 24px " + BODY; g.fillText("joaomiguelcom.github.io/long-road", 80, H - 270);
     const blob = await new Promise((r) => cv.toBlob(r, "image/png"));
     const file = new File([blob], "long-road-" + y + ".png", { type: "image/png" });
     if (navigator.canShare && navigator.canShare({ files: [file] }) && window.matchMedia("(pointer: coarse)").matches) {
