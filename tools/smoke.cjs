@@ -34,6 +34,8 @@ const chrome = process.env.CHROME_PATH; // the GitHub runner has Chrome installe
       await check(page, name + " " + what);
     };
     await open("artist", "Pearl Jam", "Pearl Jam page");
+    const venue = await page.evaluate(() => { const b = document.querySelector("[data-venue]"); return b ? b.dataset.venue : null; });
+    if (venue) await open("venue", venue, "venue page");
     const id = await page.locator("[data-open]").count() ? await page.locator("[data-open]").first().getAttribute("data-open") : null;
     if (id) await open("open", id, "concert page"); else errors.push(name + ": no concert to open");
     await page.close();
