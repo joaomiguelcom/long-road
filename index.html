@@ -1047,10 +1047,13 @@
     const songsHere = list.reduce((n, c) => n + (c.songs || []).filter((s) => !s.tape && s.name).length, 0);
     const sites = countBy(list, (c) => c.venue).map((s) => s.key);
     const busiest = countBy(list, (c) => c.date)[0];
-    // longest run of consecutive years
+    // longest run of consecutive editions; 2020 and 2021 had no festivals (COVID), so skipping them does not break it
+    const NO_FESTIVALS = [2020, 2021];
+    const follows = (a, b) => { let y = a + 1; while (NO_FESTIVALS.includes(y) && y !== b) y++; return b === y; };
     const ys = f.years.map(Number).sort((a, b) => a - b);
     let run = { n: 1, from: ys[0], to: ys[0] }, cur = { ...run };
-    for (let i = 1; i < ys.length; i++) { cur = ys[i] === ys[i - 1] + 1 ? { n: cur.n + 1, from: cur.from, to: ys[i] } : { n: 1, from: ys[i], to: ys[i] }; if (cur.n > run.n) run = { ...cur }; }
+    for (let i = 1; i < ys.length; i++) { cur = follows(ys[i - 1], ys[i]) ? { n: cur.n + 1, from: cur.from, to: ys[i] } : { n: 1, from: ys[i], to: ys[i] }; if (cur.n > run.n) run = { ...cur }; }
+    const covidGap = run.from < 2020 && run.to > 2021 && !NO_FESTIVALS.every((y) => ys.includes(y));
     // editions, newest first: dates, site and the artists seen, in the order they played
     const editions = f.years.slice().sort().reverse().map((y) => {
       const l = list.filter((c) => c.date.startsWith(y)).reverse();
@@ -1064,7 +1067,7 @@
     }).join("");
     const facts = [
       busiest && busiest.count > 1 ? "Busiest day: " + plural(busiest.count, "concert", "concerts") + " on " + fmtDate(busiest.key) : "",
-      run.n > 1 ? "Longest streak: " + run.n + " editions in a row (" + run.from + "–" + run.to + ")" : "",
+      run.n > 1 ? "Longest streak: " + run.n + " editions in a row (" + run.from + "–" + run.to + (covidGap ? ", no festivals in 2020–21" : "") + ")" : "",
       sites.length > 1 ? "Sites: " + sites.map(esc).join(", ") : "",
     ].filter(Boolean);
     return '<div class="detail-wide">' +
