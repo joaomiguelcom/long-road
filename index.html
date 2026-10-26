@@ -132,6 +132,7 @@
   .edition-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; margin-bottom: 8px; }
   .year-link { background: none; border: 0; padding: 0; font: 600 22px/1.1 var(--display); color: var(--text); cursor: pointer; }
   .hist { font: inherit; font-size: 13px; background: var(--line); border: 0; border-radius: 6px; padding: 4px 9px; color: var(--muted); cursor: pointer; }
+  span.hist { cursor: default; } /* plain labels (openers, closers): not links */
   .hist.cur { background: var(--accent); color: #0F1115; font-weight: 600; cursor: default; }
   .sec-title { margin: 0; font: 500 18px/1.2 var(--display); }
   .badge { font-size: 11px; border-radius: 999px; padding: 1px 8px; margin-left: 4px; background: rgba(242,165,65,.15); color: var(--accent); white-space: nowrap; }
@@ -225,7 +226,7 @@
     td .open:hover { color: var(--accent); }
     .icon-btn:hover { border-color: var(--accent); color: var(--accent); }
     .inline-link:hover { color: var(--accent); text-decoration-color: currentColor; }
-    .hist:not(.cur):hover, .year-link:hover { color: var(--accent); }
+    button.hist:not(.cur):hover, .year-link:hover { color: var(--accent); }
     .next-item:hover { background: var(--line); color: inherit; }
     .otd-item:hover { background: var(--line); }
     .th-btn:hover { color: var(--text); }
