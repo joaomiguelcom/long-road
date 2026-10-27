@@ -42,6 +42,11 @@
   }
   :root[data-theme="light"] header { background: linear-gradient(180deg, rgba(176,104,12,.08), rgba(176,104,12,0) 70%); }
   :root[data-theme="light"] .seg button.on { box-shadow: 0 1px 3px rgba(0,0,0,.12); }
+  /* the new tab slides in from the side it was swiped from */
+  @keyframes slideL { from { opacity: .3; transform: translateX(28px); } to { opacity: 1; transform: none; } }
+  @keyframes slideR { from { opacity: .3; transform: translateX(-28px); } to { opacity: 1; transform: none; } }
+  #app.slide-l { animation: slideL .22s ease-out; } #app.slide-r { animation: slideR .22s ease-out; }
+  @media (prefers-reduced-motion: reduce) { #app.slide-l, #app.slide-r { animation: none; } }
   /* back to top: shows up once a long page has been scrolled */
   .to-top { position: fixed; right: 16px; bottom: max(16px, env(safe-area-inset-bottom)); z-index: 1000; width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--line-2); background: var(--surface); color: var(--text);
     display: inline-flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; box-shadow: 0 4px 14px rgba(0,0,0,.3); opacity: 0; transform: translateY(8px); pointer-events: none; transition: opacity .2s, transform .2s; }
@@ -794,6 +799,36 @@
   }
   // fade the right edge only while there are more tabs to scroll to
   const tabScroll = {};
+  // phones: a sideways swipe moves to the next or previous tab.
+  // Not from the screen edges (iOS uses them for back), and not on things that scroll sideways themselves (tab bar, charts, map, tables).
+  if (window.matchMedia("(pointer: coarse)").matches) {
+    let sw = null;
+    const scrollsX = (el) => {
+      for (; el && el !== document.body; el = el.parentElement) {
+        if (el.id === "map" || el.matches("input, select, textarea, .leaflet-container")) return true;
+        const ox = getComputedStyle(el).overflowX;
+        if ((ox === "auto" || ox === "scroll") && el.scrollWidth > el.clientWidth + 2) return true;
+      }
+      return false;
+    };
+    document.addEventListener("touchstart", (e) => {
+      const t = e.touches[0];
+      sw = e.touches.length === 1 && t.clientX > 24 && t.clientX < window.innerWidth - 24 && !scrollsX(e.target) ? { x: t.clientX, y: t.clientY, at: Date.now() } : null;
+    }, { passive: true });
+    document.addEventListener("touchend", (e) => {
+      if (!sw) return;
+      const t = e.changedTouches[0], dx = t.clientX - sw.x, dy = t.clientY - sw.y, quick = Date.now() - sw.at < 700;
+      sw = null;
+      if (!quick || Math.abs(dx) < 70 || Math.abs(dy) > Math.abs(dx) * 0.5) return;
+      const i = TABS.findIndex((x) => x[0] === state.tab) + (dx < 0 ? 1 : -1);
+      if (i < 0 || i >= TABS.length) return;
+      const btn = document.querySelector('#tabs [data-tab="' + TABS[i][0] + '"]');
+      if (!btn) return;
+      btn.click();
+      app.classList.remove("slide-l", "slide-r"); void app.offsetWidth;
+      app.classList.add(dx < 0 ? "slide-l" : "slide-r");
+    }, { passive: true });
+  }
   const toTop = document.getElementById("toTop");
   let topTick = false;
   window.addEventListener("scroll", () => {
