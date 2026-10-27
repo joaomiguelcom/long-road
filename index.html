@@ -297,7 +297,8 @@
     .kpis { grid-template-columns: 1fr 1fr; gap: 12px; }
     .kpis .card { padding: 16px; }
     .kpis > :first-child:nth-last-child(odd) { grid-column: 1 / -1; }
-    .mlist { display: block; } .msort { display: flex; margin-bottom: 12px; } .mchip { display: contents; } .table-box.has-mlist { display: none; }
+    .mlist { display: block; } .msort { display: flex; margin-bottom: 12px; }
+    .wrap > .msort { margin-bottom: -12px; } /* tab pages already have a 24px gap: keep 12px everywhere */ .mchip { display: contents; } .table-box.has-mlist { display: none; }
   }
   /* hover only where a real pointer exists, so taps on touch screens do not leave items highlighted */
   @media (hover: hover) {
