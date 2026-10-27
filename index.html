@@ -944,7 +944,7 @@
     return '' +
       '<div class="list-head"><div class="list-title"><h2>' + plural(list.length, "concert", "concerts") + "</h2>" +
       (F ? '<span class="chip"><span class="chip-label">' + F.label + "</span><strong>" + esc(F.show(state.filter.v)) + (state.filter.y ? " · " + esc(state.filter.y) : "") + '</strong><button type="button" id="clearf" aria-label="Clear filter"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button></span>' : "") +
-      "</div>" + searchBox("q", "Search concerts", "Search artist, venue, city, year", state.q) + "</div>" +
+      "</div>" + searchBox("q", "Search concerts", "Search artist, venue, city", state.q) + "</div>" +
       table("concerts", CONCERT_COLS, concertRows(list), limitOf("concerts", 100), concertM, quick);
   }
 
