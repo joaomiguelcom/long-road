@@ -39,7 +39,8 @@ function setRefresh(w) { const next = new Date(); next.setHours(24, 5, 0, 0); w.
 async function build() {
   const w = new ListWidget();
   w.backgroundColor = BG;
-  // no url: iOS always opens the widget's app on a tap, so leaving it out is the closest to "nothing happens"
+  // a tap opens the site (without a url iOS would open Scriptable)
+  w.url = SITE;
   const family = config.widgetFamily || "medium";
   if (family === "small") w.setPadding(20, 14, 20, 14); else w.setPadding(14, 14, 14, 14);
   let shows = [];
