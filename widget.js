@@ -36,17 +36,10 @@ function header(w) {
 // refresh after midnight so the day count stays right
 function setRefresh(w) { const next = new Date(); next.setHours(24, 5, 0, 0); w.refreshAfterDate = next; }
 
-// Tapping opens the site in Safari. iOS has no link that opens a home-screen web app, so the widget's
-// Parameter can name a Shortcut that opens it (Shortcuts "Open App" → Long Road); then the tap runs that.
-const tapUrl = () => {
-  const name = (typeof args !== "undefined" && args.widgetParameter || "").trim();
-  return name ? "shortcuts://run-shortcut?name=" + encodeURIComponent(name) : SITE;
-};
-
 async function build() {
   const w = new ListWidget();
   w.backgroundColor = BG;
-  w.url = tapUrl();
+  // no url: iOS always opens the widget's app on a tap, so leaving it out is the closest to "nothing happens"
   w.setPadding(14, 14, 14, 14);
   const family = config.widgetFamily || "medium";
   let shows = [];
