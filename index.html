@@ -786,6 +786,8 @@
     const furthest = concerts.reduce((b, c) => { if (c.lat == null || c.lng == null) return b; const k = kmFrom(+c.lat, +c.lng); return k > b.k ? { c, k } : b; }, { c: null, k: 0 });
     const abroad = concerts.filter((c) => c.country && c.country !== "Portugal");
     const cityAbroad = countBy(abroad, (c) => c.city)[0];
+    // artists seen both in Portugal and abroad, most seen first
+    const homeAway = artists.filter((a) => { const l = concerts.filter((c) => c.artist === a.key); return l.some((c) => c.country === "Portugal") && l.some((c) => c.country && c.country !== "Portugal"); });
     return '' +
       '<div class="duo">' + nextUp() + lastSeen() + "</div>" +
       '<section class="grid kpis" aria-label="Summary">' +
@@ -823,6 +825,7 @@
         (furthest.c ? fun("Furthest from home", fmtN(Math.round(furthest.k)) + " km", esc(furthest.c.artist) + " · " + esc(furthest.c.city) + ", " + fmtDate(furthest.c.date).slice(-4), openAttr(furthest.c)) : "") +
         fun("Calendar coverage", daysCovered + " of 366", (366 - daysCovered) + " days still without a concert") +
         fun("Cities", fmtN(cities.length), esc(cities[0].key) + " leads with " + fmtN(cities[0].count) + " concerts", tabAttr("map")) +
+        (homeAway.length ? fun("Home and away", plural(homeAway.length, "artist", "artists"), "Seen in Portugal and abroad · " + homeAway.slice(0, 2).map((a) => esc(a.key)).join(", ") + (homeAway.length > 2 ? "…" : ""), aattr(homeAway[0].key)) : "") +
         (cityAbroad ? fun("Favourite city abroad", esc(cityAbroad.key), plural(cityAbroad.count, "concert", "concerts") + " · " + fmtN(abroad.length) + " outside Portugal", fattr("city", cityAbroad.key)) : "") +
         (reunion ? fun("Longest wait for an encore", esc(reunion.artist), Math.floor(reunion.days / 365.25) + " years between " + fmtDate(reunion.from) + " and " + fmtDate(reunion.to), aattr(reunion.artist)) : "") +
         (songs.length ? fun("One-time songs", fmtN(heardOnce), "Songs you only heard live once", tabAttr("songs")) : "") +
