@@ -199,8 +199,7 @@
   .setstrip-legend { font-size: 13px; margin-top: 10px; } .setstrip-legend b { color: var(--text); font-weight: 600; }
   .setstrip-key { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--text); opacity: .7; margin-right: 5px; vertical-align: 0; }
   .new-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); margin-right: 6px; vertical-align: 2px; }
-  /* in concert lists the dot hangs in the margin, so the names stay aligned */
-  .open > .new-dot { position: absolute; margin: .5em 0 0 -12px; }
+  .first-time { color: var(--accent); }
   .delta { font: 500 14px/1 Inter, system-ui, sans-serif; margin-left: 8px; vertical-align: middle; color: var(--muted); white-space: nowrap; }
   .delta.up { color: var(--ok); }
   .delta.down { color: var(--bad); }
@@ -776,13 +775,13 @@
       "</tbody></table></div>" +
       (limit && rows.length > limit ? '<div class="more"><button class="btn" data-more="' + id + '" data-shown="' + limit + '">Show more</button></div>' : "");
   }
-  // fresh: optional set of concerts to mark with the first-time dot
+  // fresh: optional set of concerts to mark as "First time" in the notes
   const concertRows = (list, fresh) => list.map((c) => [
     cell('<span style="white-space:nowrap">' + fmtDate(c.date) + "</span>", c.date),
-    cell('<button type="button" class="open" data-open="' + esc(c.id) + '"' + (fresh && fresh.has(c) ? ' title="First time you saw them"' : "") + ">" + (fresh && fresh.has(c) ? '<span class="new-dot" aria-hidden="true"></span>' : "") + esc(c.artist) + "</button>", c.artist),
+    cell('<button type="button" class="open" data-open="' + esc(c.id) + '">' + esc(c.artist) + "</button>", c.artist),
     cell(esc(c.venue), c.venue),
     cell(esc(c.city), c.city),
-    cell(notes(c), (c.festival || "") + (c.tour || "")),
+    cell((fresh && fresh.has(c) ? '<span class="first-time">First time</span>' + (notes(c) ? " · " : "") : "") + notes(c), (c.festival || "") + (c.tour || "")),
     cell(String((c.songs || []).length || ""), (c.songs || []).length)
   ]);
   const concertM = (r) => ({ title: r[1].h, sub: [r[0].h, r[2].h, r[3].h], tag: r[4].h, value: r[5].h, unit: r[5].s === 1 ? "song" : "songs" });
@@ -1229,7 +1228,7 @@
         (list.length > 1 ? " · Last " + fmtDate(last.date) + " (" + at(last) + ")" : "") + "</div></div>" +
       '<section class="grid kpis" aria-label="Venue summary">' +
         kpi("Concerts", '<span class="accent">' + list.length + "</span>", nights.length < list.length ? plural(nights.length, "night", "nights") : "", fattr("venue", key)) +
-        kpi("Artists", vArtists.length + "", firsts.length ? '<span class="new-dot" aria-hidden="true"></span>' + (firsts.length === vArtists.length ? "all first times" : plural(firsts.length, "first time", "first times")) : "") +
+        kpi("Artists", vArtists.length + "", firsts.length ? (firsts.length === vArtists.length ? "all first times" : plural(firsts.length, "first time", "first times")) : "") +
         kpi("Years", span + "", first.date.slice(0, 4) + (span > 1 ? "–" + last.date.slice(0, 4) : "")) +
         (songsHere ? kpi("Songs heard", fmtN(songsHere)) : "") +
       "</section>" +
