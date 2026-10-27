@@ -123,6 +123,7 @@
   .quick [data-clear] { order: 9; }
   .clear-all { padding: 0; width: 30px; height: 30px; justify-content: center; flex: none; }
   .clear-all svg { flex: none; }
+  .empty-filters { text-align: center; padding: 40px 0; border: 1px dashed var(--line-2); border-radius: 12px; } .empty-filters p { margin: 0 0 12px; }
   .quick .icon-chip { padding: 0; width: 30px; height: 30px; justify-content: center; flex: none; }
   /* filters belong to the search above them */
   .list-head + .quick { margin-top: -8px; }
@@ -700,6 +701,8 @@
       st ? String(st.col) : "", "", ' data-sortsel="' + id + '"') +
       (st ? '<button type="button" class="toggle on icon-chip" data-sortdir="' + id + '" aria-label="' + (st.dir > 0 ? "Ascending, switch to descending" : "Descending, switch to ascending") + '">' + (st.dir > 0 ? "↑" : "↓") + "</button>" : "") + "</span>" : "";
     const sortBar = bar ? '<div class="quick">' + bar + sortChips + "</div>" : m ? '<div class="quick msort">' + sortChips + "</div>" : "";
+    // a filtered list that ends up empty says so and offers the way back
+    if (bar && !rows.length) return sortBar + '<div class="empty empty-filters"><p>Nothing matches these filters.</p><button type="button" class="toggle on" data-clear="' + id + '">Clear filters</button></div>';
     const mlist = m ? '<ul class="mlist">' + shown.map((r) => {
       // links in the second line are spans: Safari keeps a button as one block, so a long name broke the line apart
       const x = m(r), sub = (x.sub || []).filter(Boolean).map((h) => h.replace(/<button type="button"/g, '<span role="button" tabindex="0"').replace(/<\/button>/g, "</span>"));
