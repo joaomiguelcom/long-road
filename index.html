@@ -16,6 +16,10 @@
 <meta property="og:image:alt" content="Long Road logo: a road leading to the sun">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#0F1115">
+<script>
+  // light or dark, as last chosen (dark by default); set before the page draws so it never flashes
+  try { if (localStorage.getItem("theme") === "light") { document.documentElement.dataset.theme = "light"; document.querySelector('meta[name="theme-color"]').content = "#F6F4EF"; } } catch (e) {}
+</script>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Long Road">
 <link rel="manifest" href="manifest.webmanifest">
@@ -28,7 +32,19 @@
     --bg: #0F1115; --surface: #181B21; --line: #262A31; --line-2: #3A3F48;
     --text: #ECEDEE; --muted: #9AA0A6; --accent: #F2A541; --accent-2: #FFC876; --ok: #7BC67E; --bad: #F2726B;
     --display: Oswald, "Arial Narrow", sans-serif;
+    --map-bg: #1b1d22; --on-accent: #0F1115;
   }
+  /* light theme: same layout, paper colours; the amber is darker so text in it stays readable on white */
+  :root[data-theme="light"] {
+    --bg: #F6F4EF; --surface: #FFFFFF; --line: #E5E1D8; --line-2: #CFCAC0;
+    --text: #1A1C20; --muted: #5E646C; --accent: #B0680C; --accent-2: #8F5308; --ok: #2E8540; --bad: #C9372C;
+    --map-bg: #E9E6DF; --on-accent: #FFFFFF;
+  }
+  :root[data-theme="light"] header { background: linear-gradient(180deg, rgba(176,104,12,.08), rgba(176,104,12,0) 70%); }
+  :root[data-theme="light"] .seg button.on { box-shadow: 0 1px 3px rgba(0,0,0,.12); }
+  .head-side { display: flex; align-items: center; gap: 8px; }
+  .theme-btn { width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--line-2); background: var(--surface); color: var(--muted); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; flex: none; }
+  .theme-btn svg { flex: none; }
   * { box-sizing: border-box; }
   html { touch-action: manipulation; }
   body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.5 Inter, system-ui, sans-serif; }
@@ -167,7 +183,7 @@
   .year-link { background: none; border: 0; padding: 0; font: 600 22px/1.1 var(--display); color: var(--text); cursor: pointer; }
   .hist { text-align: left; font: inherit; font-size: 13px; background: var(--line); border: 0; border-radius: 6px; padding: 4px 9px; color: var(--muted); cursor: pointer; }
   span.hist { cursor: default; } /* plain labels (openers, closers): not links */
-  .hist.cur { background: var(--accent); color: #0F1115; font-weight: 600; cursor: default; }
+  .hist.cur { background: var(--accent); color: var(--on-accent); font-weight: 600; cursor: default; }
   .sec-title { margin: 0; font: 500 18px/1.2 var(--display); }
   .badge { font-size: 11px; border-radius: 999px; padding: 1px 8px; margin-left: 4px; background: rgba(242,165,65,.15); color: var(--accent); white-space: nowrap; }
   .badge.cover { background: var(--line); color: var(--muted); }
@@ -229,7 +245,7 @@
   .year-nav { display: flex; gap: 8px; align-items: center; }
   .year-nav .btn { align-self: auto; }
   select { -webkit-appearance: none; appearance: none; background: var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23F2A541' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 14px center; color: var(--text); border: 1px solid var(--line-2); border-radius: 8px; padding: 10px 42px 10px 16px; min-height: 44px; font: inherit; font-size: 16px; cursor: pointer; }
-  #map { height: min(70vh, 640px); border-radius: 12px; border: 1px solid var(--line); background: #1b1d22; }
+  #map { height: min(70vh, 640px); border-radius: 12px; border: 1px solid var(--line); background: var(--map-bg); }
   .leaflet-popup-content-wrapper, .leaflet-popup-tip { background: var(--surface); color: var(--text); }
   .leaflet-popup-content { font: 14px/1.45 Inter, system-ui, sans-serif; }
   .pop ul { margin: 6px 0; padding-left: 18px; }
@@ -296,7 +312,10 @@
           <button type="button" class="eyebrow eyebrow-btn" id="toAbout">João Miguel's concert archive</button>
         </div>
       </div>
-      <div class="sync" id="sync"><span class="dot" aria-hidden="true"></span>Updated …</div>
+      <div class="head-side">
+        <div class="sync" id="sync"><span class="dot" aria-hidden="true"></span>Updated …</div>
+        <button type="button" class="theme-btn" id="theme" aria-label="Switch theme"></button>
+      </div>
     </div>
     <nav aria-label="Sections" id="tabs"><button type="button" data-tab="overview" aria-current="page">Overview</button><button type="button" data-tab="concerts">Concerts</button><button type="button" data-tab="artists">Artists</button><button type="button" data-tab="venues">Venues</button><button type="button" data-tab="festivals">Festivals</button><button type="button" data-tab="songs">Songs</button><button type="button" data-tab="years">Year in review</button><button type="button" data-tab="map">Map</button></nav>
   </div>
@@ -1457,7 +1476,7 @@
       return '<button type="button" class="' + (state.mapKind === k ? "on" : "") + '" data-mkind="' + k + '" aria-pressed="' + (state.mapKind === k) + '"' + (none && state.mapKind !== k ? " disabled" : "") + ">" + label + "</button>"; };
     const sel = '<div class="quick"><div class="seg" role="group" aria-label="Type">' + mKind("", "All") + mKind("shows", "Shows") + mKind("fest", "Festivals") + "</div>" + qpick("msel", "Year", mOpts, state.mapYears) + clearAll(state.mapKind || state.mapYears, "map") + "</div>";
     return '<div class="list-head"><div class="list-title"><h2>Map</h2><span class="muted">' + plural(new Set(list.map((c) => c.city)).size, "city", "cities") + " · " + plural(new Set(list.map((c) => c.country)).size, "country", "countries") + "</span></div></div>" + sel + '<div id="map" role="region" aria-label="Map of concert cities"></div>' +
-      '<p class="tag" style="margin:0">Circles are cities (setlist.fm gives coordinates per city, not per venue). Bigger means more concerts; white circles are cities you went to only once. Click a circle to see its concerts.</p>';
+      '<p class="tag" style="margin:0">Circles are cities (setlist.fm gives coordinates per city, not per venue). Bigger means more concerts; ' + (isLight() ? "dark" : "white") + ' circles are cities you went to only once. Click a circle to see its concerts.</p>';
   }
   function loadLeaflet(cb) {
     if (window.L) return cb();
@@ -1491,15 +1510,18 @@
       const dark = L.layerGroup([
         L.tileLayer(esri + "Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}", { maxZoom: 16, attribution: "Tiles &copy; Esri" }),
         L.tileLayer(esri + "Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}", { maxZoom: 16 })
-      ]).addTo(map);
+      ]);
       const street = L.tileLayer(esri + "World_Street_Map/MapServer/tile/{z}/{y}/{x}", { maxZoom: 18, attribution: "Tiles &copy; Esri" });
+      (isLight() ? street : dark).addTo(map);
       L.control.layers({ Dark: dark, Streets: street }, null, { position: "topright" }).addTo(map);
+      // one-visit cities stand out from the amber: white on the dark map, near black on the streets map
+      const ONCE = isLight() ? "#1A1C20" : "#ECEDEE";
       const pts = [];
       for (const e of byCity.values()) {
         pts.push([e.lat, e.lng]);
         const once = e.count === 1;
         const top = [...e.venues.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5);
-        L.circleMarker([e.lat, e.lng], { radius: 5 + Math.sqrt(e.count) * 2, color: once ? "#ECEDEE" : "#F2A541", weight: 1.5, fillColor: once ? "#ECEDEE" : "#F2A541", fillOpacity: once ? 0.25 : 0.45 })
+        L.circleMarker([e.lat, e.lng], { radius: 5 + Math.sqrt(e.count) * 2, color: once ? ONCE : "#F2A541", weight: 1.5, fillColor: once ? ONCE : "#F2A541", fillOpacity: once ? 0.25 : 0.45 })
           .bindPopup('<div class="pop"><strong>' + esc(e.city) + '</strong> <span class="muted">' + esc(e.country) + "</span><br>" + plural(e.count, "concert", "concerts") +
             "<ul>" + top.map(([n, k]) => "<li>" + esc(n) + " · " + k + "</li>").join("") + "</ul>" +
             '<button type="button" class="link"' + fattr("city", e.city) + ">See concerts</button></div>")
@@ -1552,6 +1574,29 @@
     for (const [k, u] of Object.entries(URL_KEYS)) if (p.has(u)) state[k] = k === "shelfOnly" ? p.get(u) === "1" : p.get(u);
     if (p.has("f") && FILTERS[p.get("f")]) state.filter = { f: p.get("f"), v: p.get("v") || "", y: p.get("fy") || null };
   }
+  // ---------- theme ----------
+  // dark by default; the choice is remembered on this device
+  const isLight = () => document.documentElement.dataset.theme === "light";
+  function themeButton() {
+    const b = document.getElementById("theme");
+    if (!b) return;
+    const light = isLight();
+    b.setAttribute("aria-label", light ? "Switch to dark theme" : "Switch to light theme");
+    b.title = b.getAttribute("aria-label");
+    b.innerHTML = light
+      ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>'
+      : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>';
+  }
+  function setTheme(light) {
+    if (light) document.documentElement.dataset.theme = "light"; else delete document.documentElement.dataset.theme;
+    try { localStorage.setItem("theme", light ? "light" : "dark"); } catch (e) { /* private mode: works until reload */ }
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.content = light ? "#F6F4EF" : "#0F1115";
+    themeButton();
+    if (state.tab === "map") render();
+  }
+  themeButton();
+
   function render() {
     if (map) { map.remove(); map = null; }
     syncUrl();
@@ -1630,6 +1675,7 @@
     else if (t.id === "nextAll") { state.nextAll = !state.nextAll; render(); }
     else if (t.id === "clearf") { state.filter = null; state.limits.concerts = 0; render(); }
     else if (t.id === "back") { if (depth() > 0) goBack(); else go(() => { state.detail = null; }); }
+    else if (t.id === "theme") setTheme(!isLight());
     else if (t.id === "toAbout") {
       if (state.tab !== "overview" || state.detail || state.artist || state.venue || state.festival || state.song) go(() => { state.tab = "overview"; state.detail = null; state.filter = null; state.artist = null; state.venue = null; state.festival = null; state.song = null; });
       const el = document.getElementById("about"); if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
