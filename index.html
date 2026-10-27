@@ -1080,7 +1080,8 @@
       '<button type="button" class="hist" data-open="' + esc(x.id) + '">' + esc(x.artist) + ((x.festival || x.venue) !== (c.festival || c.venue) ? " · " + esc(x.festival || x.venue) : "") + "</button>").join("") + "</div></div>" : "";
     const navBtn = (x, dir) => x ? '<button type="button" class="icon-btn" data-swap="' + esc(x.id) + '" aria-label="' + (dir < 0 ? "Previous" : "Next") + " concert: " + esc(x.artist) + '" title="' + esc(x.artist + " · " + fmtDate(x.date)) + '">' + (dir < 0 ? "‹" : "›") + "</button>" : '<span class="icon-btn off" aria-hidden="true">' + (dir < 0 ? "‹" : "›") + "</span>";
     return '<article class="card detail">' +
-      '<div class="detail-top"><button class="icon-btn" id="back" aria-label="Back">←</button><div class="detail-nav">' + navBtn(prev, -1) + navBtn(next, 1) + "</div></div>" +
+      '<div class="detail-top"><button class="icon-btn" id="back" aria-label="Back">←</button><div class="detail-nav"><button type="button" class="icon-btn" data-share-concert="' + esc(c.id) + '" aria-label="Share this concert as an image" title="Share as image">' +
+        '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 8l5-5 5 5M5 14v5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5"/></svg></button>' + navBtn(prev, -1) + navBtn(next, 1) + "</div></div>" +
       '<div class="detail-head"><span class="next-date big"><span class="m">' + mon(d) + '</span><span class="d">' + d.getDate() + '</span><span class="y">' + d.getFullYear() + "</span></span>" +
         '<div style="min-width:0"><h2 class="detail-title">' + artistBtn(c.artist, "title-link") + '</h2><div class="muted detail-meta">' + meta + "</div></div></div>" +
       '<div class="facts">' + facts.join("") + "</div>" +
@@ -1500,16 +1501,104 @@
     });
     g.restore();
     g.fillStyle = MUT; g.font = "400 26px " + BODY; g.textAlign = "right"; g.fillText("longroad.joaomiguel.com", R, 1815); g.textAlign = "left";
+    await deliverPng(cv, "long-road-" + y + ".png", "Long Road " + y);
+  }
+
+  // phones get the share sheet (Instagram, WhatsApp…); computers download the PNG
+  async function deliverPng(cv, name, title) {
     const blob = await new Promise((r) => cv.toBlob(r, "image/png"));
-    const file = new File([blob], "long-road-" + y + ".png", { type: "image/png" });
+    const file = new File([blob], name, { type: "image/png" });
     if (navigator.canShare && navigator.canShare({ files: [file] }) && window.matchMedia("(pointer: coarse)").matches) {
-      try { await navigator.share({ files: [file], title: "Long Road " + y }); } catch (e) {}
+      try { await navigator.share({ files: [file], title }); } catch (e) {}
       return;
     }
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob); a.download = file.name;
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  }
+
+  // one concert as a story-sized image, in the same style as the year image
+  async function shareConcert(id) {
+    const c = concerts.find((x) => x.id === id);
+    if (!c) return;
+    const idx = chronoIdx.get(c.id);
+    const withArtist = chrono.filter((x) => x.artist === c.artist);
+    const nth = withArtist.findIndex((x) => x.id === c.id) + 1;
+    const played = (c.songs || []).filter((x) => !x.tape && x.name);
+    try { await document.fonts.ready; } catch (e) {}
+    const W = 1080, H = 1920, X = 80, R = W - 80, cv = document.createElement("canvas");
+    cv.width = W; cv.height = H;
+    const g = cv.getContext("2d");
+    const DISP = 'Oswald, "Arial Narrow", sans-serif', BODY = "Inter, system-ui, sans-serif";
+    const ACC = "#F2A541", TXT = "#ECEDEE", MUT = "#9AA0A6", LINE = "#262A31";
+    const fit = (t, max) => { if (g.measureText(t).width <= max) return t; while (t.length > 1 && g.measureText(t + "…").width > max) t = t.slice(0, -1); return t + "…"; };
+    // long names break over two lines, then shrink until they fit
+    const wrap = (t, max) => {
+      const lines = [""];
+      for (const w of t.split(" ")) { const next = (lines[lines.length - 1] + " " + w).trim(); if (g.measureText(next).width <= max || !lines[lines.length - 1]) lines[lines.length - 1] = next; else lines.push(w); }
+      return lines;
+    };
+    g.fillStyle = "#0F1115"; g.fillRect(0, 0, W, H);
+    const glow = g.createRadialGradient(W - 60, 380, 0, W - 60, 380, 1000);
+    glow.addColorStop(0, "rgba(242,165,65,.20)"); glow.addColorStop(1, "rgba(242,165,65,0)");
+    g.fillStyle = glow; g.fillRect(0, 0, W, H);
+    // header: road logo and title, as on the year image
+    g.save(); g.translate(X, 162); g.scale(1.5, 1.5); g.translate(-6, -8);
+    g.fillStyle = "rgba(242,165,65,.35)"; g.beginPath(); g.arc(32, 19, 9, 0, Math.PI * 2); g.fill();
+    g.fillStyle = ACC; g.fill(new Path2D("M29.5 19h5L54 58H10zM31.4 23h1.2l.3 5h-1.8zM31 33h2l.5 8h-3zM30.3 46h3.4l.6 12h-4.6z"), "evenodd");
+    g.restore();
+    g.textBaseline = "alphabetic";
+    g.fillStyle = TXT; g.font = "600 46px " + DISP; g.fillText("LONG ROAD", X + 104, 196);
+    g.fillStyle = MUT; g.font = "400 27px " + BODY; g.fillText("João Miguel's concert archive", X + 104, 236);
+    // date, artist, where
+    const d = new Date(c.date + "T12:00:00");
+    g.fillStyle = ACC; g.font = "600 64px " + DISP; g.letterSpacing = "2px";
+    g.fillText((d.getDate() + " " + mon(d) + " " + d.getFullYear()).toUpperCase(), X - 2, 400); g.letterSpacing = "0px";
+    let size = 150; g.font = "600 " + size + "px " + DISP;
+    let lines = wrap(c.artist, R - X);
+    while ((lines.length > 2 || lines.some((l) => g.measureText(l).width > R - X)) && size > 70) { size -= 10; g.font = "600 " + size + "px " + DISP; lines = wrap(c.artist, R - X); }
+    let yy = 400 + size * 1.05;
+    g.fillStyle = TXT;
+    lines.slice(0, 2).forEach((l, i) => { if (i) yy += size * 1.02; g.fillText(fit(l, R - X), X - 4, yy); });
+    yy += 80;
+    g.font = "400 36px " + BODY;
+    if (c.festival) { g.fillStyle = ACC; g.fillText(fit(c.festival, R - X), X, yy); yy += 52; }
+    g.fillStyle = MUT; g.fillText(fit(c.venue + " · " + c.city + (c.country !== "Portugal" ? ", " + c.country : ""), R - X), X, yy); yy += 52;
+    g.font = "400 28px " + BODY;
+    g.fillText("Concert #" + fmtN(idx + 1) + " · " + (nth > 1 ? ordinal(nth) + " time seeing them" : "First time seeing them"), X, yy);
+    yy += 50;
+    g.fillStyle = LINE; g.fillRect(X, yy, R - X, 2); yy += 70;
+    // setlist: one column, or two when it is long; whatever does not fit is counted at the end
+    g.fillStyle = ACC; g.font = "600 25px " + BODY; g.letterSpacing = "4px";
+    g.fillText(played.length ? "SETLIST · " + played.length + (played.length === 1 ? " SONG" : " SONGS") : "SETLIST", X, yy); g.letterSpacing = "0px";
+    yy += 30;
+    if (!played.length) { g.fillStyle = MUT; g.font = "400 32px " + BODY; g.fillText("No setlist on setlist.fm yet.", X, yy + 40); }
+    else {
+      const rows = [], encores = new Set(c.songs.filter((x) => /^Encore/.test(x.set)).map((x) => x.set)).size;
+      let lastSet = null;
+      for (const x of c.songs) if (!x.tape && x.name) {
+        if (lastSet !== null && x.set !== lastSet && /^Encore/.test(x.set)) rows.push({ encore: encores > 1 ? x.set : "Encore" });
+        lastSet = x.set; rows.push({ name: x.name });
+      }
+      const top = yy + 20, bottom = 1740, lh = rows.length > 16 ? 44 : 52, maxCol = Math.floor((bottom - top) / lh);
+      const cols = rows.length > maxCol ? 2 : 1, colW = (R - X) / cols, fs = rows.length > 16 ? 29 : 34;
+      // two columns share the songs evenly, up to the space there is
+      const perCol = cols > 1 ? Math.min(maxCol, Math.ceil(rows.length / 2)) : maxCol;
+      const room = perCol * cols, shown = rows.length > room ? rows.slice(0, room - 1) : rows;
+      let n = 0;
+      shown.forEach((r, i) => {
+        const x = X + Math.floor(i / perCol) * colW, ry = top + (i % perCol) * lh + lh * 0.7;
+        if (r.encore) { g.fillStyle = ACC; g.font = "600 " + (fs - 8) + "px " + BODY; g.letterSpacing = "3px"; g.fillText(r.encore.toUpperCase(), x, ry); g.letterSpacing = "0px"; return; }
+        n++;
+        g.fillStyle = MUT; g.font = "500 " + (fs - 4) + "px " + BODY; g.textAlign = "right"; g.fillText(n + ".", x + 44, ry); g.textAlign = "left";
+        g.fillStyle = TXT; g.font = "400 " + fs + "px " + BODY; g.fillText(fit(r.name, colW - 76), x + 58, ry);
+      });
+      const left = rows.filter((r) => !r.encore).length - n;
+      if (left > 0) { g.fillStyle = MUT; g.font = "400 " + (fs - 2) + "px " + BODY; g.fillText("+ " + left + " more", X + (cols - 1) * colW + 58, top + (perCol - 1) * lh + lh * 0.7); }
+    }
+    g.fillStyle = MUT; g.font = "400 26px " + BODY; g.textAlign = "right"; g.fillText("longroad.joaomiguel.com", R, 1815); g.textAlign = "left";
+    await deliverPng(cv, "long-road-" + c.date + "-" + c.artist.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") + ".png", c.artist + " · " + fmtDate(c.date));
   }
 
   // ---------- map ----------
@@ -1628,6 +1717,23 @@
     for (const [k, u] of Object.entries(URL_KEYS)) if (p.has(u)) state[k] = k === "shelfOnly" ? p.get(u) === "1" : p.get(u);
     if (p.has("f") && FILTERS[p.get("f")]) state.filter = { f: p.get("f"), v: p.get("v") || "", y: p.get("fy") || null };
   }
+  // the big Overview numbers count up from 0 when the site opens (once per visit)
+  let counted = false;
+  function countUp() {
+    if (counted) return;
+    counted = true;
+    if (state.tab !== "overview" || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const els = [...app.querySelectorAll(".kpi")].map((el) => ({ el, to: +el.textContent.replace(/,/g, "") })).filter((x) => /^[\d,]+$/.test(x.el.textContent) && x.to > 0);
+    const t0 = performance.now(), dur = 900;
+    const step = (now) => {
+      const k = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - k, 3);
+      for (const x of els) if (x.el.isConnected) x.el.textContent = fmtN(Math.round(x.to * e));
+      if (k < 1) requestAnimationFrame(step);
+    };
+    for (const x of els) x.el.textContent = "0";
+    requestAnimationFrame(step);
+  }
+
   // ---------- theme ----------
   // dark by default; the choice is remembered on this device
   const isLight = () => document.documentElement.dataset.theme === "light";
@@ -1659,6 +1765,7 @@
     if (state.tab === "map") initMap(mapList());
     // years chart scrolls sideways on phones: start at the most recent years
     app.querySelectorAll(".years").forEach((el) => { el.scrollLeft = el.scrollWidth; });
+    countUp();
   }
   // Every view change can be undone with Back. On desktop it is a browser history entry (browser Back works too);
   // on touch screens it is an in-app stack, so the iPhone edge swipe does not navigate inside the app.
@@ -1747,6 +1854,7 @@
     else if (t.id === "backFestivals") go(() => { state.festival = null; });
     else if (t.id === "backSongs") go(() => { state.song = null; });
     else if (t.id === "shareYear") shareYear(state.year);
+    else if (d.shareConcert) shareConcert(d.shareConcert);
   }, true);
   document.addEventListener("change", (e) => {
     // renderKeeping keeps the chip around a kept select, so mark it here
