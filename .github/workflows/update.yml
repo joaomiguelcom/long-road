@@ -64,6 +64,12 @@ jobs:
           sed -i "s/__BUILD__/$BUILD/g" _site/index.html
           echo "$BUILD" > _site/version.txt
 
+      # comments stay in the repo; the published files go out without them
+      - name: Strip comments
+        run: |
+          npm install --no-save --no-package-lock --prefix "$RUNNER_TEMP/min" html-minifier-terser@7.2.0 terser@5.36.0
+          NODE_PATH="$RUNNER_TEMP/min/node_modules" node tools/strip-comments.cjs _site
+
       # opens the built site in Chrome and stops the deploy if the app breaks
       - name: Smoke test
         env:
