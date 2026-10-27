@@ -271,6 +271,12 @@
     .search { max-width: none; } h1 { font-size: 34px; } .kpi { font-size: 34px; } td, th { padding: 10px 12px; }
     .brand svg { width: 46px; height: 46px; }
     .brand .eyebrow { font-size: 11px; letter-spacing: .1em; margin-top: 7px; }
+    /* update time and theme button sit right of the title, stacked and right-aligned */
+    .head { align-items: center; gap: 14px 10px; }
+    .head-side { flex-direction: column-reverse; align-items: flex-end; gap: 8px; margin-left: auto; }
+    .sync { min-width: 0; min-height: 0; padding: 0; border: 0; background: none; font-size: 11px; gap: 6px; }
+    .sync .dot { width: 6px; height: 6px; box-shadow: 0 0 0 2px rgba(123,198,126,.18); }
+    .sync-long { display: none; }
     nav { margin: 16px -16px 0; padding: 0 16px; }
     nav.more-right { -webkit-mask-image: linear-gradient(90deg, #000 85%, transparent); mask-image: linear-gradient(90deg, #000 85%, transparent); }
     nav button { padding: 12px 12px; }
@@ -539,7 +545,8 @@
   }
   document.getElementById("sync").innerHTML =
     '<span class="dot" aria-hidden="true"></span>' +
-    "Updated " + esc((() => { const d = new Date(DATA.generatedAt); return d.getDate() + " " + mon(d) + " " + d.getFullYear() + ", " + d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }); })());
+    // phones drop "Updated" and the year so it fits next to the title
+    (() => { const d = new Date(DATA.generatedAt); return '<span><span class="sync-long">Updated </span>' + d.getDate() + " " + mon(d) + '<span class="sync-long"> ' + d.getFullYear() + "</span>, " + d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }) + "</span>"; })();
 
   // ---------- aggregations ----------
   // concerts are newest first, so every Map below is filled in order of last seen; the sorts are stable and keep that order on ties
