@@ -693,6 +693,8 @@
   // round × at the end of a filter row while any of its filters (or the sort) is on
   const clearAll = (on, scope) => on || state.sorts[scope] ? '<button type="button" class="toggle clear-all" data-clear="' + scope + '" aria-label="Clear all filters" title="Clear all filters">' +
     '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>' : "";
+  // share icon used by the image buttons (concert page, Year in review)
+  const SHARE_ICON = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 8l5-5 5 5M5 14v5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5"/></svg>';
   const fattr = (f, v, y) => ' data-f="' + f + '" data-v="' + esc(v) + '"' + (y ? ' data-y="' + esc(y) + '"' : "");
   const aattr = (name) => ' data-artist="' + esc(name) + '"';
   // attrFn(x) returns [field, value, year?] (opens the concert list filtered) or an attribute string
@@ -1081,7 +1083,7 @@
     const navBtn = (x, dir) => x ? '<button type="button" class="icon-btn" data-swap="' + esc(x.id) + '" aria-label="' + (dir < 0 ? "Previous" : "Next") + " concert: " + esc(x.artist) + '" title="' + esc(x.artist + " · " + fmtDate(x.date)) + '">' + (dir < 0 ? "‹" : "›") + "</button>" : '<span class="icon-btn off" aria-hidden="true">' + (dir < 0 ? "‹" : "›") + "</span>";
     return '<article class="card detail">' +
       '<div class="detail-top"><button class="icon-btn" id="back" aria-label="Back">←</button><div class="detail-nav"><button type="button" class="icon-btn" data-share-concert="' + esc(c.id) + '" aria-label="Share this concert as an image" title="Share as image">' +
-        '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 8l5-5 5 5M5 14v5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5"/></svg></button>' + navBtn(prev, -1) + navBtn(next, 1) + "</div></div>" +
+        SHARE_ICON + '</button>' + navBtn(prev, -1) + navBtn(next, 1) + "</div></div>" +
       '<div class="detail-head"><span class="next-date big"><span class="m">' + mon(d) + '</span><span class="d">' + d.getDate() + '</span><span class="y">' + d.getFullYear() + "</span></span>" +
         '<div style="min-width:0"><h2 class="detail-title">' + artistBtn(c.artist, "title-link") + '</h2><div class="muted detail-meta">' + meta + "</div></div></div>" +
       '<div class="facts">' + facts.join("") + "</div>" +
@@ -1403,7 +1405,7 @@
       '<div class="year-nav">' + (prev ? '<button class="btn" data-year="' + prev.key + '">← ' + prev.key + "</button>" : "") +
       '<label for="ysel" class="sr-only">Year</label><select id="ysel">' + byYear.slice().reverse().map((x) => '<option value="' + x.key + '"' + (x.key === y ? " selected" : "") + ">" + x.key + "</option>").join("") + "</select>" +
       (next ? '<button class="btn" data-year="' + next.key + '">' + next.key + " →</button>" : "") +
-      '<button class="btn" id="shareYear">Share</button>' + "</div></div>" +
+      '<button type="button" class="icon-btn" id="shareYear" aria-label="Share this year as an image" title="Share as image">' + SHARE_ICON + "</button>" + "</div></div>" +
       '<section class="grid kpis" aria-label="Year summary">' +
         kpi("Concerts", '<span class="accent">' + list.length + "</span>" + delta(list.length, pList.length), '<span class="go">See them all</span>', fattr("year", y)) +
         kpi("Artists", yArtists.length + delta(yArtists.length, pArtists), newArtists.length + " seen for the first time", fattr("newArtists", y)) +
