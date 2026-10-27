@@ -75,6 +75,8 @@
   .list-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 16px; }
   .list-title { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; min-width: 0; }
   .list-title h2 { margin: 0; font: 500 26px/1.2 var(--display); }
+  /* the title is mostly lowercase in a tall display font, so its visual middle sits lower than its box: nudge the subtitle to match */
+  .list-title > .muted { position: relative; top: 3px; }
   .search { position: relative; width: 100%; max-width: 320px; }
   .search svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); pointer-events: none; }
   .search input[type=search] { max-width: none; padding-left: 38px; }
@@ -118,6 +120,7 @@
   .m-val { flex: none; text-align: right; font: 600 18px/1 var(--display); font-variant-numeric: tabular-nums; }
   .m-val small { display: block; margin-top: 3px; font: 400 11px/1 Inter, system-ui, sans-serif; color: var(--muted); }
   .mchip { display: none; }
+  .quick [data-clear] { order: 9; }
   /* filters belong to the search above them */
   .list-head + .quick { margin-top: -8px; }
   table { width: 100%; min-width: 760px; border-collapse: collapse; font-size: 14px; }
@@ -527,10 +530,11 @@
   const festivals = (() => {
     const m = new Map();
     for (const c of concerts) if (c.festival) {
-      const f = m.get(c.festival) || { name: c.festival, concerts: 0, days: new Set(), years: new Set() };
-      f.concerts++; f.days.add(c.date); f.years.add(c.date.slice(0, 4)); m.set(c.festival, f);
+      const f = m.get(c.festival) || { name: c.festival, concerts: 0, days: new Set(), years: new Set(), countries: {} };
+      f.concerts++; f.days.add(c.date); f.years.add(c.date.slice(0, 4)); f.countries[c.country] = (f.countries[c.country] || 0) + 1; m.set(c.festival, f);
     }
-    return [...m.values()].map((f) => ({ name: f.name, concerts: f.concerts, days: f.days.size, count: f.years.size, years: [...f.years].sort() }))
+    return [...m.values()].map((f) => ({ name: f.name, concerts: f.concerts, days: f.days.size, count: f.years.size, years: [...f.years].sort(),
+      country: Object.entries(f.countries).sort((a, b) => b[1] - a[1])[0][0] }))
       .sort((a, b) => b.count - a.count);
   })();
   const cities = countBy(concerts, (c) => c.city);
@@ -637,6 +641,8 @@
     return '<span class="toggle qpick' + (cur ? " on" : "") + '"><span>' + (prefix || "") + esc(on[1]) + '</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>' +
       '<select id="' + id + '" aria-label="' + label + '"' + (attrs || "") + ">" + opts.map((o) => '<option value="' + esc(o[0]) + '"' + (o[2] || "") + (o[0] === cur ? " selected" : "") + ">" + esc(o[1]) + "</option>").join("") + "</select></span>";
   };
+  // shown at the end of a filter row while any of its filters is on
+  const clearAll = (on, scope) => on ? '<button type="button" class="toggle" data-clear="' + scope + '">Clear all ×</button>' : "";
   const fattr = (f, v, y) => ' data-f="' + f + '" data-v="' + esc(v) + '"' + (y ? ' data-y="' + esc(y) + '"' : "");
   const aattr = (name) => ' data-artist="' + esc(name) + '"';
   // attrFn(x) returns [field, value, year?] (opens the concert list filtered) or an attribute string
@@ -727,7 +733,7 @@
     festivals: { label: "Festival concerts", test: (c, v) => !!c.festival && c.date.startsWith(v), show: (v) => v }
   };
 
-  const state = { tab: "overview", q: "", detail: null, limits: {}, artistQ: "", songQ: "", filter: null, artist: null, venue: null, festival: null, song: null, kind: "", country: "", venueCountry: "", venueCity: "", mapYears: "", year: byYear.length ? byYear[byYear.length - 1].key : null, sorts: {} };
+  const state = { tab: "overview", q: "", detail: null, limits: {}, artistQ: "", songQ: "", filter: null, artist: null, venue: null, festival: null, song: null, kind: "", country: "", cYear: "", venueCountry: "", festCountry: "", mapKind: "", venueCity: "", mapYears: "", year: byYear.length ? byYear[byYear.length - 1].key : null, sorts: {} };
   const limitOf = (id, def) => state.limits[id] || def;
   const TABS = [["overview", "Overview"], ["concerts", "Concerts"], ["artists", "Artists"], ["venues", "Venues"], ["festivals", "Festivals"], ["songs", "Songs"], ["years", "Year in review"], ["map", "Map"]];
 
@@ -911,9 +917,12 @@
     // quick filters on top of any other filter: festival or not, and country
     if (state.kind) list = list.filter((c) => state.kind === "fest" ? !!c.festival : !c.festival);
     if (state.country) list = list.filter((c) => c.country === state.country);
+    if (state.cYear) list = list.filter((c) => c.date.startsWith(state.cYear));
     const kindBtn = (k, label) => '<button type="button" class="' + (state.kind === k ? "on" : "") + '" data-kind="' + k + '" aria-pressed="' + (state.kind === k) + '">' + label + "</button>";
     const quick = '<div class="seg" role="group" aria-label="Type">' + kindBtn("", "All") + kindBtn("shows", "Shows") + kindBtn("fest", "Festivals") + "</div>" +
-      qpick("csel", "Country", [["", "All countries"]].concat(countries.map((x) => [x.key, x.key + " (" + x.count + ")"])), state.country);
+      qpick("csel", "Country", [["", "All countries"]].concat(countries.map((x) => [x.key, x.key + " (" + x.count + ")"])), state.country) +
+      qpick("cysel", "Year", [["", "All years"]].concat(byYear.slice().reverse().map((y) => [y.key, y.key + " (" + y.count + ")"])), state.cYear) +
+      clearAll(state.kind || state.country || state.cYear || state.q || state.filter, "concerts");
     return '' +
       '<div class="list-head"><div class="list-title"><h2>' + plural(list.length, "concert", "concerts") + "</h2>" +
       (F ? '<span class="chip"><span class="chip-label">' + F.label + "</span><strong>" + esc(F.show(state.filter.v)) + (state.filter.y ? " · " + esc(state.filter.y) : "") + '</strong><button type="button" id="clearf" aria-label="Clear filter"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button></span>' : "") +
@@ -998,10 +1007,11 @@
       cell(String(a.rank), a.rank), cell(artistBtn(a.key) + mark(a.key), a.key), cell(String(a.count), a.count),
       cell(fmtDate(s.first), s.first), cell(fmtDate(s.last), s.last)]; });
     const toggle = shelf.size ? '<button type="button" class="toggle' + (state.shelfOnly ? " on" : "") + '" data-shelf="' + (state.shelfOnly ? "0" : "1") + '" aria-pressed="' + !!state.shelfOnly + '">' + VINYL(14) + " On the shelf</button>" : "";
+    const clearA = clearAll(state.shelfOnly || state.artistQ || state.artistSet, "artists");
     const setChip = state.artistSet === "homeAway" ? '<button type="button" class="toggle on" data-aset="" aria-label="Show all artists">Seen in Portugal and abroad ×</button>' : "";
     return '<div class="list-head"><div class="list-title"><h2>' + plural(list.length, "artist", "artists") + "</h2>" + setChip + "</div>" + searchBox("aq", "Search artist", "Search artist", state.artistQ) + "</div>" +
       table("artists", [{ label: "#", num: true, cls: "num" }, { label: "Artist" }, { label: "Concerts", num: true, cls: "num" }, { label: "First seen", cls: "muted" }, { label: "Last seen", cls: "muted" }], rows, limitOf("artists", 100),
-        (r) => ({ rank: r[0].h, title: r[1].h, sub: [r[3].s.slice(0, 4) === r[4].s.slice(0, 4) ? r[3].s.slice(0, 4) : r[3].s.slice(0, 4) + " – " + r[4].s.slice(0, 4)], value: r[2].h, unit: r[2].s === 1 ? "concert" : "concerts" }), toggle);
+        (r) => ({ rank: r[0].h, title: r[1].h, sub: [r[3].s.slice(0, 4) === r[4].s.slice(0, 4) ? r[3].s.slice(0, 4) : r[3].s.slice(0, 4) + " – " + r[4].s.slice(0, 4)], value: r[2].h, unit: r[2].s === 1 ? "concert" : "concerts" }), toggle + clearA);
   }
 
   // records by this artist in the Discogs collection
@@ -1125,7 +1135,7 @@
     const vCities = countBy(inCountry, (v) => v.city);
     const rows = list.map((v) => { const f = firstVisit(v.key); return [cell(String(v.rank), v.rank), cell('<button class="open"' + vattr(v.key) + ">" + esc(v.name) + "</button>", v.name), cell(esc(v.city), v.city), cell(fmtDate(f), f), cell(String(v.count), v.count)]; });
     const vCountries = countBy(venues, (v) => v.country);
-    const citySel = qpick("vcsel", "Country", [["", "All countries"]].concat(vCountries.map((x) => [x.key, x.key + " (" + x.count + ")"])), state.venueCountry) + qpick("vsel", "City", [["", "All cities"]].concat(vCities.map((x) => [x.key, x.key + " (" + x.count + ")"])), state.venueCity);
+    const citySel = qpick("vcsel", "Country", [["", "All countries"]].concat(vCountries.map((x) => [x.key, x.key + " (" + x.count + ")"])), state.venueCountry) + qpick("vsel", "City", [["", "All cities"]].concat(vCities.map((x) => [x.key, x.key + " (" + x.count + ")"])), state.venueCity) + clearAll(state.venueCountry || state.venueCity, "venues");
     return '<div class="list-head"><div class="list-title"><h2>' + plural(list.length, "venue", "venues") + '</h2><span class="muted">Festivals are counted separately</span></div></div>' +
       table("venues", [{ label: "#", num: true, cls: "num" }, { label: "Venue" }, { label: "City", cls: "muted" }, { label: "First visit", cls: "muted" }, { label: "Concerts", num: true, cls: "num" }], rows, 0,
         (r) => ({ rank: r[0].h, title: r[1].h, sub: [r[2].h, "since " + r[3].s.slice(0, 4)], value: r[4].h, unit: r[4].s === 1 ? "concert" : "concerts" }), citySel);
@@ -1189,11 +1199,14 @@
 
   function festivalList() {
     if (state.festival) return festivalPage(state.festival);
-    const rows = festivals.map((f) => [cell(String(f.rank), f.rank), cell('<button class="open"' + fesattr(f.name) + ">" + esc(f.name) + "</button>", f.name), cell(String(f.count), f.count), cell(String(f.concerts), f.concerts), cell(f.years.join(", "), f.years[0])]);
-    festivals.forEach((f, i) => { rows[i].yrs = f.years.slice().sort().map((y) => "’" + String(y).slice(2)).join(" "); });
-    return '<div class="list-head"><div class="list-title"><h2>' + plural(festivals.length, "festival", "festivals") + "</h2></div></div>" +
+    const fl = festivals.filter((f) => !state.festCountry || f.country === state.festCountry);
+    const fCountries = countBy(festivals, (f) => f.country);
+    const bar = qpick("fcsel", "Country", [["", "All countries"]].concat(fCountries.map((x) => [x.key, x.key + " (" + x.count + ")"])), state.festCountry) + clearAll(state.festCountry, "festivals");
+    const rows = fl.map((f) => [cell(String(f.rank), f.rank), cell('<button class="open"' + fesattr(f.name) + ">" + esc(f.name) + "</button>", f.name), cell(String(f.count), f.count), cell(String(f.concerts), f.concerts), cell(f.years.join(", "), f.years[0])]);
+    fl.forEach((f, i) => { rows[i].yrs = f.years.slice().sort().map((y) => "’" + String(y).slice(2)).join(" "); });
+    return '<div class="list-head"><div class="list-title"><h2>' + plural(fl.length, "festival", "festivals") + "</h2></div></div>" +
       table("festivals", [{ label: "#", num: true, cls: "num" }, { label: "Festival" }, { label: "Editions", num: true, cls: "num" }, { label: "Concerts", num: true, cls: "num" }, { label: "Years", cls: "muted" }], rows, 0,
-        (r) => ({ rank: r[0].h, title: r[1].h, sub: [plural(r[2].s, "edition", "editions")], tag: '<span class="tag">' + r.yrs + "</span>", value: r[3].h, unit: r[3].s === 1 ? "concert" : "concerts" }));
+        (r) => ({ rank: r[0].h, title: r[1].h, sub: [plural(r[2].s, "edition", "editions")], tag: '<span class="tag">' + r.yrs + "</span>", value: r[3].h, unit: r[3].s === 1 ? "concert" : "concerts" }), bar);
   }
 
   const sattr = (key) => ' data-song="' + esc(key) + '"';
@@ -1412,7 +1425,8 @@
     if (!withCoords.length) return '<div class="empty">The map needs coordinates. Run <code>export.ps1</code> again (the new version saves them) and reload this page.</div>';
     const list = mapList();
     const decades = [...new Set(byYear.map((y) => y.key.slice(0, 3) + "0s"))].reverse();
-    const sel = '<div class="quick">' + qpick("msel", "Years", [["", "All years"]].concat(decades.map((d) => [d, "The " + d]), byYear.slice().reverse().map((y) => [y.key, y.key])), state.mapYears) + "</div>";
+    const mKind = (k, label) => '<button type="button" class="' + (state.mapKind === k ? "on" : "") + '" data-mkind="' + k + '" aria-pressed="' + (state.mapKind === k) + '">' + label + "</button>";
+    const sel = '<div class="quick"><div class="seg" role="group" aria-label="Type">' + mKind("", "All") + mKind("shows", "Shows") + mKind("fest", "Festivals") + "</div>" + qpick("msel", "Years", [["", "All years"]].concat(decades.map((d) => [d, "The " + d]), byYear.slice().reverse().map((y) => [y.key, y.key])), state.mapYears) + clearAll(state.mapKind || state.mapYears, "map") + "</div>";
     return '<div class="list-head"><div class="list-title"><h2>Map</h2><span class="muted">' + plural(new Set(list.map((c) => c.city)).size, "city", "cities") + " · " + plural(new Set(list.map((c) => c.country)).size, "country", "countries") + "</span></div></div>" + sel + '<div id="map" role="region" aria-label="Map of concert cities"></div>' +
       '<p class="tag" style="margin:0">Circles are cities (setlist.fm gives coordinates per city, not per venue). Bigger means more concerts; white circles are cities you went to only once. Click a circle to see its concerts.</p>';
   }
@@ -1428,7 +1442,7 @@
     document.head.appendChild(js);
   }
   // concerts shown on the Map tab: all, one decade ("2010s") or one year
-  const mapList = () => concerts.filter((c) => c.lat != null && c.lng != null && (!state.mapYears ||
+  const mapList = () => concerts.filter((c) => c.lat != null && c.lng != null && (!state.mapKind || (state.mapKind === "fest") === !!c.festival) && (!state.mapYears ||
     (state.mapYears.endsWith("s") ? c.date.slice(0, 3) === state.mapYears.slice(0, 3) : c.date.startsWith(state.mapYears))));
   function initMap(list) {
     const el = document.getElementById("map");
@@ -1470,6 +1484,7 @@
   // re-render around a focused control without touching it: replacing a search box resets the iPhone keyboard to letters,
   // and focusing a fresh select reopens its picker
   function renderKeeping(id, wrap) {
+    syncUrl();
     const live = document.getElementById(id), fresh = document.createElement("div");
     fresh.innerHTML = viewHtml();
     let k = live && (wrap ? live.closest(wrap) : live), f = fresh.querySelector("#" + id);
@@ -1486,8 +1501,31 @@
       k = k.parentNode; f = f.parentNode;
     }
   }
+  // the page address follows the view and its filters (#t=concerts&kind=fest&country=Spain), so a view can be shared
+  const URL_KEYS = { tab: "t", detail: "c", artist: "artist", venue: "venue", festival: "fest", song: "song", year: "y", q: "q", kind: "kind", country: "country", cYear: "cy",
+    venueCountry: "vco", venueCity: "vci", festCountry: "fco", mapKind: "mk", mapYears: "my", shelfOnly: "shelf", artistSet: "set", artistQ: "aq", songQ: "sq" };
+  const TAB_KEYS = { concerts: ["detail", "q", "kind", "country", "cYear"], artists: ["artist", "shelfOnly", "artistSet", "artistQ"], venues: ["venue", "venueCountry", "venueCity"],
+    festivals: ["festival", "festCountry"], songs: ["song", "songQ"], years: ["year"], map: ["mapKind", "mapYears"] };
+  function syncUrl() {
+    const p = new URLSearchParams();
+    // only what the open tab uses, so the link stays short
+    const keys = ["tab"].concat(TAB_KEYS[state.tab] || []);
+    for (const k of keys) {
+      const v = state[k];
+      if (k === "tab" ? v !== "overview" : v) p.set(URL_KEYS[k], v === true ? "1" : v);
+    }
+    if (state.filter && state.tab === "concerts") { p.set("f", state.filter.f); p.set("v", state.filter.v); if (state.filter.y) p.set("fy", state.filter.y); }
+    const hash = p.toString() ? "#" + p.toString() : "";
+    if (hash !== location.hash) history.replaceState(history.state, "", location.pathname + location.search + hash);
+  }
+  function readUrl() {
+    const p = new URLSearchParams(location.hash.slice(1));
+    for (const [k, u] of Object.entries(URL_KEYS)) if (p.has(u)) state[k] = k === "shelfOnly" ? p.get(u) === "1" : p.get(u);
+    if (p.has("f") && FILTERS[p.get("f")]) state.filter = { f: p.get("f"), v: p.get("v") || "", y: p.get("fy") || null };
+  }
   function render() {
     if (map) { map.remove(); map = null; }
+    syncUrl();
     renderTabs();
     app.innerHTML = viewHtml();
     if (state.tab === "map") initMap(mapList());
@@ -1511,6 +1549,9 @@
     render(); window.scrollTo(0, 0);
   };
   const goBack = () => { if (useHistory) history.back(); else restore(stack.pop()); };
+  // a shared link opens the same view
+  try { readUrl(); } catch (e) { /* a broken link just opens the overview */ }
+  if (!TABS.some((t) => t[0] === state.tab)) state.tab = "overview";
   if (useHistory) {
     history.replaceState(snap(0), "");
     window.addEventListener("popstate", (e) => { if (e.state) restore(e.state); });
@@ -1526,7 +1567,7 @@
     const t = e.target.closest('button, [role="button"]');
     if (!t) return;
     const d = t.dataset;
-    if (d.tab) go(() => { state.tab = d.tab; state.detail = null; state.filter = null; state.artist = null; state.venue = null; state.festival = null; state.song = null; state.artistSet = null; state.kind = ""; state.country = ""; });
+    if (d.tab) go(() => { state.tab = d.tab; state.detail = null; state.filter = null; state.artist = null; state.venue = null; state.festival = null; state.song = null; state.artistSet = null; state.kind = ""; state.country = ""; state.cYear = ""; });
     else if (d.open) go(() => { state.tab = "concerts"; state.detail = d.open; });
     else if (d.swap) { state.detail = d.swap; if (useHistory) history.replaceState(snap(depth()), ""); render(); window.scrollTo(0, 0); }
     else if (d.artist) go(() => { state.tab = "artists"; state.artist = d.artist; state.detail = null; });
@@ -1536,6 +1577,15 @@
     else if (d.f) go(() => { state.tab = "concerts"; state.detail = null; state.filter = { f: d.f, v: d.v, y: d.y || null }; state.q = ""; state.limits.concerts = 0; });
     else if (d.aset !== undefined) go(() => { state.tab = "artists"; state.artist = null; state.detail = null; state.artistSet = d.aset || null; state.shelfOnly = false; state.artistQ = ""; state.limits.artists = 0; });
     else if (d.kind !== undefined) { state.kind = d.kind; state.limits.concerts = 0; render(); }
+    else if (d.mkind !== undefined) { state.mapKind = d.mkind; render(); }
+    else if (d.clear) {
+      if (d.clear === "concerts") Object.assign(state, { kind: "", country: "", cYear: "", q: "", filter: null });
+      if (d.clear === "venues") Object.assign(state, { venueCountry: "", venueCity: "" });
+      if (d.clear === "artists") Object.assign(state, { shelfOnly: false, artistQ: "", artistSet: null });
+      if (d.clear === "festivals") state.festCountry = "";
+      if (d.clear === "map") Object.assign(state, { mapKind: "", mapYears: "" });
+      state.limits = {}; render();
+    }
     else if (d.shelf) go(() => { state.tab = "artists"; state.artist = null; state.detail = null; state.shelfOnly = d.shelf === "1"; });
     else if (d.year) go(() => { state.year = d.year; });
     else if (d.yr) go(() => { state.tab = "years"; state.year = d.yr; state.detail = null; state.filter = null; state.artist = null; state.venue = null; state.festival = null; state.song = null; });
@@ -1568,6 +1618,8 @@
     if (e.target.id === "vcsel") { state.venueCountry = e.target.value; state.venueCity = ""; renderKeeping("vcsel"); return; }
     if (e.target.id === "vsel") { state.venueCity = e.target.value; renderKeeping("vsel"); return; }
     if (e.target.id === "msel") { state.mapYears = e.target.value; render(); return; }
+    if (e.target.id === "cysel") { state.cYear = e.target.value; state.limits.concerts = 0; renderKeeping("cysel"); return; }
+    if (e.target.id === "fcsel") { state.festCountry = e.target.value; renderKeeping("fcsel"); return; }
     if (e.target.id === "csel") { state.country = e.target.value; state.limits.concerts = 0; renderKeeping("csel"); }
     const ss = e.target.dataset && e.target.dataset.sortsel;
     if (ss) {
