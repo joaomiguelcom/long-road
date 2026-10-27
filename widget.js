@@ -54,21 +54,21 @@ async function build() {
   if (family === "small") {
     // artist first, the countdown at the bottom, and the show after it to fill the space
     const s = shows[0];
-    const a = w.addText(s.artist); a.font = Font.boldSystemFont(19); a.textColor = TXT; a.lineLimit = 2; a.minimumScaleFactor = 0.6;
-    const p = w.addText(shortDate(s.day) + " · " + s.place.split(", ")[0]); p.font = Font.systemFont(12); p.textColor = MUT; p.lineLimit = 1;
+    const a = w.addText(s.artist); a.font = Font.boldSystemFont(22); a.textColor = TXT; a.lineLimit = 2; a.minimumScaleFactor = 0.6;
+    const p = w.addText(shortDate(s.day) + " · " + s.place.split(", ")[0]); p.font = Font.systemFont(13); p.textColor = MUT; p.lineLimit = 1;
     w.addSpacer();
     const row = w.addStack(); row.bottomAlignContent();
-    const big = row.addText(s.days === 0 ? "Tonight" : String(s.days)); big.font = Font.heavySystemFont(s.days === 0 ? 28 : 36); big.textColor = ACC;
+    const big = row.addText(s.days === 0 ? "Tonight" : String(s.days)); big.font = Font.heavySystemFont(s.days === 0 ? 32 : 50); big.textColor = ACC; big.minimumScaleFactor = 0.7;
     if (s.days > 0) {
       row.addSpacer(5);
       const u = row.addStack(); u.layoutVertically();
-      const u1 = u.addText(s.days === 1 ? "day" : "days"); u1.font = Font.mediumSystemFont(11); u1.textColor = MUT;
-      const u2 = u.addText("to go"); u2.font = Font.mediumSystemFont(11); u2.textColor = MUT;
-      u.addSpacer(4);
+      const u1 = u.addText(s.days === 1 ? "day" : "days"); u1.font = Font.mediumSystemFont(13); u1.textColor = MUT;
+      const u2 = u.addText("to go"); u2.font = Font.mediumSystemFont(13); u2.textColor = MUT;
+      u.addSpacer(7);
     }
     if (shows[1]) {
-      w.addSpacer(4);
-      const t = w.addText("Then " + shortDate(shows[1].day) + " · " + shows[1].artist); t.font = Font.systemFont(10); t.textColor = MUT; t.lineLimit = 1;
+      w.addSpacer(2);
+      const t = w.addText("Then " + shortDate(shows[1].day) + " · " + shows[1].artist); t.font = Font.systemFont(11); t.textColor = MUT; t.lineLimit = 1; t.minimumScaleFactor = 0.8;
     }
     setRefresh(w);
     return w;
