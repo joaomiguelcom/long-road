@@ -1,7 +1,7 @@
 // Long Road widget for the iPhone home screen, run by the Scriptable app (scriptable.app).
 // Scriptable keeps a two-line loader that downloads this file from the site and runs it,
 // so changes here reach the widget without touching the phone:
-//   const r = new Request("https://longroad.joaomiguel.com/widget.js");
+//   const r = new Request("https://longroad.joaomiguel.com/widget.js?t=" + Date.now());  (query string skips the 10-minute cache)
 //   await eval(await r.loadString());
 // eval cannot wait on its own, so this file ends with a promise and the loader awaits it.
 // Small widget: the next concert and the days left. Medium and large: the next shows as a list.
