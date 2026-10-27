@@ -629,7 +629,8 @@
     const e = songMap.get(k) || { key: k, name: s.name, artist: songOwner(s, c), count: 0, by: new Set() };
     e.count++; if (c.artist !== e.artist) e.by.add(c.artist); songMap.set(k, e);
     const pk = s.name + "||" + c.artist;
-    const p = playedMap.get(pk) || { name: s.name, artist: c.artist, count: 0 };
+    // key: the song page for this song (its owner may differ from who played it)
+    const p = playedMap.get(pk) || { name: s.name, artist: c.artist, count: 0, key: k };
     p.count++; playedMap.set(pk, p);
   }
   // artists seen both in Portugal and abroad (the "Home and away" fun fact and artist list)
@@ -1189,7 +1190,7 @@
         kpi("Years", (+last.date.slice(0, 4) - +first.date.slice(0, 4) + 1) + "", first.date.slice(0, 4) + "–" + last.date.slice(0, 4)) +
         kpi("Countries", aCountries + "") +
       "</section>" +
-      (top.length ? '<section class="card"><h2>Songs you heard most</h2>' + bars(top.slice(0, 15), (s) => esc(s.name)) + "</section>" : "") +
+      (top.length ? '<section class="card"><h2>Songs you heard most</h2>' + bars(top.slice(0, 15), (s) => esc(s.name), (s) => sattr(s.key)) + "</section>" : "") +
       (related.length ? '<div class="history"><span class="muted">Also seen</span><div class="history-list">' + related.map((x) => '<button type="button" class="hist"' + aattr(x.key) + ">" + esc(x.key) + " · " + plural(x.count, "concert", "concerts") + "</button>").join("") + "</div></div>" : "") +
       timeline + songStats +
       '<section class="card"><div class="card-head"><h2>Concerts</h2><button class="link"' + fattr("artist", name) + ">Open in concert list</button></div>" +
