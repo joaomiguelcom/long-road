@@ -189,6 +189,15 @@
   .edition-meta { flex-basis: 100%; font-size: 15px; color: var(--text); }
   .edition-stats { flex-basis: 100%; font-size: 13px; color: var(--muted); }
   .edition .hist { color: var(--text); background: var(--line); }
+  .setstrip { display: grid; grid-template-columns: repeat(10, 1fr); gap: 4px; align-items: end; height: 96px; margin-top: 8px; padding-top: 16px; border-bottom: 2px solid var(--line-2); }
+  .setstrip-col { height: 100%; display: flex; flex-direction: column; justify-content: flex-end; position: relative; }
+  .setstrip-bar { display: block; background: var(--accent); border-radius: 3px 3px 0 0; min-height: 3px; }
+  .setstrip-bar.enc { background: var(--text); opacity: .75; border-radius: 3px 3px 0 0; }
+  .setstrip-bar.enc + .setstrip-bar { border-radius: 0; }
+  .setstrip-n { font-size: 11px; color: var(--muted); text-align: center; margin-bottom: 3px; }
+  .setstrip-axis { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); margin-top: 4px; }
+  .setstrip-legend { font-size: 13px; margin-top: 10px; } .setstrip-legend b { color: var(--text); font-weight: 600; }
+  .setstrip-key { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--text); opacity: .7; margin-right: 5px; vertical-align: 0; }
   .new-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); margin-right: 6px; vertical-align: 2px; }
   .delta { font: 500 14px/1 Inter, system-ui, sans-serif; margin-left: 8px; vertical-align: middle; color: var(--muted); white-space: nowrap; }
   .delta.up { color: var(--ok); }
@@ -765,9 +774,10 @@
       "</tbody></table></div>" +
       (limit && rows.length > limit ? '<div class="more"><button class="btn" data-more="' + id + '" data-shown="' + limit + '">Show more</button></div>' : "");
   }
-  const concertRows = (list) => list.map((c) => [
+  // fresh: optional set of concerts to mark with the first-time dot
+  const concertRows = (list, fresh) => list.map((c) => [
     cell('<span style="white-space:nowrap">' + fmtDate(c.date) + "</span>", c.date),
-    cell('<button type="button" class="open" data-open="' + esc(c.id) + '">' + esc(c.artist) + "</button>", c.artist),
+    cell('<button type="button" class="open" data-open="' + esc(c.id) + '"' + (fresh && fresh.has(c) ? ' title="First time you saw them"' : "") + ">" + (fresh && fresh.has(c) ? '<span class="new-dot" aria-hidden="true"></span>' : "") + esc(c.artist) + "</button>", c.artist),
     cell(esc(c.venue), c.venue),
     cell(esc(c.city), c.city),
     cell(notes(c), (c.festival || "") + (c.tour || "")),
@@ -1217,7 +1227,7 @@
         (list.length > 1 ? " · Last " + fmtDate(last.date) + " (" + at(last) + ")" : "") + "</div></div>" +
       '<section class="grid kpis" aria-label="Venue summary">' +
         kpi("Concerts", '<span class="accent">' + list.length + "</span>", nights.length < list.length ? plural(nights.length, "night", "nights") : "", fattr("venue", key)) +
-        kpi("Artists", vArtists.length + "", firsts.length ? (firsts.length === vArtists.length ? "all first times" : plural(firsts.length, "first time", "first times")) : "") +
+        kpi("Artists", vArtists.length + "", firsts.length ? '<span class="new-dot" aria-hidden="true"></span>' + (firsts.length === vArtists.length ? "all first times" : plural(firsts.length, "first time", "first times")) : "") +
         kpi("Years", span + "", first.date.slice(0, 4) + (span > 1 ? "–" + last.date.slice(0, 4) : "")) +
         (songsHere ? kpi("Songs heard", fmtN(songsHere)) : "") +
       "</section>" +
@@ -1225,7 +1235,7 @@
       (vYears.length > 1 ? '<div class="history"><span class="muted">By year</span><div class="history-list">' + vYears.map((y) => '<button type="button" class="hist"' + fattr("venue", key, y.key) + ">" + y.key + (y.count > 1 ? " ×" + y.count : "") + "</button>").join("") + "</div></div>" : "") +
       (facts.length ? '<section class="card"><h2>Venue facts</h2><ul class="facts-list">' + facts.map((f) => "<li>" + f + "</li>").join("") + "</ul></section>" : "") +
       '<section class="card"><div class="card-head"><h2>Concerts</h2><button class="link"' + fattr("venue", key) + ">Open in concert list</button></div>" +
-        table("venue-concerts", CONCERT_COLS, concertRows(list), 0, concertM) + "</section>" +
+        table("venue-concerts", CONCERT_COLS, concertRows(list, new Set(firsts)), 0, concertM) + "</section>" +
       "</div>";
   }
 
@@ -1314,6 +1324,29 @@
   }
 
   const sattr = (key) => ' data-song="' + esc(key) + '"';
+  // where a song falls in the setlist: one dot per time heard, from the first song (left) to the last (right)
+  function setStrip(plays) {
+    const pts = plays.filter((x) => x.n > 1);
+    if (!pts.length) return "";
+    const third = (x) => x.i / (x.n - 1) < 1 / 3 ? 0 : x.i / (x.n - 1) <= 2 / 3 ? 1 : 2;
+    const parts = [0, 1, 2].map((k) => pts.filter((x) => third(x) === k).length);
+    return '<section class="card"><h2>Where it falls in the set</h2>' +
+      // ten slices of the setlist, from the first song to the last; encore plays stacked on top
+      (() => {
+        const bins = Array.from({ length: 10 }, () => ({ main: 0, enc: 0 }));
+        pts.forEach((x) => { bins[Math.min(9, Math.floor(x.i / (x.n - 1) * 10))][/^Encore/.test(x.set || "") ? "enc" : "main"]++; });
+        const top = Math.max(...bins.map((x) => x.main + x.enc));
+        return '<div class="setstrip" role="img" aria-label="' + esc("Early " + parts[0] + ", middle " + parts[1] + ", late " + parts[2]) + '">' + bins.map((x) => {
+          const n = x.main + x.enc;
+          return '<div class="setstrip-col">' + (n ? '<span class="setstrip-n">' + n + "</span>" : "") +
+            (x.enc ? '<span class="setstrip-bar enc" style="height:' + (x.enc / top * 100).toFixed(1) + '%"></span>' : "") +
+            (x.main ? '<span class="setstrip-bar" style="height:' + (x.main / top * 100).toFixed(1) + '%"></span>' : "") + "</div>";
+        }).join("") + "</div>";
+      })() +
+      '<div class="setstrip-axis"><span>Opener</span><span>Middle</span><span>Closer</span></div>' +
+      '<div class="setstrip-legend muted">' + ["Early", "Middle", "Late"].map((l, k) => l + " <b>" + parts[k] + "</b>").join(" · ") +
+        (pts.some((x) => /^Encore/.test(x.set || "")) ? ' · <span class="setstrip-key enc"></span>encore' : "") + "</div></section>";
+  }
   // every time João heard one song, whoever played it, with where it fell in the setlist
   function songPage(key) {
     const s = songs.find((x) => x.key === key);
@@ -1352,6 +1385,7 @@
         kpi("Last heard", fmtDate(last.c.date).slice(-4), esc(last.c.artist) + " · " + fmtDate(last.c.date).slice(0, 6), openAttr(last.c)) +
         kpi("Years", yrs + "", "with this song live") +
       "</section>" +
+      setStrip(plays) +
       (facts.length ? '<section class="card"><h2>Song facts</h2><ul class="facts-list">' + facts.map((f) => "<li>" + f + "</li>").join("") + "</ul></section>" : "") +
       '<section class="card"><div class="card-head"><h2>Every time you heard it</h2><button class="link"' + fattr("song", s.artist + "||" + s.name) + ">Open in concert list</button></div>" +
         table("song-plays", [{ label: "Date", cls: "muted" }, { label: "Artist" }, { label: "Where", cls: "muted" }, { label: "In the setlist" }], rows, 0,
