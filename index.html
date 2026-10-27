@@ -117,9 +117,9 @@
   .m-tag { margin-top: 4px; font-size: 12px; } .m-tag br { display: none; } .m-tag .accent ~ .tag::before { content: " · "; white-space: pre; }
   .m-val { flex: none; text-align: right; font: 600 18px/1 var(--display); font-variant-numeric: tabular-nums; }
   .m-val small { display: block; margin-top: 3px; font: 400 11px/1 Inter, system-ui, sans-serif; color: var(--muted); }
-  .msort { align-items: center; gap: 8px; margin-bottom: 10px; }
-  .msort label { margin: 0; white-space: nowrap; }
-  .msort select { flex: 1; min-width: 0; }
+  .mchip { display: none; }
+  /* filters belong to the search above them */
+  .list-head + .quick { margin-top: -8px; }
   table { width: 100%; min-width: 760px; border-collapse: collapse; font-size: 14px; }
   th.num, td.num { width: 1%; white-space: nowrap; }
   th { text-align: left; font-weight: 500; color: var(--muted); background: var(--surface); padding: 12px 16px; }
@@ -247,7 +247,7 @@
     .kpis { grid-template-columns: 1fr 1fr; gap: 12px; }
     .kpis .card { padding: 16px; }
     .kpis > :first-child:nth-last-child(odd) { grid-column: 1 / -1; }
-    .mlist { display: block; } .msort { display: flex; } .table-box.has-mlist { display: none; }
+    .mlist { display: block; } .msort { display: flex; } .mchip { display: contents; } .table-box.has-mlist { display: none; }
   }
   /* hover only where a real pointer exists, so taps on touch screens do not leave items highlighted */
   @media (hover: hover) {
@@ -625,10 +625,11 @@
 
   // ---------- rendering helpers ----------
   // select styled as a filter chip; opts are [value, text], the first one is "everything"
-  const qpick = (id, label, opts, cur) => {
+  // prefix is shown only on the chip ("Sort: Artist"); o[2] adds attributes to an option; attrs go on the select
+  const qpick = (id, label, opts, cur, prefix, attrs) => {
     const on = opts.find((o) => o[0] === cur) || opts[0];
-    return '<span class="toggle qpick' + (cur ? " on" : "") + '"><span>' + esc(on[1]) + '</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>' +
-      '<select id="' + id + '" aria-label="' + label + '">' + opts.map((o) => '<option value="' + esc(o[0]) + '"' + (o[0] === cur ? " selected" : "") + ">" + esc(o[1]) + "</option>").join("") + "</select></span>";
+    return '<span class="toggle qpick' + (cur ? " on" : "") + '"><span>' + (prefix || "") + esc(on[1]) + '</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>' +
+      '<select id="' + id + '" aria-label="' + label + '"' + (attrs || "") + ">" + opts.map((o) => '<option value="' + esc(o[0]) + '"' + (o[2] || "") + (o[0] === cur ? " selected" : "") + ">" + esc(o[1]) + "</option>").join("") + "</select></span>";
   };
   const fattr = (f, v, y) => ' data-f="' + f + '" data-v="' + esc(v) + '"' + (y ? ' data-y="' + esc(y) + '"' : "");
   const aattr = (name) => ' data-artist="' + esc(name) + '"';
@@ -661,7 +662,8 @@
   const cell = (h, s) => ({ h: h, s: s === undefined ? h : s });
   // m(row) describes the mobile layout of a row: { rank, title, sub: [html…], tag, value, unit }.
   // Phones get that two-line list instead of the wide table, so nothing scrolls sideways.
-  function table(id, cols, rows, limit, m) {
+  // bar: filter chips shown above the list; on phones the sort chip joins the same row
+  function table(id, cols, rows, limit, m, bar) {
     const st = state.sorts[id];
     if (st) rows = rows.slice().sort((a, b) => {
       const x = a[st.col].s, y = b[st.col].s;
@@ -669,10 +671,10 @@
       return st.dir * r;
     });
     const shown = limit ? rows.slice(0, limit) : rows;
-    const sortBar = m ? '<div class="msort"><label for="ms-' + id + '">Sort by</label><select id="ms-' + id + '" data-sortsel="' + id + '">' +
-      '<option value=""' + (st ? "" : " selected") + ">Default</option>" +
-      cols.map((c, i) => c.label === "#" ? "" : '<option value="' + i + '" data-num="' + (c.num ? 1 : 0) + '"' + (st && st.col === i ? " selected" : "") + ">" + c.label + "</option>").join("") + "</select>" +
-      (st ? '<button type="button" class="icon-btn" data-sortdir="' + id + '" aria-label="' + (st.dir > 0 ? "Ascending, switch to descending" : "Descending, switch to ascending") + '">' + (st.dir > 0 ? "↑" : "↓") + "</button>" : "") + "</div>" : "";
+    const sortChips = m ? '<span class="mchip">' + qpick("ms-" + id, "Sort by", [["", "Default"]].concat(cols.map((c, i) => c.label === "#" ? null : [String(i), c.label, ' data-num="' + (c.num ? 1 : 0) + '"']).filter(Boolean)),
+      st ? String(st.col) : "", "Sort: ", ' data-sortsel="' + id + '"') +
+      (st ? '<button type="button" class="toggle on" data-sortdir="' + id + '" aria-label="' + (st.dir > 0 ? "Ascending, switch to descending" : "Descending, switch to ascending") + '">' + (st.dir > 0 ? "↑" : "↓") + "</button>" : "") + "</span>" : "";
+    const sortBar = bar ? '<div class="quick">' + bar + sortChips + "</div>" : m ? '<div class="quick msort">' + sortChips + "</div>" : "";
     const mlist = m ? '<ul class="mlist">' + shown.map((r) => {
       // links in the second line are spans: Safari keeps a button as one block, so a long name broke the line apart
       const x = m(r), sub = (x.sub || []).filter(Boolean).map((h) => h.replace(/<button type="button"/g, '<span role="button" tabindex="0"').replace(/<\/button>/g, "</span>"));
@@ -904,13 +906,13 @@
     if (state.kind) list = list.filter((c) => state.kind === "fest" ? !!c.festival : !c.festival);
     if (state.country) list = list.filter((c) => c.country === state.country);
     const kindBtn = (k, label) => '<button type="button" class="toggle' + (state.kind === k ? " on" : "") + '" data-kind="' + k + '" aria-pressed="' + (state.kind === k) + '">' + label + "</button>";
-    const quick = '<div class="quick">' + kindBtn("", "All") + kindBtn("shows", "Shows") + kindBtn("fest", "Festivals") +
-      qpick("csel", "Country", [["", "All countries"]].concat(countries.map((x) => [x.key, x.key + " (" + x.count + ")"])), state.country) + "</div>";
+    const quick = kindBtn("", "All") + kindBtn("shows", "Shows") + kindBtn("fest", "Festivals") +
+      qpick("csel", "Country", [["", "All countries"]].concat(countries.map((x) => [x.key, x.key + " (" + x.count + ")"])), state.country);
     return '' +
       '<div class="list-head"><div class="list-title"><h2>' + plural(list.length, "concert", "concerts") + "</h2>" +
       (F ? '<span class="chip"><span class="chip-label">' + F.label + "</span><strong>" + esc(F.show(state.filter.v)) + (state.filter.y ? " · " + esc(state.filter.y) : "") + '</strong><button type="button" id="clearf" aria-label="Clear filter"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button></span>' : "") +
-      "</div>" + searchBox("q", "Search concerts", "Search artist, venue, city, year", state.q) + "</div>" + quick +
-      table("concerts", CONCERT_COLS, concertRows(list), limitOf("concerts", 100), concertM);
+      "</div>" + searchBox("q", "Search concerts", "Search artist, venue, city, year", state.q) + "</div>" +
+      table("concerts", CONCERT_COLS, concertRows(list), limitOf("concerts", 100), concertM, quick);
   }
 
   function concertDetail(id) {
@@ -991,9 +993,9 @@
       cell(fmtDate(s.first), s.first), cell(fmtDate(s.last), s.last)]; });
     const toggle = shelf.size ? '<button type="button" class="toggle' + (state.shelfOnly ? " on" : "") + '" data-shelf="' + (state.shelfOnly ? "0" : "1") + '" aria-pressed="' + !!state.shelfOnly + '">' + VINYL(14) + " On the shelf</button>" : "";
     const setChip = state.artistSet === "homeAway" ? '<button type="button" class="toggle on" data-aset="" aria-label="Show all artists">Seen in Portugal and abroad ×</button>' : "";
-    return '<div class="list-head"><div class="list-title"><h2>' + plural(list.length, "artist", "artists") + "</h2>" + setChip + "</div>" + searchBox("aq", "Search artist", "Search artist", state.artistQ) + "</div>" + (toggle ? '<div class="quick">' + toggle + "</div>" : "") +
+    return '<div class="list-head"><div class="list-title"><h2>' + plural(list.length, "artist", "artists") + "</h2>" + setChip + "</div>" + searchBox("aq", "Search artist", "Search artist", state.artistQ) + "</div>" +
       table("artists", [{ label: "#", num: true, cls: "num" }, { label: "Artist" }, { label: "Concerts", num: true, cls: "num" }, { label: "First seen", cls: "muted" }, { label: "Last seen", cls: "muted" }], rows, limitOf("artists", 100),
-        (r) => ({ rank: r[0].h, title: r[1].h, sub: [r[3].s.slice(0, 4) === r[4].s.slice(0, 4) ? r[3].s.slice(0, 4) : r[3].s.slice(0, 4) + " – " + r[4].s.slice(0, 4)], value: r[2].h, unit: r[2].s === 1 ? "concert" : "concerts" }));
+        (r) => ({ rank: r[0].h, title: r[1].h, sub: [r[3].s.slice(0, 4) === r[4].s.slice(0, 4) ? r[3].s.slice(0, 4) : r[3].s.slice(0, 4) + " – " + r[4].s.slice(0, 4)], value: r[2].h, unit: r[2].s === 1 ? "concert" : "concerts" }), toggle);
   }
 
   // records by this artist in the Discogs collection
@@ -1114,10 +1116,10 @@
     const list = venues.filter((v) => !state.venueCity || v.city === state.venueCity);
     const vCities = countBy(venues, (v) => v.city);
     const rows = list.map((v) => { const f = firstVisit(v.key); return [cell(String(v.rank), v.rank), cell('<button class="open"' + vattr(v.key) + ">" + esc(v.name) + "</button>", v.name), cell(esc(v.city), v.city), cell(fmtDate(f), f), cell(String(v.count), v.count)]; });
-    const citySel = '<div class="quick">' + qpick("vsel", "City", [["", "All cities"]].concat(vCities.map((x) => [x.key, x.key + " (" + x.count + ")"])), state.venueCity) + "</div>";
-    return '<div class="list-head"><div class="list-title"><h2>' + plural(list.length, "venue", "venues") + '</h2><span class="muted">Festivals are counted separately</span></div></div>' + citySel +
+    const citySel = qpick("vsel", "City", [["", "All cities"]].concat(vCities.map((x) => [x.key, x.key + " (" + x.count + ")"])), state.venueCity);
+    return '<div class="list-head"><div class="list-title"><h2>' + plural(list.length, "venue", "venues") + '</h2><span class="muted">Festivals are counted separately</span></div></div>' +
       table("venues", [{ label: "#", num: true, cls: "num" }, { label: "Venue" }, { label: "City", cls: "muted" }, { label: "First visit", cls: "muted" }, { label: "Concerts", num: true, cls: "num" }], rows, 0,
-        (r) => ({ rank: r[0].h, title: r[1].h, sub: [r[2].h, "since " + r[3].s.slice(0, 4)], value: r[4].h, unit: r[4].s === 1 ? "concert" : "concerts" }));
+        (r) => ({ rank: r[0].h, title: r[1].h, sub: [r[2].h, "since " + r[3].s.slice(0, 4)], value: r[4].h, unit: r[4].s === 1 ? "concert" : "concerts" }), citySel);
   }
 
   const fesattr = (name) => ' data-fest="' + esc(name) + '"';
