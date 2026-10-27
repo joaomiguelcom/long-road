@@ -72,7 +72,7 @@
   .rank { display: inline-block; min-width: 24px; color: var(--muted); font-variant-numeric: tabular-nums; }
   .barbtn { display: block; width: 100%; background: none; border: 0; padding: 3px 0; color: inherit; text-align: left; cursor: pointer; font: inherit; }
   button.year { background: none; border: 0; padding: 0; color: inherit; cursor: pointer; font: inherit; }
-  .list-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 16px; }
+  .list-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 18px 16px; }
   .list-title { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; min-width: 0; }
   .list-title h2 { margin: 0; font: 500 26px/1.2 var(--display); }
   /* the title is mostly lowercase in a tall display font, so its visual middle sits lower than its box: nudge the subtitle to match */
@@ -214,6 +214,7 @@
   /* segmented control (iOS style): one pill, the chosen part lifted */
   .seg { display: inline-flex; background: var(--line); border-radius: 999px; padding: 3px; gap: 2px; }
   .seg button { font: inherit; font-size: 13px; background: none; border: 0; border-radius: 999px; padding: 3px 14px; color: var(--muted); cursor: pointer; }
+  .seg button:disabled { opacity: .35; cursor: default; }
   .seg button.on { background: var(--line-2); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,.35); }
   .records { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 8px; }
   .records a { display: flex; gap: 10px; align-items: center; padding: 8px 10px; border-radius: 8px; background: var(--line); color: inherit; text-decoration: none; }
@@ -644,6 +645,14 @@
     return '<span class="toggle qpick' + (cur ? " on" : "") + '"><span>' + (cur ? (prefix || "") + esc(on[1].replace(/ \([\d,]+\)$/, "")) : esc(label)) + '</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>' +
       '<select id="' + id + '" aria-label="' + label + '"' + (attrs || "") + ">" + opts.map((o) => '<option value="' + esc(o[0]) + '"' + (o[2] || "") + (o[0] === cur ? " selected" : "") + ">" + esc(o[1]) + "</option>").join("") + "</select></span>";
   };
+  // options for a filter chip: the values found in list (already narrowed by the other filters) with their counts;
+  // the current choice stays even when nothing is left for it
+  const facet = (list, keyFn, cur, allLabel, newestFirst) => {
+    let xs = countBy(list, keyFn);
+    if (newestFirst) xs.sort((a, b) => b.key.localeCompare(a.key));
+    if (cur && !xs.some((x) => x.key === cur)) xs.unshift({ key: cur, count: 0 });
+    return [["", allLabel]].concat(xs.map((x) => [x.key, x.key + " (" + x.count + ")"]));
+  };
   // round × at the end of a filter row while any of its filters (or the sort) is on
   const clearAll = (on, scope) => on || state.sorts[scope] ? '<button type="button" class="toggle clear-all" data-clear="' + scope + '" aria-label="Clear all filters" title="Clear all filters">' +
     '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>' : "";
@@ -918,14 +927,19 @@
     const F = state.filter && FILTERS[state.filter.f];
     let list = F ? concerts.filter((c) => F.test(c, state.filter.v) && (!state.filter.y || c.date.startsWith(state.filter.y))) : concerts;
     if (q) list = list.filter((c) => matches(c, q));
-    // quick filters on top of any other filter: festival or not, and country
-    if (state.kind) list = list.filter((c) => state.kind === "fest" ? !!c.festival : !c.festival);
-    if (state.country) list = list.filter((c) => c.country === state.country);
-    if (state.cYear) list = list.filter((c) => c.date.startsWith(state.cYear));
-    const kindBtn = (k, label) => '<button type="button" class="' + (state.kind === k ? "on" : "") + '" data-kind="' + k + '" aria-pressed="' + (state.kind === k) + '">' + label + "</button>";
+    // quick filters on top of any other filter: festival or not, country and year.
+    // Each one offers only what the others leave, with those counts.
+    const base = list;
+    const okKind = (c, k) => !k || (k === "fest" ? !!c.festival : !c.festival);
+    const okCountry = (c) => !state.country || c.country === state.country;
+    const okYear = (c) => !state.cYear || c.date.startsWith(state.cYear);
+    list = base.filter((c) => okKind(c, state.kind) && okCountry(c) && okYear(c));
+    const forKind = base.filter((c) => okCountry(c) && okYear(c));
+    const kindBtn = (k, label) => { const none = k && !forKind.some((c) => okKind(c, k));
+      return '<button type="button" class="' + (state.kind === k ? "on" : "") + '" data-kind="' + k + '" aria-pressed="' + (state.kind === k) + '"' + (none && state.kind !== k ? " disabled" : "") + ">" + label + "</button>"; };
     const quick = '<div class="seg" role="group" aria-label="Type">' + kindBtn("", "All") + kindBtn("shows", "Shows") + kindBtn("fest", "Festivals") + "</div>" +
-      qpick("csel", "Country", [["", "All countries"]].concat(countries.map((x) => [x.key, x.key + " (" + x.count + ")"])), state.country) +
-      qpick("cysel", "Year", [["", "All years"]].concat(byYear.slice().reverse().map((y) => [y.key, y.key + " (" + y.count + ")"])), state.cYear) +
+      qpick("csel", "Country", facet(base.filter((c) => okKind(c, state.kind) && okYear(c)), (c) => c.country, state.country, "All countries"), state.country) +
+      qpick("cysel", "Year", facet(base.filter((c) => okKind(c, state.kind) && okCountry(c)), (c) => c.date.slice(0, 4), state.cYear, "All years", true), state.cYear) +
       clearAll(state.kind || state.country || state.cYear || state.q || state.filter, "concerts");
     return '' +
       '<div class="list-head"><div class="list-title"><h2>' + plural(list.length, "concert", "concerts") + "</h2>" +
@@ -1428,9 +1442,17 @@
     const withCoords = concerts.filter((c) => c.lat != null && c.lng != null);
     if (!withCoords.length) return '<div class="empty">The map needs coordinates. Run <code>export.ps1</code> again (the new version saves them) and reload this page.</div>';
     const list = mapList();
-    const decades = [...new Set(byYear.map((y) => y.key.slice(0, 3) + "0s"))].reverse();
-    const mKind = (k, label) => '<button type="button" class="' + (state.mapKind === k ? "on" : "") + '" data-mkind="' + k + '" aria-pressed="' + (state.mapKind === k) + '">' + label + "</button>";
-    const sel = '<div class="quick"><div class="seg" role="group" aria-label="Type">' + mKind("", "All") + mKind("shows", "Shows") + mKind("fest", "Festivals") + "</div>" + qpick("msel", "Year", [["", "All years"]].concat(decades.map((d) => [d, "The " + d]), byYear.slice().reverse().map((y) => [y.key, y.key])), state.mapYears) + clearAll(state.mapKind || state.mapYears, "map") + "</div>";
+    // years and decades offered are only those with concerts of the chosen type, and the other way round
+    const okKind = (c, k) => !k || (k === "fest") === !!c.festival;
+    const okYears = (c) => !state.mapYears || (state.mapYears.endsWith("s") ? c.date.slice(0, 3) === state.mapYears.slice(0, 3) : c.date.startsWith(state.mapYears));
+    const kindList = withCoords.filter((c) => okKind(c, state.mapKind));
+    const yearsOf = countBy(kindList, (c) => c.date.slice(0, 4)).sort((a, b) => b.key.localeCompare(a.key));
+    const decadesOf = countBy(kindList, (c) => c.date.slice(0, 3) + "0s").sort((a, b) => b.key.localeCompare(a.key));
+    const mOpts = [["", "All years"]].concat(decadesOf.map((d) => [d.key, "The " + d.key + " (" + d.count + ")"]), yearsOf.map((y) => [y.key, y.key + " (" + y.count + ")"]));
+    if (state.mapYears && !mOpts.some((o) => o[0] === state.mapYears)) mOpts.splice(1, 0, [state.mapYears, state.mapYears + " (0)"]);
+    const mKind = (k, label) => { const none = k && !withCoords.some((c) => okKind(c, k) && okYears(c));
+      return '<button type="button" class="' + (state.mapKind === k ? "on" : "") + '" data-mkind="' + k + '" aria-pressed="' + (state.mapKind === k) + '"' + (none && state.mapKind !== k ? " disabled" : "") + ">" + label + "</button>"; };
+    const sel = '<div class="quick"><div class="seg" role="group" aria-label="Type">' + mKind("", "All") + mKind("shows", "Shows") + mKind("fest", "Festivals") + "</div>" + qpick("msel", "Year", mOpts, state.mapYears) + clearAll(state.mapKind || state.mapYears, "map") + "</div>";
     return '<div class="list-head"><div class="list-title"><h2>Map</h2><span class="muted">' + plural(new Set(list.map((c) => c.city)).size, "city", "cities") + " · " + plural(new Set(list.map((c) => c.country)).size, "country", "countries") + "</span></div></div>" + sel + '<div id="map" role="region" aria-label="Map of concert cities"></div>' +
       '<p class="tag" style="margin:0">Circles are cities (setlist.fm gives coordinates per city, not per venue). Bigger means more concerts; white circles are cities you went to only once. Click a circle to see its concerts.</p>';
   }
