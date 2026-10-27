@@ -60,7 +60,7 @@ jobs:
       - name: Build site
         run: |
           mkdir -p _site
-          cp index.html upcoming.js extra.js manifest.webmanifest sw.js _site/
+          cp index.html upcoming.js extra.js widget.js manifest.webmanifest sw.js _site/
           # the app only reads these three; the raw exports stay in the repo
           mkdir -p _site/data && cp data/data.js _site/data/ && { cp data/discogs.js _site/data/ || true; } && { cp data/popularity.js _site/data/ || true; }
           if [ -d img ]; then cp -r img _site/; fi
