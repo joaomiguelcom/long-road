@@ -206,7 +206,7 @@
   .empty { padding: 48px 0; color: var(--muted); }
   @media (max-width: 600px) {
     /* fun facts: two narrow columns on phones */
-    .fun-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+    .fun-grid { grid-template-columns: 1fr 1fr; grid-auto-rows: 1fr; gap: 10px; }
     .fun-grid .fun { padding: 14px; overflow-wrap: anywhere; }
     .fun-grid .fun .big { font-size: 21px; }
     .fun-grid .fun .small { font-size: 12px; }
@@ -829,9 +829,9 @@
         (furthest.c ? fun("Furthest from home", fmtN(Math.round(furthest.k)) + " km", esc(furthest.c.artist) + " · " + esc(furthest.c.city) + ", " + fmtDate(furthest.c.date).slice(-4), openAttr(furthest.c)) : "") +
         fun("Calendar coverage", daysCovered + " of 366", (366 - daysCovered) + " days still without a concert") +
         fun("Cities", fmtN(cities.length), esc(cities[0].key) + " leads with " + fmtN(cities[0].count) + " concerts", tabAttr("map")) +
-        (homeAway.length ? fun("Home and away", plural(homeAway.length, "artist", "artists"), "Seen in Portugal and abroad · " + homeAway.slice(0, 2).map((a) => esc(a.key)).join(", ") + (homeAway.length > 2 ? "…" : ""), ' data-aset="homeAway"') : "") +
+        (homeAway.length ? fun("Home and away", plural(homeAway.length, "artist", "artists"), "Seen in Portugal and abroad", ' data-aset="homeAway"') : "") +
         (cityAbroad ? fun("Favourite city abroad", esc(cityAbroad.key), plural(cityAbroad.count, "concert", "concerts") + " · " + fmtN(abroad.length) + " outside Portugal", fattr("city", cityAbroad.key)) : "") +
-        (reunion ? fun("Longest wait for an encore", esc(reunion.artist), Math.floor(reunion.days / 365.25) + " years between " + fmtDate(reunion.from) + " and " + fmtDate(reunion.to), aattr(reunion.artist)) : "") +
+        (reunion ? fun("Longest wait to return", esc(reunion.artist), Math.floor(reunion.days / 365.25) + " years · " + reunion.from.slice(0, 4) + " to " + reunion.to.slice(0, 4), aattr(reunion.artist)) : "") +
         (songs.length ? fun("One-time songs", fmtN(heardOnce), "Songs you only heard live once", tabAttr("songs")) : "") +
       "</div></section>" +
       milestones() + about();
