@@ -523,7 +523,7 @@
   };
   const artists = countBy(concerts, (c) => c.artist);
   const venueKey = (c) => c.venue + "||" + (c.city || "");
-  const venues = countBy(concerts.filter((c) => !c.festival), venueKey).map((v) => { const [name, city] = v.key.split("||"); return { ...v, name, city }; });
+  const venues = countBy(concerts.filter((c) => !c.festival), venueKey).map((v) => { const [name, city] = v.key.split("||"); return { ...v, name, city, country: (concerts.find((c) => !c.festival && venueKey(c) === v.key) || {}).country || "" }; });
   const festivals = (() => {
     const m = new Map();
     for (const c of concerts) if (c.festival) {
@@ -727,7 +727,7 @@
     festivals: { label: "Festival concerts", test: (c, v) => !!c.festival && c.date.startsWith(v), show: (v) => v }
   };
 
-  const state = { tab: "overview", q: "", detail: null, limits: {}, artistQ: "", songQ: "", filter: null, artist: null, venue: null, festival: null, song: null, kind: "", country: "", venueCity: "", mapYears: "", year: byYear.length ? byYear[byYear.length - 1].key : null, sorts: {} };
+  const state = { tab: "overview", q: "", detail: null, limits: {}, artistQ: "", songQ: "", filter: null, artist: null, venue: null, festival: null, song: null, kind: "", country: "", venueCountry: "", venueCity: "", mapYears: "", year: byYear.length ? byYear[byYear.length - 1].key : null, sorts: {} };
   const limitOf = (id, def) => state.limits[id] || def;
   const TABS = [["overview", "Overview"], ["concerts", "Concerts"], ["artists", "Artists"], ["venues", "Venues"], ["festivals", "Festivals"], ["songs", "Songs"], ["years", "Year in review"], ["map", "Map"]];
 
@@ -1119,10 +1119,13 @@
   function venueList() {
     if (state.venue) return venuePage(state.venue);
     const firstVisit = (key) => { const l = concerts.filter((c) => !c.festival && venueKey(c) === key); return l[l.length - 1].date; };
-    const list = venues.filter((v) => !state.venueCity || v.city === state.venueCity);
-    const vCities = countBy(venues, (v) => v.city);
+    // country first, then the cities of that country
+    const inCountry = venues.filter((v) => !state.venueCountry || v.country === state.venueCountry);
+    const list = inCountry.filter((v) => !state.venueCity || v.city === state.venueCity);
+    const vCities = countBy(inCountry, (v) => v.city);
     const rows = list.map((v) => { const f = firstVisit(v.key); return [cell(String(v.rank), v.rank), cell('<button class="open"' + vattr(v.key) + ">" + esc(v.name) + "</button>", v.name), cell(esc(v.city), v.city), cell(fmtDate(f), f), cell(String(v.count), v.count)]; });
-    const citySel = qpick("vsel", "City", [["", "All cities"]].concat(vCities.map((x) => [x.key, x.key + " (" + x.count + ")"])), state.venueCity);
+    const vCountries = countBy(venues, (v) => v.country);
+    const citySel = qpick("vcsel", "Country", [["", "All countries"]].concat(vCountries.map((x) => [x.key, x.key + " (" + x.count + ")"])), state.venueCountry) + qpick("vsel", "City", [["", "All cities"]].concat(vCities.map((x) => [x.key, x.key + " (" + x.count + ")"])), state.venueCity);
     return '<div class="list-head"><div class="list-title"><h2>' + plural(list.length, "venue", "venues") + '</h2><span class="muted">Festivals are counted separately</span></div></div>' +
       table("venues", [{ label: "#", num: true, cls: "num" }, { label: "Venue" }, { label: "City", cls: "muted" }, { label: "First visit", cls: "muted" }, { label: "Concerts", num: true, cls: "num" }], rows, 0,
         (r) => ({ rank: r[0].h, title: r[1].h, sub: [r[2].h, "since " + r[3].s.slice(0, 4)], value: r[4].h, unit: r[4].s === 1 ? "concert" : "concerts" }), citySel);
@@ -1562,6 +1565,7 @@
     const pick = e.target.closest(".qpick");
     if (pick) pick.classList.toggle("on", !!e.target.value);
     if (e.target.id === "ysel") go(() => { state.year = e.target.value; });
+    if (e.target.id === "vcsel") { state.venueCountry = e.target.value; state.venueCity = ""; renderKeeping("vcsel"); return; }
     if (e.target.id === "vsel") { state.venueCity = e.target.value; renderKeeping("vsel"); return; }
     if (e.target.id === "msel") { state.mapYears = e.target.value; render(); return; }
     if (e.target.id === "csel") { state.country = e.target.value; state.limits.concerts = 0; renderKeeping("csel"); }
