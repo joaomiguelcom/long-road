@@ -57,19 +57,18 @@ async function build() {
     const a = w.addText(s.artist); a.font = Font.boldSystemFont(22); a.textColor = TXT; a.lineLimit = 2; a.minimumScaleFactor = 0.6;
     const p = w.addText(shortDate(s.day) + " · " + s.place.split(", ")[0]); p.font = Font.systemFont(13); p.textColor = MUT; p.lineLimit = 1;
     w.addSpacer(4);
-    const row = w.addStack(); row.bottomAlignContent();
+    const row = w.addStack(); row.centerAlignContent();
     const big = row.addText(s.days === 0 ? "Tonight" : String(s.days)); big.font = Font.heavySystemFont(s.days === 0 ? 32 : 46); big.textColor = ACC; big.minimumScaleFactor = 0.7;
     if (s.days > 0) {
-      row.addSpacer(5);
+      row.addSpacer(6);
       const u = row.addStack(); u.layoutVertically();
       const u1 = u.addText(s.days === 1 ? "day" : "days"); u1.font = Font.mediumSystemFont(13); u1.textColor = MUT;
       const u2 = u.addText("to go"); u2.font = Font.mediumSystemFont(13); u2.textColor = MUT;
-      u.addSpacer(7);
     }
     if (shows[1]) {
       w.addSpacer();
       const t = w.addText("Then " + shortDate(shows[1].day) + " · " + shows[1].artist); t.font = Font.systemFont(11); t.textColor = MUT; t.lineLimit = 1; t.minimumScaleFactor = 0.8;
-    }
+    } else w.addSpacer();
     setRefresh(w);
     return w;
   }
