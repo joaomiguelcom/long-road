@@ -40,8 +40,8 @@ async function build() {
   const w = new ListWidget();
   w.backgroundColor = BG;
   // no url: iOS always opens the widget's app on a tap, so leaving it out is the closest to "nothing happens"
-  w.setPadding(14, 14, 14, 14);
   const family = config.widgetFamily || "medium";
+  if (family === "small") w.setPadding(20, 14, 20, 14); else w.setPadding(14, 14, 14, 14);
   let shows = [];
   try { shows = await loadShows(); } catch (e) { /* offline: show the empty state */ }
   header(w);
@@ -56,9 +56,9 @@ async function build() {
     const s = shows[0];
     const a = w.addText(s.artist); a.font = Font.boldSystemFont(22); a.textColor = TXT; a.lineLimit = 2; a.minimumScaleFactor = 0.6;
     const p = w.addText(shortDate(s.day) + " · " + s.place.split(", ")[0]); p.font = Font.systemFont(13); p.textColor = MUT; p.lineLimit = 1;
-    w.addSpacer();
+    w.addSpacer(4);
     const row = w.addStack(); row.bottomAlignContent();
-    const big = row.addText(s.days === 0 ? "Tonight" : String(s.days)); big.font = Font.heavySystemFont(s.days === 0 ? 32 : 50); big.textColor = ACC; big.minimumScaleFactor = 0.7;
+    const big = row.addText(s.days === 0 ? "Tonight" : String(s.days)); big.font = Font.heavySystemFont(s.days === 0 ? 32 : 46); big.textColor = ACC; big.minimumScaleFactor = 0.7;
     if (s.days > 0) {
       row.addSpacer(5);
       const u = row.addStack(); u.layoutVertically();
@@ -67,7 +67,7 @@ async function build() {
       u.addSpacer(7);
     }
     if (shows[1]) {
-      w.addSpacer(2);
+      w.addSpacer();
       const t = w.addText("Then " + shortDate(shows[1].day) + " · " + shows[1].artist); t.font = Font.systemFont(11); t.textColor = MUT; t.lineLimit = 1; t.minimumScaleFactor = 0.8;
     }
     setRefresh(w);
