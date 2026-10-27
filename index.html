@@ -52,7 +52,7 @@
   nav::-webkit-scrollbar { display: none; }
   nav button { background: none; border: 0; border-bottom: 3px solid transparent; color: var(--muted); padding: 12px 14px; min-height: 44px; cursor: pointer; white-space: nowrap; font-weight: 500; }
   nav button[aria-current="page"] { color: var(--text); border-bottom-color: var(--accent); font-weight: 600; }
-  main.wrap { padding-top: 28px; padding-bottom: 48px; display: flex; flex-direction: column; gap: 24px; }
+  main.wrap { padding-top: 18px; padding-bottom: 48px; display: flex; flex-direction: column; gap: 24px; }
   .grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--min, 220px)), 1fr)); }
   .card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 20px; min-width: 0; }
   .card h2 { margin: 0 0 14px; font: 500 22px/1.2 var(--display); }
@@ -121,6 +121,9 @@
   .m-val small { display: block; margin-top: 3px; font: 400 11px/1 Inter, system-ui, sans-serif; color: var(--muted); }
   .mchip { display: none; }
   .quick [data-clear] { order: 9; }
+  .clear-all { padding: 0; width: 30px; height: 30px; justify-content: center; flex: none; }
+  .clear-all svg { flex: none; }
+  .quick .icon-chip { padding: 0; width: 30px; height: 30px; justify-content: center; flex: none; }
   /* filters belong to the search above them */
   .list-head + .quick { margin-top: -8px; }
   table { width: 100%; min-width: 760px; border-collapse: collapse; font-size: 14px; }
@@ -638,11 +641,12 @@
   // prefix is shown only on the chip ("Sort: Artist"); o[2] adds attributes to an option; attrs go on the select
   const qpick = (id, label, opts, cur, prefix, attrs) => {
     const on = opts.find((o) => o[0] === cur) || opts[0];
-    return '<span class="toggle qpick' + (cur ? " on" : "") + '"><span>' + (prefix || "") + esc(on[1]) + '</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>' +
+    return '<span class="toggle qpick' + (cur ? " on" : "") + '"><span>' + (cur ? (prefix || "") + esc(on[1].replace(/ \([\d,]+\)$/, "")) : esc(label)) + '</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>' +
       '<select id="' + id + '" aria-label="' + label + '"' + (attrs || "") + ">" + opts.map((o) => '<option value="' + esc(o[0]) + '"' + (o[2] || "") + (o[0] === cur ? " selected" : "") + ">" + esc(o[1]) + "</option>").join("") + "</select></span>";
   };
-  // shown at the end of a filter row while any of its filters is on
-  const clearAll = (on, scope) => on ? '<button type="button" class="toggle" data-clear="' + scope + '">Clear all ×</button>' : "";
+  // round × at the end of a filter row while any of its filters (or the sort) is on
+  const clearAll = (on, scope) => on || state.sorts[scope] ? '<button type="button" class="toggle clear-all" data-clear="' + scope + '" aria-label="Clear all filters" title="Clear all filters">' +
+    '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>' : "";
   const fattr = (f, v, y) => ' data-f="' + f + '" data-v="' + esc(v) + '"' + (y ? ' data-y="' + esc(y) + '"' : "");
   const aattr = (name) => ' data-artist="' + esc(name) + '"';
   // attrFn(x) returns [field, value, year?] (opens the concert list filtered) or an attribute string
@@ -683,9 +687,9 @@
       return st.dir * r;
     });
     const shown = limit ? rows.slice(0, limit) : rows;
-    const sortChips = m ? '<span class="mchip">' + qpick("ms-" + id, "Sort by", [["", "Default"]].concat(cols.map((c, i) => c.label === "#" ? null : [String(i), c.label, ' data-num="' + (c.num ? 1 : 0) + '"']).filter(Boolean)),
-      st ? String(st.col) : "", "Sort: ", ' data-sortsel="' + id + '"') +
-      (st ? '<button type="button" class="toggle on" data-sortdir="' + id + '" aria-label="' + (st.dir > 0 ? "Ascending, switch to descending" : "Descending, switch to ascending") + '">' + (st.dir > 0 ? "↑" : "↓") + "</button>" : "") + "</span>" : "";
+    const sortChips = m ? '<span class="mchip">' + qpick("ms-" + id, "Sort", [["", "Default"]].concat(cols.map((c, i) => c.label === "#" ? null : [String(i), c.label, ' data-num="' + (c.num ? 1 : 0) + '"']).filter(Boolean)),
+      st ? String(st.col) : "", "", ' data-sortsel="' + id + '"') +
+      (st ? '<button type="button" class="toggle on icon-chip" data-sortdir="' + id + '" aria-label="' + (st.dir > 0 ? "Ascending, switch to descending" : "Descending, switch to ascending") + '">' + (st.dir > 0 ? "↑" : "↓") + "</button>" : "") + "</span>" : "";
     const sortBar = bar ? '<div class="quick">' + bar + sortChips + "</div>" : m ? '<div class="quick msort">' + sortChips + "</div>" : "";
     const mlist = m ? '<ul class="mlist">' + shown.map((r) => {
       // links in the second line are spans: Safari keeps a button as one block, so a long name broke the line apart
@@ -1426,7 +1430,7 @@
     const list = mapList();
     const decades = [...new Set(byYear.map((y) => y.key.slice(0, 3) + "0s"))].reverse();
     const mKind = (k, label) => '<button type="button" class="' + (state.mapKind === k ? "on" : "") + '" data-mkind="' + k + '" aria-pressed="' + (state.mapKind === k) + '">' + label + "</button>";
-    const sel = '<div class="quick"><div class="seg" role="group" aria-label="Type">' + mKind("", "All") + mKind("shows", "Shows") + mKind("fest", "Festivals") + "</div>" + qpick("msel", "Years", [["", "All years"]].concat(decades.map((d) => [d, "The " + d]), byYear.slice().reverse().map((y) => [y.key, y.key])), state.mapYears) + clearAll(state.mapKind || state.mapYears, "map") + "</div>";
+    const sel = '<div class="quick"><div class="seg" role="group" aria-label="Type">' + mKind("", "All") + mKind("shows", "Shows") + mKind("fest", "Festivals") + "</div>" + qpick("msel", "Year", [["", "All years"]].concat(decades.map((d) => [d, "The " + d]), byYear.slice().reverse().map((y) => [y.key, y.key])), state.mapYears) + clearAll(state.mapKind || state.mapYears, "map") + "</div>";
     return '<div class="list-head"><div class="list-title"><h2>Map</h2><span class="muted">' + plural(new Set(list.map((c) => c.city)).size, "city", "cities") + " · " + plural(new Set(list.map((c) => c.country)).size, "country", "countries") + "</span></div></div>" + sel + '<div id="map" role="region" aria-label="Map of concert cities"></div>' +
       '<p class="tag" style="margin:0">Circles are cities (setlist.fm gives coordinates per city, not per venue). Bigger means more concerts; white circles are cities you went to only once. Click a circle to see its concerts.</p>';
   }
@@ -1584,6 +1588,7 @@
       if (d.clear === "artists") Object.assign(state, { shelfOnly: false, artistQ: "", artistSet: null });
       if (d.clear === "festivals") state.festCountry = "";
       if (d.clear === "map") Object.assign(state, { mapKind: "", mapYears: "" });
+      delete state.sorts[d.clear];
       state.limits = {}; render();
     }
     else if (d.shelf) go(() => { state.tab = "artists"; state.artist = null; state.detail = null; state.shelfOnly = d.shelf === "1"; });
