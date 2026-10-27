@@ -199,6 +199,8 @@
   .setstrip-legend { font-size: 13px; margin-top: 10px; } .setstrip-legend b { color: var(--text); font-weight: 600; }
   .setstrip-key { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--text); opacity: .7; margin-right: 5px; vertical-align: 0; }
   .new-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); margin-right: 6px; vertical-align: 2px; }
+  /* in concert lists the dot hangs in the margin, so the names stay aligned */
+  .open > .new-dot { position: absolute; margin: .5em 0 0 -12px; }
   .delta { font: 500 14px/1 Inter, system-ui, sans-serif; margin-left: 8px; vertical-align: middle; color: var(--muted); white-space: nowrap; }
   .delta.up { color: var(--ok); }
   .delta.down { color: var(--bad); }
