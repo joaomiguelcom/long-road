@@ -26,7 +26,7 @@
 <style>
   :root {
     --bg: #0F1115; --surface: #181B21; --line: #262A31; --line-2: #3A3F48;
-    --text: #ECEDEE; --muted: #9AA0A6; --accent: #F2A541; --accent-2: #FFC876; --ok: #7BC67E;
+    --text: #ECEDEE; --muted: #9AA0A6; --accent: #F2A541; --accent-2: #FFC876; --ok: #7BC67E; --bad: #F2726B;
     --display: Oswald, "Arial Narrow", sans-serif;
   }
   * { box-sizing: border-box; }
@@ -87,6 +87,10 @@
   .year .v { font-size: 11px; color: var(--muted); }
   .year .b { width: 100%; background: var(--accent); border-radius: 3px 3px 0 0; min-height: 2px; }
   .year .y { font-size: 11px; color: var(--muted); }
+  .months { height: 170px; overflow: visible; }
+  .months .year { flex: 1 1 0; min-width: 0; }
+  .year .b.part { background: rgba(242,165,65,.45); }
+  .year .b.none { background: var(--line); }
   .fun { display: flex; flex-direction: column; gap: 2px; }
   button.card { width: 100%; display: flex; flex-direction: column; justify-content: flex-start; align-items: stretch; text-align: left; font: inherit; color: inherit; cursor: pointer; transition: border-color .15s; }
   button.card:focus-visible { border-color: var(--accent); }
@@ -148,11 +152,11 @@
   .fday:only-of-type { display: block; }
   .delta { font: 500 14px/1 Inter, system-ui, sans-serif; margin-left: 8px; vertical-align: middle; color: var(--muted); white-space: nowrap; }
   .delta.up { color: var(--ok); }
+  .delta.down { color: var(--bad); }
   .edition-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; margin-bottom: 8px; }
   .year-link { background: none; border: 0; padding: 0; font: 600 22px/1.1 var(--display); color: var(--text); cursor: pointer; }
   .hist { text-align: left; font: inherit; font-size: 13px; background: var(--line); border: 0; border-radius: 6px; padding: 4px 9px; color: var(--muted); cursor: pointer; }
   span.hist { cursor: default; } /* plain labels (openers, closers): not links */
-  .hist.gap { opacity: .35; }
   .hist.cur { background: var(--accent); color: #0F1115; font-weight: 600; cursor: default; }
   .sec-title { margin: 0; font: 500 18px/1.2 var(--display); }
   .badge { font-size: 11px; border-radius: 999px; padding: 1px 8px; margin-left: 4px; background: rgba(242,165,65,.15); color: var(--accent); white-space: nowrap; }
@@ -210,7 +214,6 @@
   .year-nav { display: flex; gap: 8px; align-items: center; }
   .year-nav .btn { align-self: auto; }
   select { -webkit-appearance: none; appearance: none; background: var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23F2A541' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 14px center; color: var(--text); border: 1px solid var(--line-2); border-radius: 8px; padding: 10px 42px 10px 16px; min-height: 44px; font: inherit; font-size: 16px; cursor: pointer; }
-  #map.mini-map { height: 220px; }
   #map { height: min(70vh, 640px); border-radius: 12px; border: 1px solid var(--line); background: #1b1d22; }
   .leaflet-popup-content-wrapper, .leaflet-popup-tip { background: var(--surface); color: var(--text); }
   .leaflet-popup-content { font: 14px/1.45 Inter, system-ui, sans-serif; }
@@ -246,7 +249,7 @@
   @media (hover: hover) {
     a:hover { color: var(--accent-2); }
     .barbtn:hover .row span:first-child { color: var(--accent); }
-    .barbtn:hover .fill, .year:hover .b { background: var(--accent-2); }
+    .barbtn:hover .fill, button.year:hover .b { background: var(--accent-2); }
     .chip button:hover { color: var(--text); background: var(--line); }
     button.card:hover { border-color: var(--accent); }
     td .open:hover { color: var(--accent); }
@@ -543,7 +546,7 @@
   // a song belongs to whoever wrote it: Alive played by Eddie Vedder is still Pearl Jam's Alive
   const songOwner = (s, c) => s.cover || c.artist;
   const songKey = (s, c) => plain(s.name) + "||" + plain(songOwner(s, c));
-  const HOME = [41.15, -8.61];   // Porto: distances and the map lines start here
+  const HOME = [41.15, -8.61];   // Porto: distances start here
   const songMap = new Map();      // by song, for the Songs tab
   const playedMap = new Map();    // by the artist on stage, for artist pages
   let songsHeard = 0;
@@ -706,7 +709,7 @@
     festivals: { label: "Festival concerts", test: (c, v) => !!c.festival && c.date.startsWith(v), show: (v) => v }
   };
 
-  const state = { tab: "overview", q: "", detail: null, limits: {}, artistQ: "", songQ: "", filter: null, artist: null, venue: null, festival: null, song: null, kind: "", country: "", artistNew: "", venueCity: "", songCovers: false, mapYears: "", year: byYear.length ? byYear[byYear.length - 1].key : null, sorts: {} };
+  const state = { tab: "overview", q: "", detail: null, limits: {}, artistQ: "", songQ: "", filter: null, artist: null, venue: null, festival: null, song: null, kind: "", country: "", venueCity: "", mapYears: "", year: byYear.length ? byYear[byYear.length - 1].key : null, sorts: {} };
   const limitOf = (id, def) => state.limits[id] || def;
   const TABS = [["overview", "Overview"], ["concerts", "Concerts"], ["artists", "Artists"], ["venues", "Venues"], ["festivals", "Festivals"], ["songs", "Songs"], ["years", "Year in review"], ["map", "Map"]];
 
@@ -972,16 +975,14 @@
   function artistList() {
     if (state.artist) return artistPage(state.artist);
     const q = state.artistQ.trim().toLowerCase();
-    const list = artists.filter((a) => (!q || a.key.toLowerCase().includes(q)) && (!state.shelfOnly || onShelf(a.key)) && (state.artistSet !== "homeAway" || homeAwaySet.has(a.key)) && (!state.artistNew || firstSeen.get(a.key).startsWith(state.artistNew)));
+    const list = artists.filter((a) => (!q || a.key.toLowerCase().includes(q)) && (!state.shelfOnly || onShelf(a.key)) && (state.artistSet !== "homeAway" || homeAwaySet.has(a.key)));
     const mark = (k) => onShelf(k) ? ' <span class="on-shelf" title="On the record shelf">' + VINYL(14) + "</span>" : "";
     const rows = list.map((a) => { const s = artistSpan(a.key); return [
       cell(String(a.rank), a.rank), cell(artistBtn(a.key) + mark(a.key), a.key), cell(String(a.count), a.count),
       cell(fmtDate(s.first), s.first), cell(fmtDate(s.last), s.last)]; });
     const toggle = shelf.size ? '<button type="button" class="toggle' + (state.shelfOnly ? " on" : "") + '" data-shelf="' + (state.shelfOnly ? "0" : "1") + '" aria-pressed="' + !!state.shelfOnly + '">' + VINYL(14) + " On the shelf</button>" : "";
-    const newSel = '<label for="nsel" class="sr-only">First seen in</label><select id="nsel" class="qsel"><option value="">First seen: any year</option>' +
-      byYear.slice().reverse().map((y) => '<option value="' + y.key + '"' + (state.artistNew === y.key ? " selected" : "") + ">New in " + y.key + "</option>").join("") + "</select>";
     const setChip = state.artistSet === "homeAway" ? '<button type="button" class="toggle on" data-aset="" aria-label="Show all artists">Seen in Portugal and abroad ×</button>' : "";
-    return '<div class="list-head"><div class="list-title"><h2>' + plural(list.length, "artist", "artists") + "</h2>" + setChip + toggle + newSel + "</div>" + searchBox("aq", "Search artist", "Search artist", state.artistQ) + "</div>" +
+    return '<div class="list-head"><div class="list-title"><h2>' + plural(list.length, "artist", "artists") + "</h2>" + setChip + toggle + "</div>" + searchBox("aq", "Search artist", "Search artist", state.artistQ) + "</div>" +
       table("artists", [{ label: "#", num: true, cls: "num" }, { label: "Artist" }, { label: "Concerts", num: true, cls: "num" }, { label: "First seen", cls: "muted" }, { label: "Last seen", cls: "muted" }], rows, limitOf("artists", 100),
         (r) => ({ rank: r[0].h, title: r[1].h, sub: [r[3].s.slice(0, 4) === r[4].s.slice(0, 4) ? r[3].s.slice(0, 4) : r[3].s.slice(0, 4) + " – " + r[4].s.slice(0, 4)], value: r[2].h, unit: r[2].s === 1 ? "concert" : "concerts" }));
   }
@@ -1030,12 +1031,10 @@
           (aDebuts.length ? "<li>Live debuts you saw: " + aDebuts.map((d) => esc(d.name) + " (" + d.date.slice(0, 4) + ")").join(" · ") + "</li>" : "") +
         "</ul></section>";
     })() : "";
-    // every year from the first to the last time, so the gaps show too
-    const aYears = countBy(list, (c) => c.date.slice(0, 4));
-    const y0 = +first.date.slice(0, 4), y1 = +last.date.slice(0, 4);
-    const timeline = list.length > 1 && y1 > y0 ? '<div class="history"><span class="muted">Years</span><div class="history-list">' +
-      Array.from({ length: y1 - y0 + 1 }, (_, i) => String(y0 + i)).map((y) => { const n = (aYears.find((x) => x.key === y) || {}).count;
-        return n ? '<button type="button" class="hist"' + fattr("artist", name, y) + ">" + y + (n > 1 ? " ×" + n : "") + "</button>" : '<span class="hist gap" aria-label="' + y + ': not seen">' + y + "</span>"; }).join("") + "</div></div>" : "";
+    // only the years he saw them
+    const aYears = countBy(list, (c) => c.date.slice(0, 4)).sort((a, b) => a.key.localeCompare(b.key));
+    const timeline = aYears.length > 1 ? '<div class="history"><span class="muted">Years</span><div class="history-list">' +
+      aYears.map((y) => '<button type="button" class="hist"' + fattr("artist", name, y.key) + ">" + y.key + (y.count > 1 ? " ×" + y.count : "") + "</button>").join("") + "</div></div>" : "";
     const related = (RELATED[name] || []).map((r) => artists.find((x) => x.key === r)).filter(Boolean);
     return '<div class="detail-wide">' +
       '<button class="btn" id="backArtists">← All artists</button>' +
@@ -1094,8 +1093,6 @@
       "</section>" +
       (regulars.length ? '<section class="card"><h2>Most seen here</h2>' + bars(regulars.slice(0, 10), (a) => esc(a.key), (a) => aattr(a.key)) + "</section>" : "") +
       (vYears.length > 1 ? '<div class="history"><span class="muted">By year</span><div class="history-list">' + vYears.map((y) => '<button type="button" class="hist"' + fattr("venue", key, y.key) + ">" + y.key + (y.count > 1 ? " ×" + y.count : "") + "</button>").join("") + "</div></div>" : "") +
-      '<section class="card"><h2>Where</h2><div id="map" class="mini-map" role="region" aria-label="Map of ' + esc(v.city) + '"></div>' +
-        '<p class="tag" style="margin:10px 0 0">setlist.fm gives coordinates per city, so the pin marks ' + esc(v.city) + ", not the venue itself.</p></section>" +
       (facts.length ? '<section class="card"><h2>Venue facts</h2><ul class="facts-list">' + facts.map((f) => "<li>" + f + "</li>").join("") + "</ul></section>" : "") +
       '<section class="card"><div class="card-head"><h2>Concerts</h2><button class="link"' + fattr("venue", key) + ">Open in concert list</button></div>" +
         table("venue-concerts", CONCERT_COLS, concertRows(list), 0, concertM) + "</section>" +
@@ -1230,7 +1227,7 @@
     if (state.song) return songPage(state.song);
     const q = plain(state.songQ);
     // songs whose title matches come first, then songs by matching artists
-    const pool = state.songCovers ? songs.filter((s) => s.by.size) : songs;
+    const pool = songs;
     const list = q ? pool.filter((s) => plain(s.name).includes(q)).concat(pool.filter((s) => !plain(s.name).includes(q) && [s.artist, ...s.by].some((a) => plain(a).includes(q)))) : pool;
     // an original by an artist João never saw is shown as a cover of whoever played it, so it does not look like he saw them
     const seen = (a) => artists.some((x) => x.key === a);
@@ -1240,7 +1237,7 @@
     const rows = list.map((s) => [cell(String(s.rank), s.rank), cell('<button type="button" class="open"' + sattr(s.key) + ">" + esc(s.name) + "</button>", s.name), cell(songArtist(s), seen(s.artist) ? s.artist : [...s.by][0]), cell(String(s.count), s.count)]);
     const coverRows = covers.map((x) => [cell(esc(x.name), x.name), cell(esc(x.original), x.original), cell(artistBtn(x.artist, "open muted-btn"), x.artist), cell(String(x.count), x.count)]);
     const debutRows = debuts.slice().sort((a, b) => b.date.localeCompare(a.date)).map((d) => [cell('<button type="button" class="open muted-btn" data-open="' + esc(d.id) + '">' + fmtDate(d.date) + "</button>", d.date), cell(esc(d.name), d.name), cell(esc(d.artist), d.artist), cell(esc(d.info), d.info)]);
-    return '<div class="list-head"><div class="list-title"><h2>Songs you heard most</h2><span class="muted">' + fmtN(songs.length) + " different songs, " + fmtN(songsHeard) + " in total, " + fmtN(heardOnce) + " heard only once</span>" + '<button type="button" class="toggle' + (state.songCovers ? " on" : "") + '" data-covers="' + (state.songCovers ? "0" : "1") + '" aria-pressed="' + state.songCovers + '">Covers only</button>' + "</div>" + searchBox("sq", "Search songs", "Search song or artist", state.songQ) + "</div>" +
+    return '<div class="list-head"><div class="list-title"><h2>Songs you heard most</h2><span class="muted">' + fmtN(songs.length) + " different songs, " + fmtN(songsHeard) + " in total, " + fmtN(heardOnce) + " heard only once</span>" + "</div>" + searchBox("sq", "Search songs", "Search song or artist", state.songQ) + "</div>" +
       (q && !list.length ? '<div class="empty">No songs match.</div>' : "") +
       table("songs", [{ label: "#", num: true, cls: "num" }, { label: "Song" }, { label: "Artist" }, { label: "Times", num: true, cls: "num" }], rows, limitOf("songs", 25),
         (r) => ({ rank: r[0].h, title: r[1].h, sub: [r[2].h], value: r[3].h, unit: r[3].s === 1 ? "time" : "times" })) +
@@ -1269,7 +1266,7 @@
     // the same numbers for the calendar year before, to show the change
     const py = String(+y - 1);
     const pList = concerts.filter((c) => c.date.startsWith(py));
-    const delta = (cur, before) => pList.length ? '<span class="delta' + (cur > before ? " up" : "") + '" title="' + py + ": " + fmtN(before) + '">' + (cur === before ? "=" : (cur > before ? "+" : "−") + fmtN(Math.abs(cur - before))) + " vs ’" + py.slice(2) + "</span>" : "";
+    const delta = (cur, before) => pList.length ? '<span class="delta' + (cur > before ? " up" : cur < before ? " down" : "") + '" title="' + py + ": " + fmtN(before) + '">' + (cur === before ? "=" : (cur > before ? "+" : "−") + fmtN(Math.abs(cur - before))) + " vs ’" + py.slice(2) + "</span>" : "";
     const pArtists = new Set(pList.map((c) => c.artist)).size;
     const pVenues = new Set(pList.filter((c) => !c.festival).map(venueKey)).size;
     const pFest = new Set(pList.filter((c) => c.festival).map((c) => c.festival)).size;
@@ -1294,9 +1291,12 @@
         (newArtists.length ? fun("New discoveries", newArtists.length + "", newArtists.slice(0, 3).map((a) => esc(a.key)).join(", ") + (newArtists.length > 3 ? "…" : ""), fattr("newArtists", y)) : "") +
       "</div>" +
       '<section class="card"><h2>Top artists</h2>' + bars(yArtists.slice(0, 10), (a) => esc(a.key), (a) => ["artist", a.key, y]) + "</section>" +
-      // every month of the year, empty ones too
-      '<section class="card"><h2>Month by month</h2>' + bars(Array.from({ length: 12 }, (_, i) => { const k = y + "-" + String(i + 1).padStart(2, "0"); return { key: k, count: (yMonths.find((m) => m.key === k) || {}).count || 0 }; }),
-        (m) => new Date(m.key + "-15").toLocaleDateString("en-GB", { month: "long" }), (m) => m.count ? ["month", m.key] : null) + "</section>" +
+      // every month of the year, empty ones too, drawn like the share image: the busiest month in full colour
+      (() => { const ms = Array.from({ length: 12 }, (_, i) => { const k = y + "-" + String(i + 1).padStart(2, "0"); return { key: k, count: (yMonths.find((m) => m.key === k) || {}).count || 0 }; });
+        const mx = Math.max(1, ...ms.map((m) => m.count));
+        return '<section class="card"><h2>Month by month</h2><div class="years months">' + ms.map((m) => { const name = new Date(m.key + "-15").toLocaleDateString("en-GB", { month: "long" }), t = name + ": " + plural(m.count, "concert", "concerts");
+          const bar = '<span class="v">' + (m.count || "") + '</span><span class="b' + (m.count === mx ? "" : m.count ? " part" : " none") + '" style="display:block;height:' + (m.count ? Math.round(m.count / mx * 130) : 2) + 'px"></span><span class="y">' + name[0] + "</span>";
+          return m.count ? '<button type="button" class="year"' + fattr("month", m.key) + ' title="' + t + '" aria-label="' + t + '">' + bar + "</button>" : '<span class="year" aria-label="' + t + '">' + bar + "</span>"; }).join("") + "</div></section>"; })() +
       (newArtists.length ? '<section class="card"><div class="card-head"><h2>New for you</h2><button class="link"' + fattr("newArtists", y) + ">Open in concert list</button></div>" +
         '<p class="tag" style="margin:0 0 12px">' + plural(newArtists.length, "artist", "artists") + " seen for the first time in " + esc(y) + "</p>" +
         '<div class="history-list">' + newArtists.map((a) => '<button type="button" class="hist"' + aattr(a.key) + ">" + esc(a.key) + "</button>").join("") + "</div></section>" : "") +
@@ -1397,7 +1397,7 @@
       decades.map((d) => '<option value="' + d + '"' + (state.mapYears === d ? " selected" : "") + ">The " + d + "</option>").join("") +
       byYear.slice().reverse().map((y) => '<option value="' + y.key + '"' + (state.mapYears === y.key ? " selected" : "") + ">" + y.key + "</option>").join("") + "</select>";
     return '<div class="list-head"><div class="list-title"><h2>Map</h2><span class="muted">' + plural(new Set(list.map((c) => c.city)).size, "city", "cities") + " · " + plural(new Set(list.map((c) => c.country)).size, "country", "countries") + "</span>" + sel + '</div></div><div id="map" role="region" aria-label="Map of concert cities"></div>' +
-      '<p class="tag" style="margin:0">Circles are cities (setlist.fm gives coordinates per city, not per venue). Bigger means more concerts; white circles are cities you went to only once, and dashed lines lead from Porto to the concerts abroad. Click a circle to see its concerts.</p>';
+      '<p class="tag" style="margin:0">Circles are cities (setlist.fm gives coordinates per city, not per venue). Bigger means more concerts; white circles are cities you went to only once. Click a circle to see its concerts.</p>';
   }
   function loadLeaflet(cb) {
     if (window.L) return cb();
@@ -1413,8 +1413,7 @@
   // concerts shown on the Map tab: all, one decade ("2010s") or one year
   const mapList = () => concerts.filter((c) => c.lat != null && c.lng != null && (!state.mapYears ||
     (state.mapYears.endsWith("s") ? c.date.slice(0, 3) === state.mapYears.slice(0, 3) : c.date.startsWith(state.mapYears))));
-  // small: the one-city map on a venue page
-  function initMap(list, small) {
+  function initMap(list) {
     const el = document.getElementById("map");
     if (!el) return;
     loadLeaflet(() => {
@@ -1426,7 +1425,7 @@
         const e = byCity.get(k) || { city: c.city, country: c.country, lat: +c.lat, lng: +c.lng, count: 0, venues: new Map() };
         e.count++; const vn = c.festival || c.venue; e.venues.set(vn, (e.venues.get(vn) || 0) + 1); byCity.set(k, e);
       }
-      map = L.map("map", { scrollWheelZoom: false, worldCopyJump: true, zoomControl: !small });
+      map = L.map("map", { scrollWheelZoom: false, worldCopyJump: true });
       // Esri tiles need no API key and work when the page is opened from a file (no Referer)
       const esri = "https://server.arcgisonline.com/ArcGIS/rest/services/";
       const dark = L.layerGroup([
@@ -1434,13 +1433,11 @@
         L.tileLayer(esri + "Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}", { maxZoom: 16 })
       ]).addTo(map);
       const street = L.tileLayer(esri + "World_Street_Map/MapServer/tile/{z}/{y}/{x}", { maxZoom: 18, attribution: "Tiles &copy; Esri" });
-      if (!small) L.control.layers({ Dark: dark, Streets: street }, null, { position: "topright" }).addTo(map);
+      L.control.layers({ Dark: dark, Streets: street }, null, { position: "topright" }).addTo(map);
       const pts = [];
-      if (!small) for (const e of byCity.values()) if (e.country !== "Portugal")
-        L.polyline([HOME, [e.lat, e.lng]], { color: "#F2A541", weight: 1.2, opacity: 0.5, dashArray: "4 6", interactive: false }).addTo(map);
       for (const e of byCity.values()) {
         pts.push([e.lat, e.lng]);
-        const once = !small && e.count === 1;
+        const once = e.count === 1;
         const top = [...e.venues.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5);
         L.circleMarker([e.lat, e.lng], { radius: 5 + Math.sqrt(e.count) * 2, color: once ? "#ECEDEE" : "#F2A541", weight: 1.5, fillColor: once ? "#ECEDEE" : "#F2A541", fillOpacity: once ? 0.25 : 0.45 })
           .bindPopup('<div class="pop"><strong>' + esc(e.city) + '</strong> <span class="muted">' + esc(e.country) + "</span><br>" + plural(e.count, "concert", "concerts") +
@@ -1448,7 +1445,7 @@
             '<button type="button" class="link"' + fattr("city", e.city) + ">See concerts</button></div>")
           .addTo(map);
       }
-      if (small) map.setView(pts[0], 11); else if (pts.length) map.fitBounds(pts, { padding: [30, 30], maxZoom: 7 });
+      if (pts.length) map.fitBounds(pts, { padding: [30, 30], maxZoom: 7 });
     });
   }
 
@@ -1477,7 +1474,6 @@
     renderTabs();
     app.innerHTML = viewHtml();
     if (state.tab === "map") initMap(mapList());
-    if (state.tab === "venues" && state.venue) initMap(concerts.filter((c) => !c.festival && venueKey(c) === state.venue), true);
     // years chart scrolls sideways on phones: start at the most recent years
     app.querySelectorAll(".years").forEach((el) => { el.scrollLeft = el.scrollWidth; });
   }
@@ -1522,7 +1518,6 @@
     else if (d.fest) go(() => { state.tab = "festivals"; state.festival = d.fest; state.detail = null; });
     else if (d.f) go(() => { state.tab = "concerts"; state.detail = null; state.filter = { f: d.f, v: d.v, y: d.y || null }; state.q = ""; state.limits.concerts = 0; });
     else if (d.aset !== undefined) go(() => { state.tab = "artists"; state.artist = null; state.detail = null; state.artistSet = d.aset || null; state.shelfOnly = false; state.artistQ = ""; state.limits.artists = 0; });
-    else if (d.covers) { state.songCovers = d.covers === "1"; state.limits.songs = 0; render(); }
     else if (d.kind !== undefined) { state.kind = d.kind; state.limits.concerts = 0; render(); }
     else if (d.shelf) go(() => { state.tab = "artists"; state.artist = null; state.detail = null; state.shelfOnly = d.shelf === "1"; });
     else if (d.year) go(() => { state.year = d.year; });
@@ -1552,7 +1547,6 @@
     if (e.target.id === "ysel") go(() => { state.year = e.target.value; });
     if (e.target.id === "vsel") { state.venueCity = e.target.value; renderKeeping("vsel"); return; }
     if (e.target.id === "msel") { state.mapYears = e.target.value; render(); return; }
-    if (e.target.id === "nsel") { state.artistNew = e.target.value; state.limits.artists = 0; renderKeeping("nsel"); }
     if (e.target.id === "csel") { state.country = e.target.value; state.limits.concerts = 0; renderKeeping("csel"); }
     const ss = e.target.dataset && e.target.dataset.sortsel;
     if (ss) {
