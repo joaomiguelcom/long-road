@@ -37,7 +37,7 @@
   /* light theme: same layout, paper colours; the amber is darker so text in it stays readable on white */
   :root[data-theme="light"] {
     --bg: #F6F4EF; --surface: #FFFFFF; --line: #E5E1D8; --line-2: #CFCAC0;
-    --text: #1A1C20; --muted: #5E646C; --accent: #B0680C; --accent-2: #8F5308; --ok: #2E8540; --bad: #C9372C;
+    --text: #1A1C20; --muted: #5E646C; --accent: #9A5A08; --accent-2: #8F5308; --ok: #2E8540; --bad: #C9372C;
     --map-bg: #E9E6DF; --on-accent: #FFFFFF;
   }
   :root[data-theme="light"] header { background: linear-gradient(180deg, rgba(176,104,12,.08), rgba(176,104,12,0) 70%); }
@@ -118,6 +118,11 @@
   .months .year { flex: 1 1 0; min-width: 0; }
   .year .b.part { background: rgba(242,165,65,.45); }
   .year .b.none { background: var(--line); }
+  .year .b.future { background: transparent; }
+  .year .y.future { opacity: .45; }
+  .year .b.booked, .booked-key { background: transparent; border: 1.5px dashed var(--accent); border-bottom: 0; border-radius: 3px 3px 0 0; }
+  .booked-key { display: inline-block; width: 10px; height: 10px; border-bottom: 1.5px dashed var(--accent); border-radius: 2px; margin-right: 6px; vertical-align: -1px; }
+  .v-booked { color: var(--accent); }
   .fun { display: flex; flex-direction: column; gap: 2px; }
   button.card { width: 100%; display: flex; flex-direction: column; justify-content: flex-start; align-items: stretch; text-align: left; font: inherit; color: inherit; cursor: pointer; transition: border-color .15s; }
   button.card:focus-visible { border-color: var(--accent); }
@@ -133,6 +138,11 @@
   .mlist { list-style: none; margin: 0; padding: 0; border: 1px solid var(--line); border-radius: 12px; }
   .mlist li { position: relative; display: flex; align-items: center; gap: 12px; padding: 12px 14px; }
   .mlist li + li { border-top: 1px solid var(--line); }
+  /* festival day header in concert lists: festival, day and site written once */
+  .mlist li.m-group { display: block; padding: 10px 14px 8px; font-size: 13px; color: var(--muted); background: rgba(255,255,255,.03); }
+  .mlist li.in-group { padding-top: 10px; padding-bottom: 10px; }
+  tr.t-group td { font-size: 13px; color: var(--muted); background: rgba(255,255,255,.03); padding-top: 10px; padding-bottom: 8px; }
+  :root[data-theme="light"] .mlist li.m-group, :root[data-theme="light"] tr.t-group td { background: rgba(0,0,0,.03); }
   .m-rank { flex: none; min-width: 22px; color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; }
   .m-main { flex: 1; min-width: 0; }
   .m-title { font-weight: 600; overflow-wrap: anywhere; }
@@ -159,7 +169,8 @@
   td .open { background: none; border: 0; color: var(--text); font-weight: 600; cursor: pointer; padding: 4px 0; text-align: left; }
   .toolbar { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 12px; }
   .toolbar h2 { margin: 0; font: 500 26px/1.2 var(--display); }
-  .detail { max-width: 760px; display: flex; flex-direction: column; gap: 18px; }
+  .detail { display: flex; flex-direction: column; gap: 18px; }
+  .nav-logo { display: none; }
   .detail-top { display: flex; justify-content: space-between; align-items: center; }
   .detail-nav { display: flex; gap: 8px; }
   .icon-btn { width: 44px; height: 44px; display: grid; place-items: center; background: none; border: 1px solid var(--line-2); border-radius: 10px; color: var(--text); font-size: 20px; line-height: 1; cursor: pointer; }
@@ -167,13 +178,16 @@
   .detail-head { display: flex; gap: 16px; align-items: center; }
   .next-date.big { width: 64px; padding: 6px 0 7px; }
   .next-date.big .d { font-size: 30px; }
-  .detail-title { margin: 0; font: 600 34px/1.1 var(--display); overflow-wrap: anywhere; }
+  .detail-title { margin: 0; font: 600 40px/1.1 var(--display); overflow-wrap: anywhere; }
+  .setlist-src { display: inline-block; margin-top: 14px; }
+  .list-note { margin: -12px 0 0; }
   .detail-meta { margin-top: 4px; line-height: 1.35; }
   .card h2.detail-title { margin: 0; } /* .card h2 adds a 14px bottom margin */
   .inline-link { background: none; border: 0; padding: 0; font: inherit; color: inherit; cursor: pointer; display: inline; text-decoration: underline; text-decoration-color: var(--line-2); text-underline-offset: 3px; }
   .facts { display: flex; flex-wrap: wrap; gap: 8px; }
   .fact { font-size: 12px; color: var(--muted); border: 1px solid var(--line-2); border-radius: 999px; padding: 4px 10px; }
   .history { display: flex; flex-direction: column; gap: 8px; }
+  .fun-card .card { background: var(--bg); }
   .history-list { display: flex; flex-wrap: wrap; gap: 6px; }
   .edition + .edition { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--line); }
   .quick { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
@@ -192,12 +206,13 @@
   .setstrip { display: grid; grid-template-columns: repeat(10, 1fr); gap: 4px; align-items: end; height: 96px; margin-top: 8px; padding-top: 16px; border-bottom: 2px solid var(--line-2); }
   .setstrip-col { height: 100%; display: flex; flex-direction: column; justify-content: flex-end; position: relative; }
   .setstrip-bar { display: block; background: var(--accent); border-radius: 3px 3px 0 0; min-height: 3px; }
-  .setstrip-bar.enc { background: var(--text); opacity: .75; border-radius: 3px 3px 0 0; }
+  /* encore: grey with diagonal stripes, so it does not depend on colour alone */
+  .setstrip-bar.enc { background: repeating-linear-gradient(135deg, var(--text) 0 3px, transparent 3px 6px); opacity: .75; border-radius: 3px 3px 0 0; }
   .setstrip-bar.enc + .setstrip-bar { border-radius: 0; }
   .setstrip-n { font-size: 11px; color: var(--muted); text-align: center; margin-bottom: 3px; }
   .setstrip-axis { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); margin-top: 4px; }
   .setstrip-legend { font-size: 13px; margin-top: 10px; } .setstrip-legend b { color: var(--text); font-weight: 600; }
-  .setstrip-key { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--text); opacity: .7; margin-right: 5px; vertical-align: 0; }
+  .setstrip-key { display: inline-block; width: 10px; height: 10px; border-radius: 2px; background: repeating-linear-gradient(135deg, var(--text) 0 2px, transparent 2px 4px); opacity: .75; margin-right: 5px; vertical-align: -1px; }
   .setstrip-key.main { background: var(--accent); opacity: 1; }
   .new-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); margin-right: 6px; vertical-align: 2px; }
   .first-time { color: var(--accent); }
@@ -240,6 +255,8 @@
   .next-date .d { display: block; font: 500 24px/1.1 var(--display); }
   .next-date .y { display: block; font-size: 10px; color: var(--muted); margin-top: 1px; }
   .next-when { flex: none; font-size: 13px; color: var(--muted); white-space: nowrap; }
+  .next-col { flex: none; width: 64px; display: flex; flex-direction: column; align-items: center; gap: 5px; }
+  .next-col .next-when { font-size: 11px; line-height: 1.2; }
   .next-when.soon { color: var(--accent); font-weight: 600; }
   .otd-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
   .otd-item { width: 100%; display: flex; align-items: center; gap: 14px; background: none; border: 0; border-radius: 8px; padding: 8px; margin: 0 -8px; color: inherit; text-align: left; cursor: pointer; font: inherit; }
@@ -303,6 +320,11 @@
     .sync .dot { width: 6px; height: 6px; box-shadow: 0 0 0 2px rgba(123,198,126,.18); }
     .sync-long { display: none; }
     nav { margin: 16px -16px 0; padding: 0 16px; }
+    header { position: sticky; z-index: 1050; background: linear-gradient(180deg, rgba(242,165,65,.07), rgba(242,165,65,0) 70%), var(--bg); }
+    :root[data-theme="light"] header { background: linear-gradient(180deg, rgba(176,104,12,.08), rgba(176,104,12,0) 70%), var(--bg); }
+    header.compact { background: var(--bg); box-shadow: 0 6px 16px rgba(0,0,0,.25); }
+    .nav-logo { display: none; flex: none; align-items: center; background: none; border: 0; padding: 0 10px 0 0; cursor: pointer; }
+    header.compact .nav-logo { display: inline-flex; }
     nav.more-right { -webkit-mask-image: linear-gradient(90deg, #000 85%, transparent); mask-image: linear-gradient(90deg, #000 85%, transparent); }
     nav button { padding: 12px 12px; }
     .kpis { grid-template-columns: 1fr 1fr; gap: 12px; }
@@ -349,7 +371,7 @@
         <button type="button" class="theme-btn" id="theme" aria-label="Switch theme"></button>
       </div>
     </div>
-    <nav aria-label="Sections" id="tabs"><button type="button" data-tab="overview" aria-current="page">Overview</button><button type="button" data-tab="concerts">Concerts</button><button type="button" data-tab="artists">Artists</button><button type="button" data-tab="venues">Venues</button><button type="button" data-tab="festivals">Festivals</button><button type="button" data-tab="songs">Songs</button><button type="button" data-tab="years">Year in review</button><button type="button" data-tab="map">Map</button></nav>
+    <nav aria-label="Sections" id="tabs"><button type="button" class="nav-logo" id="navLogo" aria-label="Back to top"><svg width="26" height="26" viewBox="6 8 52 52" aria-hidden="true"><circle cx="32" cy="19" r="9" fill="#F2A541" opacity=".35"/><path fill-rule="evenodd" d="M29.5 19h5L54 58H10zM31.4 23h1.2l.3 5h-1.8zM31 33h2l.5 8h-3zM30.3 46h3.4l.6 12h-4.6z" fill="#F2A541"/></svg></button><button type="button" data-tab="overview" aria-current="page">Overview</button><button type="button" data-tab="concerts">Concerts</button><button type="button" data-tab="artists">Artists</button><button type="button" data-tab="venues">Venues</button><button type="button" data-tab="festivals">Festivals</button><button type="button" data-tab="songs">Songs</button><button type="button" data-tab="years">Year in review</button><button type="button" data-tab="map">Map</button></nav>
   </div>
 </header>
 <main class="wrap" id="app"></main>
@@ -737,6 +759,10 @@
     '<input id="' + id + '" type="search" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" enterkeyhint="search" placeholder="' + placeholder + '" value="' + esc(value) + '"></div>';
   const artistBtn = (name, cls) => '<button type="button" class="' + (cls || "open") + '"' + aattr(name) + ">" + esc(name) + "</button>";
   const notes = (c) => (c.festival ? '<span class="accent">' + esc(c.festival) + "</span>" : "") + (c.festival && c.tour ? "<br>" : "") + (c.tour ? '<span class="tag">' + esc(c.tour) + "</span>" : "");
+  // "Show all N" under a list cut to its first items; open lists are kept per key while the page lives
+  const opened = new Set();
+  const isOpen = (k) => opened.has(k);
+  const moreBtn = (k, total, cut) => total > cut ? '<button type="button" class="link" data-expand="' + esc(k) + '" style="margin-top:10px">' + (isOpen(k) ? "Show less" : "Show all " + fmtN(total)) + "</button>" : "";
   const plural = (n, one, many) => fmtN(n) + " " + (n === 1 ? one : many);
 
   // Sortable tables: rows are arrays of cells { h: html, s: sort value }; sorting happens on the data,
@@ -753,16 +779,21 @@
       return st.dir * r;
     });
     const shown = limit ? rows.slice(0, limit) : rows;
+    // rows that carry the same .grp key next to each other (a festival day) share one header,
+    // so the festival, day and site are written once instead of on every row
+    const gk = (r) => r && r.grp ? r.grp.key : null;
+    const inGroup = (i) => gk(shown[i]) && (gk(shown[i - 1]) === gk(shown[i]) || gk(shown[i + 1]) === gk(shown[i]));
+    const opens = (i) => inGroup(i) && gk(shown[i - 1]) !== gk(shown[i]);
     const sortChips = m ? '<span class="mchip">' + qpick("ms-" + id, "Sort", [["", "Default"]].concat(cols.map((c, i) => c.label === "#" ? null : [String(i), c.label, ' data-num="' + (c.num ? 1 : 0) + '"']).filter(Boolean)),
       st ? String(st.col) : "", "", ' data-sortsel="' + id + '"') +
       (st ? '<button type="button" class="toggle on icon-chip" data-sortdir="' + id + '" aria-label="' + (st.dir > 0 ? "Ascending, switch to descending" : "Descending, switch to ascending") + '">' + (st.dir > 0 ? "↑" : "↓") + "</button>" : "") + "</span>" : "";
     const sortBar = bar ? '<div class="quick">' + bar + sortChips + "</div>" : m ? '<div class="quick msort">' + sortChips + "</div>" : "";
     // a filtered list that ends up empty says so and offers the way back
     if (bar && !rows.length) return sortBar + '<div class="empty empty-filters"><p>Nothing matches these filters.</p><button type="button" class="toggle on" data-clear="' + id + '">Clear filters</button></div>';
-    const mlist = m ? '<ul class="mlist">' + shown.map((r) => {
+    const mlist = m ? '<ul class="mlist">' + shown.map((r, i) => {
       // links in the second line are spans: Safari keeps a button as one block, so a long name broke the line apart
-      const x = m(r), sub = (x.sub || []).filter(Boolean).map((h) => h.replace(/<button type="button"/g, '<span role="button" tabindex="0"').replace(/<\/button>/g, "</span>"));
-      return '<li>' + (x.rank !== undefined ? '<span class="m-rank">' + x.rank + "</span>" : "") +
+      const x = m(r, inGroup(i)), sub = (x.sub || []).filter(Boolean).map((h) => h.replace(/<button type="button"/g, '<span role="button" tabindex="0"').replace(/<\/button>/g, "</span>"));
+      return (opens(i) ? '<li class="m-group">' + r.grp.head + "</li>" : "") + '<li' + (inGroup(i) ? ' class="in-group"' : "") + ">" + (x.rank !== undefined ? '<span class="m-rank">' + x.rank + "</span>" : "") +
         '<div class="m-main"><div class="m-title">' + x.title + "</div>" +
         (sub.length ? '<div class="m-sub">' + sub.join(" · ") + "</div>" : "") + (x.tag ? '<div class="m-tag">' + x.tag + "</div>" : "") + "</div>" +
         (x.value ? '<span class="m-val">' + x.value + (x.unit ? "<small>" + x.unit + "</small>" : "") + "</span>" : "") + "</li>";
@@ -773,20 +804,31 @@
         '><button type="button" class="th-btn" data-sort="' + id + "|" + i + "|" + (c.num ? 1 : 0) + '">' + c.label +
         '<span class="arrow" aria-hidden="true">' + (on ? (st.dir > 0 ? "↑" : "↓") : "↕") + "</span></button></th>";
     }).join("") + "</tr></thead><tbody>" +
-      shown.map((r) => "<tr>" + r.map((c, i) => "<td" + (cols[i].cls ? ' class="' + cols[i].cls + '"' : "") + ">" + c.h + "</td>").join("") + "</tr>").join("") +
+      shown.map((r, j) => (opens(j) ? '<tr class="t-group"><td colspan="' + cols.length + '">' + r.grp.head + "</td></tr>" : "") +
+        "<tr" + (inGroup(j) ? ' class="in-group"' : "") + ">" + r.map((c, i) => "<td" + (cols[i].cls ? ' class="' + cols[i].cls + '"' : "") + ">" + (inGroup(j) && i in r.grp.alt ? r.grp.alt[i] : c.h) + "</td>").join("") + "</tr>").join("") +
       "</tbody></table></div>" +
       (limit && rows.length > limit ? '<div class="more"><button class="btn" data-more="' + id + '" data-shown="' + limit + '">Show more</button></div>' : "");
   }
   // fresh: optional set of concerts to mark as "First time" in the notes
-  const concertRows = (list, fresh) => list.map((c) => [
+  const concertRows = (list, fresh) => list.map((c) => Object.assign([
     cell('<span style="white-space:nowrap">' + fmtDate(c.date) + "</span>", c.date),
     cell('<button type="button" class="open" data-open="' + esc(c.id) + '">' + esc(c.artist) + "</button>", c.artist),
     cell(esc(c.venue), c.venue),
     cell(esc(c.city), c.city),
     cell((fresh && fresh.has(c) ? '<span class="first-time">First time</span>' + (notes(c) ? " · " : "") : "") + notes(c), (c.festival || "") + (c.tour || "")),
     cell(String((c.songs || []).length || ""), (c.songs || []).length)
-  ]);
-  const concertM = (r) => ({ title: r[1].h, sub: [r[0].h, r[2].h, r[3].h], tag: r[4].h, value: r[5].h, unit: r[5].s === 1 ? "song" : "songs" });
+  ], {
+    // festival concerts of one day group under a header; in the group the row keeps the artist, the tour and the songs
+    grp: c.festival ? { key: c.festival + "|" + c.date, alt: { 0: "", 2: "", 3: "", 4: [fresh && fresh.has(c) ? '<span class="first-time">First time</span>' : "", c.tour ? '<span class="tag">' + esc(c.tour) + "</span>" : ""].filter(Boolean).join(" · ") },
+      head: '<span class="accent">' + esc(c.festival) + "</span> · " + weekdayOf(c.date).slice(0, 3) + " " + fmtDate(c.date) + " · " + esc(c.venue) + (c.city ? ", " + esc(c.city) : "") } : null,
+    tour: c.tour ? '<span class="tag">' + esc(c.tour) + "</span>" : "",
+    first: fresh && fresh.has(c) ? '<span class="first-time">First time</span>' : "",
+  }));
+  const concertM = (r, g) => g
+    ? { title: r[1].h, tag: [r.first, r.tour].filter(Boolean).join(" · "), value: r[5].h, unit: r[5].s === 1 ? "song" : "songs" }
+    : { title: r[1].h, sub: [r[0].h, r[2].h, r[3].h], tag: r[4].h, value: r[5].h, unit: r[5].s === 1 ? "song" : "songs" };
+  // on an artist page the artist is the page: the venue leads each row
+  const artistConcertM = (r) => ({ title: r[2].h, sub: [r[0].h, r[3].h], tag: r[4].h, value: r[5].h, unit: r[5].s === 1 ? "song" : "songs" });
   const CONCERT_COLS = [{ label: "Date", cls: "muted" }, { label: "Artist" }, { label: "Venue" }, { label: "City", cls: "muted" }, { label: "Notes" }, { label: "Songs", num: true, cls: "num" }];
 
   const FILTERS = {
@@ -806,12 +848,14 @@
     festivals: { label: "Festival concerts", test: (c, v) => !!c.festival && c.date.startsWith(v), show: (v) => v }
   };
 
-  const state = { tab: "overview", q: "", detail: null, limits: {}, artistQ: "", songQ: "", filter: null, artist: null, venue: null, festival: null, song: null, kind: "", country: "", cYear: "", venueCountry: "", festCountry: "", mapKind: "", venueCity: "", mapYears: "", year: byYear.length ? byYear[byYear.length - 1].key : null, sorts: {} };
+  const state = { tab: "overview", q: "", detail: null, limits: {}, artistQ: "", venueQ: "", songQ: "", filter: null, artist: null, venue: null, festival: null, song: null, kind: "", country: "", cYear: "", venueCountry: "", festCountry: "", mapKind: "", venueCity: "", mapYears: "", year: byYear.length ? byYear[byYear.length - 1].key : null, sorts: {} };
   const limitOf = (id, def) => state.limits[id] || def;
   const TABS = [["overview", "Overview"], ["concerts", "Concerts"], ["artists", "Artists"], ["venues", "Venues"], ["festivals", "Festivals"], ["songs", "Songs"], ["years", "Year in review"], ["map", "Map"]];
 
+  // small logo shown at the start of the tabs once the header has scrolled away (phones)
+  const NAV_LOGO = '<button type="button" class="nav-logo" id="navLogo" aria-label="Back to top"><svg width="26" height="26" viewBox="6 8 52 52" aria-hidden="true"><circle cx="32" cy="19" r="9" fill="#F2A541" opacity=".35"/><path fill-rule="evenodd" d="M29.5 19h5L54 58H10zM31.4 23h1.2l.3 5h-1.8zM31 33h2l.5 8h-3zM30.3 46h3.4l.6 12h-4.6z" fill="#F2A541"/></svg></button>';
   function renderTabs() {
-    document.getElementById("tabs").innerHTML = TABS.map(([id, label]) =>
+    document.getElementById("tabs").innerHTML = NAV_LOGO + TABS.map(([id, label]) =>
       '<button type="button" data-tab="' + id + '"' + (state.tab === id ? ' aria-current="page"' : "") + ">" + label + "</button>").join("");
     // keep the active tab visible when the tab bar scrolls sideways (phones)
     const nav = document.getElementById("tabs"), cur = nav.querySelector("[aria-current]");
@@ -854,8 +898,21 @@
   let topTick = false;
   window.addEventListener("scroll", () => {
     if (topTick) return; topTick = true;
-    requestAnimationFrame(() => { const on = window.scrollY > 1200; toTop.classList.toggle("show", on); toTop.tabIndex = on ? 0 : -1; topTick = false; });
+    requestAnimationFrame(() => { const on = window.scrollY > 1200; toTop.classList.toggle("show", on); toTop.tabIndex = on ? 0 : -1; compactHead(); topTick = false; });
   }, { passive: true });
+  // phones: the header is sticky with a negative top, so the title block scrolls away and only the tabs stay,
+  // with a small logo; nothing in the page moves, because the header keeps its height
+  const headEl = document.querySelector("header"), phone = window.matchMedia("(max-width: 600px)");
+  let headLift = 0;
+  const placeHead = () => {
+    headLift = phone.matches ? document.getElementById("tabs").getBoundingClientRect().top - headEl.getBoundingClientRect().top : 0;
+    headEl.style.top = phone.matches ? -headLift + "px" : "";
+    compactHead();
+  };
+  function compactHead() { headEl.classList.toggle("compact", phone.matches && window.scrollY > headLift - 1); }
+  window.addEventListener("resize", placeHead);
+  placeHead();
+  if (document.fonts) document.fonts.ready.then(placeHead);
   const fadeTabs = () => { const nav = document.getElementById("tabs"); nav.classList.toggle("more-right", nav.scrollLeft + nav.clientWidth < nav.scrollWidth - 4); };
   document.getElementById("tabs").addEventListener("scroll", fadeTabs, { passive: true });
   window.addEventListener("resize", fadeTabs);
@@ -876,9 +933,10 @@
       '<ol class="otd-list">' + list.slice(0, state.nextAll ? list.length : 4).map((u) => {
         const d = new Date(u.date + "T12:00:00"), n = days(u.date);
         return '<li><a class="next-item" href="' + esc(u.url) + '" target="_blank" rel="noopener">' +
-          '<span class="next-date"><span class="m">' + mon(d) + '</span><span class="d">' + d.getDate() + "</span>" + (d.getFullYear() !== new Date().getFullYear() ? '<span class="y">' + d.getFullYear() + "</span>" : "") + "</span>" +
-          '<span class="otd-main"><strong>' + esc(u.artist || "") + '</strong><span class="muted">' + place(u.place) + "" + "</span></span>" +
-          '<span class="next-when' + (n <= 7 ? " soon" : "") + '">' + when(n) + "</span></a></li>";
+          // the countdown sits under the date, so the name and the place get the full width
+          '<span class="next-col"><span class="next-date"><span class="m">' + mon(d) + '</span><span class="d">' + d.getDate() + "</span>" + (d.getFullYear() !== new Date().getFullYear() ? '<span class="y">' + d.getFullYear() + "</span>" : "") + "</span>" +
+          '<span class="next-when' + (n <= 7 ? " soon" : "") + '">' + when(n) + "</span></span>" +
+          '<span class="otd-main"><strong>' + esc(u.artist || "") + '</strong><span class="muted">' + place(u.place) + "</span></span></a></li>";
       }).join("") + "</ol>" +
       (list.length > 4 ? '<button type="button" class="link" id="nextAll" style="margin-top:10px">' + (state.nextAll ? "Show less" : "Show all " + list.length) + "</button>" : "") +
       "</section>";
@@ -893,9 +951,9 @@
       '<ol class="otd-list">' + list.map((c) => {
         const d = new Date(c.date + "T12:00:00");
         return '<li><button type="button" class="next-item" data-open="' + esc(c.id) + '">' +
-          '<span class="next-date"><span class="m">' + mon(d) + '</span><span class="d">' + d.getDate() + "</span>" + (d.getFullYear() !== new Date().getFullYear() ? '<span class="y">' + d.getFullYear() + "</span>" : "") + "</span>" +
-          '<span class="otd-main"><strong>' + esc(c.artist) + '</strong><span class="muted">' + esc(c.festival || c.venue) + " · " + esc(c.city) + "</span></span>" +
-          '<span class="next-when">' + ago(c.date) + "</span></button></li>";
+          '<span class="next-col"><span class="next-date"><span class="m">' + mon(d) + '</span><span class="d">' + d.getDate() + "</span>" + (d.getFullYear() !== new Date().getFullYear() ? '<span class="y">' + d.getFullYear() + "</span>" : "") + "</span>" +
+          '<span class="next-when">' + ago(c.date) + "</span></span>" +
+          '<span class="otd-main"><strong>' + esc(c.artist) + '</strong><span class="muted">' + esc(c.festival || c.venue) + " · " + esc(c.city) + "</span></span></button></li>";
       }).join("") + "</ol>" +
       '<button type="button" class="link" data-tab="concerts" style="margin-top:10px">Show all ' + fmtN(chrono.length) + "</button></section>";
   }
@@ -910,13 +968,11 @@
     if (!list.length) return "";
     const isToday = mmdd(day) === mmdd(today);
     const label = day.toLocaleDateString("en-GB", { day: "numeric", month: "long" });
-    const thisYear = today.getFullYear();
     return '<section class="card otd" aria-labelledby="h-otd"><div class="card-head"><h2 id="h-otd">' + (isToday ? "On this day, years ago" : "On " + label + ", years ago") + '</h2><span class="muted">' + (isToday ? "Concert anniversaries · " + label : "Next concert anniversary · nothing on " + today.toLocaleDateString("en-GB", { day: "numeric", month: "long" })) + "</span></div>" +
       '<ul class="otd-list">' + list.map((c) => {
-        const y = +c.date.slice(0, 4), ago = thisYear - y;
+        const y = +c.date.slice(0, 4);
         return '<li><button type="button" class="otd-item" data-open="' + esc(c.id) + '"><span class="otd-year">' + y + '</span><span class="otd-main"><strong>' + esc(c.artist) + "</strong>" +
-          '<span class="muted">' + esc(c.festival || c.venue) + " · " + esc(c.city) + "</span></span>" +
-          '<span class="tag">' + (ago === 0 ? "this year" : ago === 1 ? "1 year ago" : ago + " years ago") + "</span></button></li>";
+          '<span class="muted">' + esc(c.festival || c.venue) + " · " + esc(c.city) + "</span></span></button></li>";
       }).join("") + "</ul></section>";
   }
 
@@ -933,7 +989,7 @@
     const progress = (have, next, prevMark, label) => next ? '<div class="ms-next"><div class="row"><span>Next: ' + ordinal(next) + " " + label + '</span><span class="muted">' + (next - have) + " to go</span></div>" +
       '<div class="track"><div class="fill" style="width:' + Math.round((have - prevMark) / (next - prevMark) * 100) + '%"></div></div></div>' : "";
     const lastC = CONCERT_MARKS.filter((m) => m <= asc.length).pop() || 0;
-    return '<section aria-labelledby="h-ms"><h2 id="h-ms" style="margin:0 0 14px;font:500 22px/1.2 var(--display)">Milestones</h2><div class="card">' +
+    return '<section class="card" aria-labelledby="h-ms"><h2 id="h-ms">Milestones</h2><div>' +
       '<h2 class="sr-only">Concerts</h2><ol class="ms-list">' + CONCERT_MARKS.filter((m) => m <= asc.length).map((m) => item(m, pick(FIXED_MILESTONES.concerts, m, asc), "concert")).join("") + "</ol>" + progress(asc.length, nextC, lastC, "concert") + "</div></section>";
   }
 
@@ -979,7 +1035,7 @@
         byYear.map((y) => '<button type="button" class="year"' + fattr("year", y.key) + ' title="' + y.key + ": " + y.count + ' concerts" aria-label="' + y.key + ": " + y.count + ' concerts"><span class="v">' + y.count + '</span><span class="b" style="display:block;height:' + Math.round(y.count / maxYear * 150) + 'px"></span><span class="y">' + "’" + y.key.slice(2) + "</span></button>").join("") +
       "</div></section>" +
       onThisDay() +
-      '<section aria-labelledby="h-fun"><h2 id="h-fun" style="margin:0 0 14px;font:500 22px/1.2 var(--display)">Fun facts</h2><div class="grid fun-grid" style="--min:240px">' +
+      '<section class="card fun-card" aria-labelledby="h-fun"><h2 id="h-fun">Fun facts</h2><div class="grid fun-grid" style="--min:240px">' +
         (topSong ? fun("Most heard song live", esc(topSong.name), esc(topSong.artist) + " · " + topSong.count + " times", sattr(topSong.key)) : "") +
         (pjSong && pjSong !== topSong ? fun("Top Pearl Jam song live", esc(pjSong.name), pjSong.count + " times", fattr("song", pjSong.artist + "||" + pjSong.name)) : "") +
         (yearsTop ? fun("Busiest year", yearsTop.key, yearsTop.count + " concerts", yrAttr(yearsTop.key)) : "") +
@@ -1073,9 +1129,11 @@
     if (c.stage && !/^region of /i.test(c.stage)) facts.push('<span class="fact">' + esc(/palco|stage|tent|clubbing/i.test(c.stage) ? c.stage : c.stage + " stage") + "</span>");
     if (c.tour) facts.push('<span class="fact">' + esc(c.tour) + "</span>");
     const others = withArtist.filter((x) => x.id !== c.id);
-    const history = '<div class="history"><span class="kpi-label">' + (others.length ? ordinal(nth) + " time seeing " + esc(c.artist) : "First time seeing " + esc(c.artist)) + "</span>" +
-      (others.length ? '<div class="history-list">' + withArtist.map((x) => x.id === c.id ? '<span class="hist cur">' + (x.date.slice(0, 4)) + "</span>" :
-        '<button type="button" class="hist"' + ' data-open="' + esc(x.id) + '" title="' + esc(fmtDate(x.date) + " · " + (x.festival || x.venue)) + '">' + x.date.slice(0, 4) + "</button>").join("") + "</div>" : "") + "</div>";
+    // every time with this artist; day and month make same-year nights tell apart ("12 Jun '18")
+    const hday = (x) => fmtDate(x.date).slice(0, 6).replace(/^0/, "") + " ’" + x.date.slice(2, 4);
+    const history = '<section class="card"><h2>' + (others.length ? ordinal(nth) + " time seeing " + esc(c.artist) : "First time seeing " + esc(c.artist)) + "</h2>" +
+      (others.length ? '<div class="history-list">' + withArtist.map((x) => x.id === c.id ? '<span class="hist cur">' + hday(x) + "</span>" :
+        '<button type="button" class="hist"' + ' data-open="' + esc(x.id) + '" title="' + esc(fmtDate(x.date) + " · " + (x.festival || x.venue)) + '">' + hday(x) + "</button>").join("") + "</div>" : '<p class="muted" style="margin:0">The only time so far.</p>') + "</section>";
     // setlist
     const played = (c.songs || []).filter((x) => !x.tape && x.name);
     const isNew = (x) => !x.tape && x.name && firstHeard.get(songKey(x, c)) === c.id;
@@ -1085,30 +1143,32 @@
     // tapes (intro/outro music) get no number and are not counted
     let num = 0;
     const setlist = groups.length ?
-      '<section><div class="card-head"><h3 class="sec-title">Setlist</h3><span class="muted">' + summary + "</span></div>" +
+      '<section class="card"><div class="card-head"><h2>Setlist</h2><span class="muted">' + summary + "</span></div>" +
       groups.map((g, i) => '<div><div class="set-label' + (/^Encore/.test(g.set) ? " encore" : "") + '">' + esc(g.set) + '</div><ol class="setlist">' +
         g.songs.map((x) => (x.tape ? '<li class="tape" title="Tape"><span class="n" aria-hidden="true"></span>' : '<li><span class="n">' + (++num) + ".</span>") + "<span>" + (x.tape ? esc(x.name) : '<span role="button" tabindex="0" class="inline-link"' + sattr(songKey(x, c)) + ">" + esc(x.name) + "</span>") +
           (nth > 1 && isNew(x) ? ' <span class="badge">new for you</span>' : "") +
           (x.cover ? ' <span class="badge cover">' + esc(x.cover) + (x.tape ? " song" : " cover") + "</span>" : "") +
           (x.with ? ' <span class="tag">· with ' + esc(x.with) + "</span>" : "") +
           (x.tape ? ' <span class="sr-only">(tape)</span>' : "") + (x.info ? ' <span class="tag">· ' + esc(x.info) + "</span>" : "") + "</span></li>").join("") + "</ol></div>").join("") +
+      (c.info ? '<p class="muted" style="margin:14px 0 0">' + esc(c.info) + "</p>" : "") +
+      '<a class="tag setlist-src" href="' + esc(c.url) + '" target="_blank" rel="noopener">Open on setlist.fm</a>' +
       "</section>"
       : c.extra ? '<p class="tag" style="margin:0">Not on setlist.fm: ' + esc(c.reason || "the artist is not in its database.") + (c.note ? " " + esc(c.note) : "") + (c.source ? ' <a href="' + esc(c.source) + '" target="_blank" rel="noopener">Source</a>' : "") + "</p>"
       : '<p class="tag" style="margin:0">No setlist yet. <a href="' + esc(c.url) + '" target="_blank" rel="noopener">Add it on setlist.fm</a></p>';
     // same night
     const sameNight = chrono.filter((x) => x.date === c.date && x.id !== c.id);
-    const night = sameNight.length ? '<div class="history"><span class="muted">Also that night</span><div class="history-list">' + sameNight.map((x) =>
-      '<button type="button" class="hist" data-open="' + esc(x.id) + '">' + esc(x.artist) + ((x.festival || x.venue) !== (c.festival || c.venue) ? " · " + esc(x.festival || x.venue) : "") + "</button>").join("") + "</div></div>" : "";
+    const night = sameNight.length ? '<section class="card"><h2>Also that night</h2><div class="history-list">' + sameNight.map((x) =>
+      '<button type="button" class="hist" data-open="' + esc(x.id) + '">' + esc(x.artist) + ((x.festival || x.venue) !== (c.festival || c.venue) ? " · " + esc(x.festival || x.venue) : "") + "</button>").join("") + "</div></section>" : "";
     const navBtn = (x, dir) => x ? '<button type="button" class="icon-btn" data-swap="' + esc(x.id) + '" aria-label="' + (dir < 0 ? "Previous" : "Next") + " concert: " + esc(x.artist) + '" title="' + esc(x.artist + " · " + fmtDate(x.date)) + '">' + (dir < 0 ? "‹" : "›") + "</button>" : '<span class="icon-btn off" aria-hidden="true">' + (dir < 0 ? "‹" : "›") + "</span>";
-    return '<article class="card detail">' +
-      '<div class="detail-top"><button class="icon-btn" id="back" aria-label="Back">←</button><div class="detail-nav"><button type="button" class="icon-btn" data-share-concert="' + esc(c.id) + '" aria-label="Share this concert as an image" title="Share as image">' +
+    // same skeleton as the other detail pages: back button, big title, then cards
+    return '<article class="detail-wide detail">' +
+      '<div class="detail-top"><button class="btn" id="back">← Back</button><div class="detail-nav"><button type="button" class="icon-btn" data-share-concert="' + esc(c.id) + '" aria-label="Share this concert as an image" title="Share as image">' +
         SHARE_ICON + '</button>' + navBtn(prev, -1) + navBtn(next, 1) + "</div></div>" +
       '<div class="detail-head"><span class="next-date big"><span class="m">' + mon(d) + '</span><span class="d">' + d.getDate() + '</span><span class="y">' + d.getFullYear() + "</span></span>" +
         '<div style="min-width:0"><h2 class="detail-title">' + artistBtn(c.artist, "title-link") + '</h2><div class="muted detail-meta">' + meta + "</div></div></div>" +
       '<div class="facts">' + facts.join("") + "</div>" +
-      history + night + setlist +
-      (c.info ? '<p class="muted" style="margin:0">' + esc(c.info) + "</p>" : "") +
-      (groups.length ? '<a class="tag" href="' + esc(c.url) + '" target="_blank" rel="noopener">Open on setlist.fm</a>' : "") +
+      history + night +
+      (groups.length ? setlist : '<section class="card"><h2>Setlist</h2>' + setlist + (c.info ? '<p class="muted" style="margin:14px 0 0">' + esc(c.info) + "</p>" : "") + "</section>") +
       "</article>";
   }
   const ordinal = (n) => n + (["th", "st", "nd", "rd"][(n % 100 - 20) % 10] || ["th", "st", "nd", "rd"][n % 100] || "th");
@@ -1176,8 +1236,8 @@
     })() : "";
     // only the years he saw them
     const aYears = countBy(list, (c) => c.date.slice(0, 4)).sort((a, b) => a.key.localeCompare(b.key));
-    const timeline = aYears.length > 1 ? '<div class="history"><span class="muted">Years</span><div class="history-list">' +
-      aYears.map((y) => '<button type="button" class="hist"' + fattr("artist", name, y.key) + ">" + y.key + (y.count > 1 ? " ×" + y.count : "") + "</button>").join("") + "</div></div>" : "";
+    const timeline = aYears.length > 1 ? '<section class="card"><h2>Years</h2><div class="history-list">' +
+      aYears.map((y) => '<button type="button" class="hist"' + fattr("artist", name, y.key) + ">" + y.key + (y.count > 1 ? " ×" + y.count : "") + "</button>").join("") + "</div></section>" : "";
     const related = (RELATED[name] || []).map((r) => artists.find((x) => x.key === r)).filter(Boolean);
     return '<div class="detail-wide">' +
       '<button class="btn" id="backArtists">← All artists</button>' +
@@ -1190,11 +1250,11 @@
         kpi("Years", (+last.date.slice(0, 4) - +first.date.slice(0, 4) + 1) + "", first.date.slice(0, 4) + "–" + last.date.slice(0, 4)) +
         kpi("Countries", aCountries + "") +
       "</section>" +
-      (top.length ? '<section class="card"><h2>Songs you heard most</h2>' + bars(top.slice(0, 15), (s) => esc(s.name), (s) => sattr(s.key)) + "</section>" : "") +
-      (related.length ? '<div class="history"><span class="muted">Also seen</span><div class="history-list">' + related.map((x) => '<button type="button" class="hist"' + aattr(x.key) + ">" + esc(x.key) + " · " + plural(x.count, "concert", "concerts") + "</button>").join("") + "</div></div>" : "") +
+      (top.length ? '<section class="card"><h2>Songs you heard most</h2>' + bars(top.slice(0, isOpen("songs-" + name) ? top.length : 10), (s) => esc(s.name), (s) => sattr(s.key)) + moreBtn("songs-" + name, top.length, 10) + "</section>" : "") +
+      (related.length ? '<section class="card"><h2>Also seen</h2><div class="history-list">' + related.map((x) => '<button type="button" class="hist"' + aattr(x.key) + ">" + esc(x.key) + " · " + plural(x.count, "concert", "concerts") + "</button>").join("") + "</div></section>" : "") +
       timeline + songStats +
       '<section class="card"><div class="card-head"><h2>Concerts</h2><button class="link"' + fattr("artist", name) + ">Open in concert list</button></div>" +
-        table("artist-concerts", CONCERT_COLS, concertRows(list), 0, concertM) + "</section>" +
+        table("artist-concerts", CONCERT_COLS, concertRows(list), 0, artistConcertM) + "</section>" +
       (once.length ? '<section class="card"><h2>Heard only once</h2><p class="muted" style="margin:0">' + once.map((s) => esc(s.name)).join(" · ") + "</p></section>" : "") +
       (aCovers.length ? '<section class="card"><h2>Covers</h2><p class="muted" style="margin:0">' + aCovers.map((x) => esc(x.name) + " (" + esc(x.original) + ")" + (x.count > 1 ? " ×" + x.count : "")).join(" · ") + "</p></section>" : "") +
       shelfCard(name) +
@@ -1235,7 +1295,7 @@
         (songsHere ? kpi("Songs heard", fmtN(songsHere)) : "") +
       "</section>" +
       (regulars.length ? '<section class="card"><h2>Most seen here</h2>' + bars(regulars.slice(0, 10), (a) => esc(a.key), (a) => aattr(a.key)) + "</section>" : "") +
-      (vYears.length > 1 ? '<div class="history"><span class="muted">By year</span><div class="history-list">' + vYears.map((y) => '<button type="button" class="hist"' + fattr("venue", key, y.key) + ">" + y.key + (y.count > 1 ? " ×" + y.count : "") + "</button>").join("") + "</div></div>" : "") +
+      (vYears.length > 1 ? '<section class="card"><h2>By year</h2><div class="history-list">' + vYears.map((y) => '<button type="button" class="hist"' + fattr("venue", key, y.key) + ">" + y.key + (y.count > 1 ? " ×" + y.count : "") + "</button>").join("") + "</div></section>" : "") +
       (facts.length ? '<section class="card"><h2>Venue facts</h2><ul class="facts-list">' + facts.map((f) => "<li>" + f + "</li>").join("") + "</ul></section>" : "") +
       '<section class="card"><div class="card-head"><h2>Concerts</h2><button class="link"' + fattr("venue", key) + ">Open in concert list</button></div>" +
         table("venue-concerts", CONCERT_COLS, concertRows(list, new Set(firsts)), 0, concertM) + "</section>" +
@@ -1247,14 +1307,16 @@
     const firstVisit = (key) => { const l = concerts.filter((c) => !c.festival && venueKey(c) === key); return l[l.length - 1].date; };
     // country first, then the cities of that country
     const inCountry = venues.filter((v) => !state.venueCountry || v.country === state.venueCountry);
-    const list = inCountry.filter((v) => !state.venueCity || v.city === state.venueCity);
+    const vq = plain(state.venueQ.trim());
+    const list = inCountry.filter((v) => (!state.venueCity || v.city === state.venueCity) && (!vq || plain(v.name).includes(vq) || plain(v.city || "").includes(vq)));
     const vCities = countBy(inCountry, (v) => v.city);
     const rows = list.map((v) => { const f = firstVisit(v.key); return [cell(String(v.rank), v.rank), cell('<button class="open"' + vattr(v.key) + ">" + esc(v.name) + "</button>", v.name), cell(esc(v.city), v.city), cell(fmtDate(f), f), cell(String(v.count), v.count)]; });
     const vCountries = countBy(venues, (v) => v.country);
-    const citySel = qpick("vcsel", "Country", [["", "All countries"]].concat(vCountries.map((x) => [x.key, x.key + " (" + x.count + ")"])), state.venueCountry) + qpick("vsel", "City", [["", "All cities"]].concat(vCities.map((x) => [x.key, x.key + " (" + x.count + ")"])), state.venueCity) + clearAll(state.venueCountry || state.venueCity, "venues");
-    return '<div class="list-head"><div class="list-title"><h2>' + plural(list.length, "venue", "venues") + '</h2><span class="muted">Festivals are counted separately</span></div></div>' +
+    const citySel = qpick("vcsel", "Country", [["", "All countries"]].concat(vCountries.map((x) => [x.key, x.key + " (" + x.count + ")"])), state.venueCountry) + qpick("vsel", "City", [["", "All cities"]].concat(vCities.map((x) => [x.key, x.key + " (" + x.count + ")"])), state.venueCity) + clearAll(state.venueCountry || state.venueCity || state.venueQ, "venues");
+    return '<div class="list-head"><div class="list-title"><h2>' + plural(list.length, "venue", "venues") + "</h2></div>" + searchBox("vq", "Search venue", "Search venue or city", state.venueQ) + "</div>" +
       table("venues", [{ label: "#", num: true, cls: "num" }, { label: "Venue" }, { label: "City", cls: "muted" }, { label: "First visit", cls: "muted" }, { label: "Concerts", num: true, cls: "num" }], rows, 0,
-        (r) => ({ rank: r[0].h, title: r[1].h, sub: [r[2].h, "since " + r[3].s.slice(0, 4)], value: r[4].h, unit: r[4].s === 1 ? "concert" : "concerts" }), citySel);
+        (r) => ({ rank: r[0].h, title: r[1].h, sub: [r[2].h, "since " + r[3].s.slice(0, 4)], value: r[4].h, unit: r[4].s === 1 ? "concert" : "concerts" }), citySel) +
+      '<p class="tag list-note">Festival concerts are not counted here.</p>';
   }
 
   const fesattr = (name) => ' data-fest="' + esc(name) + '"';
@@ -1465,14 +1527,25 @@
       "</div>" +
       '<section class="card"><h2>Top artists</h2>' + bars(yArtists.slice(0, 10), (a) => esc(a.key), (a) => ["artist", a.key, y]) + "</section>" +
       // every month of the year, empty ones too, drawn like the share image: the busiest month in full colour
-      (() => { const ms = Array.from({ length: 12 }, (_, i) => { const k = y + "-" + String(i + 1).padStart(2, "0"); return { key: k, count: (yMonths.find((m) => m.key === k) || {}).count || 0 }; });
-        const mx = Math.max(1, ...ms.map((m) => m.count));
-        return '<section class="card"><h2>Month by month</h2><div class="years months">' + ms.map((m) => { const name = new Date(m.key + "-15").toLocaleDateString("en-GB", { month: "long" }), t = name + ": " + plural(m.count, "concert", "concerts");
-          const bar = '<span class="v">' + (m.count || "") + '</span><span class="b' + (m.count === mx ? "" : m.count ? " part" : " none") + '" style="display:block;height:' + (m.count ? Math.round(m.count / mx * 130) : 2) + 'px"></span><span class="y">' + name[0] + "</span>";
-          return m.count ? '<button type="button" class="year"' + fattr("month", m.key) + ' title="' + t + '" aria-label="' + t + '">' + bar + "</button>" : '<span class="year" aria-label="' + t + '">' + bar + "</span>"; }).join("") + "</div></section>"; })() +
+      // in the current year, months still to come are faded and the shows already booked (upcoming.js) are drawn as outlines
+      (() => { const nowM = new Date().toISOString().slice(0, 7), today = new Date().toISOString().slice(0, 10);
+        const booked = ((window.LONG_ROAD_UPCOMING || {}).shows || []).filter((u) => u.date >= today);
+        const ms = Array.from({ length: 12 }, (_, i) => { const k = y + "-" + String(i + 1).padStart(2, "0");
+          return { key: k, count: (yMonths.find((m) => m.key === k) || {}).count || 0, booked: booked.filter((u) => u.date.slice(0, 7) === k).length, future: k > nowM }; });
+        const mx = Math.max(1, ...ms.map((m) => m.count + m.booked));
+        const h = (n) => Math.round(n / mx * 130);
+        return '<section class="card"><h2>Month by month</h2><div class="years months">' + ms.map((m) => { const name = new Date(m.key + "-15").toLocaleDateString("en-GB", { month: "long" }),
+            t = name + ": " + plural(m.count, "concert", "concerts") + (m.booked ? ", " + m.booked + " booked" : "");
+          const bar = '<span class="v">' + (m.count || "") + (m.booked ? '<span class="v-booked">' + (m.count ? "+" : "") + m.booked + "</span>" : "") + "</span>" +
+            (m.booked ? '<span class="b booked" style="display:block;height:' + h(m.booked) + 'px"></span>' : "") +
+            (m.count || !m.booked ? '<span class="b' + (m.count === mx ? "" : m.count ? " part" : m.future ? " future" : " none") + '" style="display:block;height:' + (m.count ? h(m.count) : 2) + "px" + (m.booked && m.count ? ";border-radius:0" : "") + '"></span>' : "") +
+            '<span class="y' + (m.future ? " future" : "") + '">' + name[0] + "</span>";
+          return m.count ? '<button type="button" class="year"' + fattr("month", m.key) + ' title="' + t + '" aria-label="' + t + '">' + bar + "</button>" : '<span class="year" title="' + t + '" aria-label="' + t + '">' + bar + "</span>"; }).join("") + "</div>" +
+          (ms.some((m) => m.booked) ? '<p class="tag" style="margin:10px 0 0"><span class="booked-key"></span>booked, not seen yet</p>' : "") + "</section>"; })() +
       (newArtists.length ? '<section class="card"><div class="card-head"><h2>New for you</h2><button class="link"' + fattr("newArtists", y) + ">Open in concert list</button></div>" +
         '<p class="tag" style="margin:0 0 12px">' + plural(newArtists.length, "artist", "artists") + " seen for the first time in " + esc(y) + "</p>" +
-        '<div class="history-list">' + newArtists.map((a) => '<button type="button" class="hist"' + aattr(a.key) + ">" + esc(a.key) + "</button>").join("") + "</div></section>" : "") +
+        '<div class="history-list">' + newArtists.slice(0, isOpen("new-" + y) ? newArtists.length : 12).map((a) => '<button type="button" class="hist"' + aattr(a.key) + ">" + esc(a.key) + "</button>").join("") + "</div>" +
+        moreBtn("new-" + y, newArtists.length, 12) + "</section>" : "") +
       (yVenues.length ? '<section class="card"><h2>Venues</h2>' + bars(yVenues.slice(0, 10), (v) => esc(v.name) + ' <span class="muted">· ' + esc(v.city) + "</span>", (v) => ["venue", v.key, y]) + "</section>" : "") +
       (yFest.length ? '<section class="card"><h2>Festivals</h2>' + bars(yFest, (f) => esc(f.key), (f) => ["festival", f.key, y]) + "</section>" : "");
   }
@@ -1751,8 +1824,8 @@
   }
   // the page address follows the view and its filters (#t=concerts&kind=fest&country=Spain), so a view can be shared
   const URL_KEYS = { tab: "t", detail: "c", artist: "artist", venue: "venue", festival: "fest", song: "song", year: "y", q: "q", kind: "kind", country: "country", cYear: "cy",
-    venueCountry: "vco", venueCity: "vci", festCountry: "fco", mapKind: "mk", mapYears: "my", shelfOnly: "shelf", artistSet: "set", artistQ: "aq", songQ: "sq" };
-  const TAB_KEYS = { concerts: ["detail", "q", "kind", "country", "cYear"], artists: ["artist", "shelfOnly", "artistSet", "artistQ"], venues: ["venue", "venueCountry", "venueCity"],
+    venueCountry: "vco", venueCity: "vci", festCountry: "fco", mapKind: "mk", mapYears: "my", shelfOnly: "shelf", artistSet: "set", artistQ: "aq", venueQ: "vq", songQ: "sq" };
+  const TAB_KEYS = { concerts: ["detail", "q", "kind", "country", "cYear"], artists: ["artist", "shelfOnly", "artistSet", "artistQ"], venues: ["venue", "venueCountry", "venueCity", "venueQ"],
     festivals: ["festival", "festCountry"], songs: ["song", "songQ"], years: ["year"], map: ["mapKind", "mapYears"] };
   function syncUrl() {
     const p = new URLSearchParams();
@@ -1856,9 +1929,10 @@
     else if (d.aset !== undefined) go(() => { state.tab = "artists"; state.artist = null; state.detail = null; state.artistSet = d.aset || null; state.shelfOnly = false; state.artistQ = ""; state.limits.artists = 0; });
     else if (d.kind !== undefined) { state.kind = d.kind; state.limits.concerts = 0; render(); }
     else if (d.mkind !== undefined) { state.mapKind = d.mkind; render(); }
+    else if (d.expand) { opened.has(d.expand) ? opened.delete(d.expand) : opened.add(d.expand); render(); }
     else if (d.clear) {
       if (d.clear === "concerts") Object.assign(state, { kind: "", country: "", cYear: "", q: "", filter: null });
-      if (d.clear === "venues") Object.assign(state, { venueCountry: "", venueCity: "" });
+      if (d.clear === "venues") Object.assign(state, { venueCountry: "", venueCity: "", venueQ: "" });
       if (d.clear === "artists") Object.assign(state, { shelfOnly: false, artistQ: "", artistSet: null });
       if (d.clear === "festivals") state.festCountry = "";
       if (d.clear === "map") Object.assign(state, { mapKind: "", mapYears: "" });
@@ -1879,7 +1953,7 @@
     else if (t.id === "nextAll") { state.nextAll = !state.nextAll; render(); }
     else if (t.id === "clearf") { state.filter = null; state.limits.concerts = 0; render(); }
     else if (t.id === "back") { if (depth() > 0) goBack(); else go(() => { state.detail = null; }); }
-    else if (t.id === "toTop") window.scrollTo({ top: 0, behavior: "smooth" });
+    else if (t.id === "toTop" || t.id === "navLogo") window.scrollTo({ top: 0, behavior: "smooth" });
     else if (t.id === "theme") setTheme(!isLight());
     else if (t.id === "toAbout") {
       if (state.tab !== "overview" || state.detail || state.artist || state.venue || state.festival || state.song) go(() => { state.tab = "overview"; state.detail = null; state.filter = null; state.artist = null; state.venue = null; state.festival = null; state.song = null; });
@@ -1912,10 +1986,11 @@
     }
   });
   document.addEventListener("input", (e) => {
-    if (e.target.id !== "q" && e.target.id !== "aq" && e.target.id !== "sq") return;
+    if (!["q", "aq", "vq", "sq"].includes(e.target.id)) return;
     const id = e.target.id;
     if (id === "q") { state.q = e.target.value; state.limits.concerts = 0; }
     else if (id === "aq") { state.artistQ = e.target.value; state.limits.artists = 0; }
+    else if (id === "vq") { state.venueQ = e.target.value; state.limits.venues = 0; }
     else { state.songQ = e.target.value; state.limits.songs = 0; }
     renderKeeping(id, ".search");
   });
