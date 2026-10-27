@@ -1575,26 +1575,37 @@
     yy += 30;
     if (!played.length) { g.fillStyle = MUT; g.font = "400 32px " + BODY; g.fillText("No setlist on setlist.fm yet.", X, yy + 40); }
     else {
-      const rows = [], encores = new Set(c.songs.filter((x) => /^Encore/.test(x.set)).map((x) => x.set)).size;
+      // every part of the show gets its label (Main set, Set 1, Encore…), unless it is all one main set
+      const sets = [...new Set(played.map((x) => x.set))], encores = sets.filter((x) => /^Encore/.test(x)).length;
+      const setName = (x) => x === "Main" ? "Main set" : /^Encore/.test(x) && encores === 1 ? "Encore" : x.replace(/:$/, "");
+      const labels = sets.length > 1 || sets[0] !== "Main";
+      // the notes shown on the concert page: cover, guest, setlist.fm's info
+      const note = (x) => [x.cover ? x.cover + " cover" : "", x.with ? "with " + x.with : "", x.info || ""].filter(Boolean).join(" · ");
+      const rows = [];
       let lastSet = null;
-      for (const x of c.songs) if (!x.tape && x.name) {
-        if (lastSet !== null && x.set !== lastSet && /^Encore/.test(x.set)) rows.push({ encore: encores > 1 ? x.set : "Encore" });
-        lastSet = x.set; rows.push({ name: x.name });
+      for (const x of played) {
+        if (labels && x.set !== lastSet) rows.push({ label: setName(x.set), encore: /^Encore/.test(x.set) });
+        lastSet = x.set; rows.push({ name: x.name, note: note(x) });
       }
-      const top = yy + 20, bottom = 1740, lh = rows.length > 16 ? 44 : 52, maxCol = Math.floor((bottom - top) / lh);
-      const cols = rows.length > maxCol ? 2 : 1, colW = (R - X) / cols, fs = rows.length > 16 ? 29 : 34;
-      // two columns share the songs evenly, up to the space there is
+      // one column while the rows fit at 40px or more (the notes need the width), else two columns sharing the rows evenly
+      const top = yy + 20, bottom = 1760, space = bottom - top, cols = rows.length * 40 > space ? 2 : 1;
+      const lh = cols > 1 ? 44 : Math.max(40, Math.min(52, Math.floor(space / rows.length))), maxCol = Math.floor(space / lh);
+      const colW = (R - X) / cols, fs = lh >= 50 ? 34 : lh >= 44 ? 30 : 28;
       const perCol = cols > 1 ? Math.min(maxCol, Math.ceil(rows.length / 2)) : maxCol;
       const room = perCol * cols, shown = rows.length > room ? rows.slice(0, room - 1) : rows;
       let n = 0;
       shown.forEach((r, i) => {
         const x = X + Math.floor(i / perCol) * colW, ry = top + (i % perCol) * lh + lh * 0.7;
-        if (r.encore) { g.fillStyle = ACC; g.font = "600 " + (fs - 8) + "px " + BODY; g.letterSpacing = "3px"; g.fillText(r.encore.toUpperCase(), x, ry); g.letterSpacing = "0px"; return; }
+        if (r.label) { g.fillStyle = r.encore ? ACC : MUT; g.font = "600 " + (fs - 8) + "px " + BODY; g.letterSpacing = "3px"; g.fillText(fit(r.label.toUpperCase(), colW - 20), x, ry); g.letterSpacing = "0px"; return; }
         n++;
         g.fillStyle = MUT; g.font = "500 " + (fs - 4) + "px " + BODY; g.textAlign = "right"; g.fillText(n + ".", x + 44, ry); g.textAlign = "left";
-        g.fillStyle = TXT; g.font = "400 " + fs + "px " + BODY; g.fillText(fit(r.name, colW - 76), x + 58, ry);
+        g.fillStyle = TXT; g.font = "400 " + fs + "px " + BODY;
+        const nm = fit(r.name, colW - 76), w = g.measureText(nm).width;
+        g.fillText(nm, x + 58, ry);
+        // the note follows the title in grey, cut to the room left on the line
+        if (r.note && colW - 76 - w > 60) { g.fillStyle = MUT; g.font = "400 " + (fs - 6) + "px " + BODY; g.fillText(fit("· " + r.note, colW - 76 - w - 12), x + 58 + w + 12, ry); }
       });
-      const left = rows.filter((r) => !r.encore).length - n;
+      const left = rows.filter((r) => !r.label).length - n;
       if (left > 0) { g.fillStyle = MUT; g.font = "400 " + (fs - 2) + "px " + BODY; g.fillText("+ " + left + " more", X + (cols - 1) * colW + 58, top + (perCol - 1) * lh + lh * 0.7); }
     }
     g.fillStyle = MUT; g.font = "400 26px " + BODY; g.textAlign = "right"; g.fillText("longroad.joaomiguel.com", R, 1815); g.textAlign = "left";
@@ -1717,23 +1728,6 @@
     for (const [k, u] of Object.entries(URL_KEYS)) if (p.has(u)) state[k] = k === "shelfOnly" ? p.get(u) === "1" : p.get(u);
     if (p.has("f") && FILTERS[p.get("f")]) state.filter = { f: p.get("f"), v: p.get("v") || "", y: p.get("fy") || null };
   }
-  // the big Overview numbers count up from 0 when the site opens (once per visit)
-  let counted = false;
-  function countUp() {
-    if (counted) return;
-    counted = true;
-    if (state.tab !== "overview" || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const els = [...app.querySelectorAll(".kpi")].map((el) => ({ el, to: +el.textContent.replace(/,/g, "") })).filter((x) => /^[\d,]+$/.test(x.el.textContent) && x.to > 0);
-    const t0 = performance.now(), dur = 900;
-    const step = (now) => {
-      const k = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - k, 3);
-      for (const x of els) if (x.el.isConnected) x.el.textContent = fmtN(Math.round(x.to * e));
-      if (k < 1) requestAnimationFrame(step);
-    };
-    for (const x of els) x.el.textContent = "0";
-    requestAnimationFrame(step);
-  }
-
   // ---------- theme ----------
   // dark by default; the choice is remembered on this device
   const isLight = () => document.documentElement.dataset.theme === "light";
@@ -1765,7 +1759,6 @@
     if (state.tab === "map") initMap(mapList());
     // years chart scrolls sideways on phones: start at the most recent years
     app.querySelectorAll(".years").forEach((el) => { el.scrollLeft = el.scrollWidth; });
-    countUp();
   }
   // Every view change can be undone with Back. On desktop it is a browser history entry (browser Back works too);
   // on touch screens it is an in-app stack, so the iPhone edge swipe does not navigate inside the app.
