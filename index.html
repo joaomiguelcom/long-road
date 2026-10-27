@@ -140,9 +140,15 @@
   .history { display: flex; flex-direction: column; gap: 8px; }
   .history-list { display: flex; flex-wrap: wrap; gap: 6px; }
   .edition + .edition { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--line); }
+  .fday { display: grid; grid-template-columns: 76px minmax(0, 1fr); gap: 8px; align-items: baseline; }
+  .fday + .fday { margin-top: 8px; }
+  .fday-date { font-size: 13px; color: var(--muted); white-space: nowrap; }
+  .fday:only-of-type { display: block; }
+  .delta { font: 500 14px/1 Inter, system-ui, sans-serif; margin-left: 8px; vertical-align: middle; color: var(--muted); white-space: nowrap; }
+  .delta.up { color: var(--ok); }
   .edition-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; margin-bottom: 8px; }
   .year-link { background: none; border: 0; padding: 0; font: 600 22px/1.1 var(--display); color: var(--text); cursor: pointer; }
-  .hist { font: inherit; font-size: 13px; background: var(--line); border: 0; border-radius: 6px; padding: 4px 9px; color: var(--muted); cursor: pointer; }
+  .hist { text-align: left; font: inherit; font-size: 13px; background: var(--line); border: 0; border-radius: 6px; padding: 4px 9px; color: var(--muted); cursor: pointer; }
   span.hist { cursor: default; } /* plain labels (openers, closers): not links */
   .hist.cur { background: var(--accent); color: #0F1115; font-weight: 600; cursor: default; }
   .sec-title { margin: 0; font: 500 18px/1.2 var(--display); }
@@ -540,7 +546,7 @@
     if (s.tape || !s.name) continue;
     songsHeard++;
     const k = songKey(s, c);
-    const e = songMap.get(k) || { name: s.name, artist: songOwner(s, c), count: 0, by: new Set() };
+    const e = songMap.get(k) || { key: k, name: s.name, artist: songOwner(s, c), count: 0, by: new Set() };
     e.count++; if (c.artist !== e.artist) e.by.add(c.artist); songMap.set(k, e);
     const pk = s.name + "||" + c.artist;
     const p = playedMap.get(pk) || { name: s.name, artist: c.artist, count: 0 };
@@ -695,7 +701,7 @@
     festivals: { label: "Festival concerts", test: (c, v) => !!c.festival && c.date.startsWith(v), show: (v) => v }
   };
 
-  const state = { tab: "overview", q: "", detail: null, limits: {}, artistQ: "", songQ: "", filter: null, artist: null, venue: null, festival: null, year: byYear.length ? byYear[byYear.length - 1].key : null, sorts: {} };
+  const state = { tab: "overview", q: "", detail: null, limits: {}, artistQ: "", songQ: "", filter: null, artist: null, venue: null, festival: null, song: null, year: byYear.length ? byYear[byYear.length - 1].key : null, sorts: {} };
   const limitOf = (id, def) => state.limits[id] || def;
   const TABS = [["overview", "Overview"], ["concerts", "Concerts"], ["artists", "Artists"], ["venues", "Venues"], ["festivals", "Festivals"], ["songs", "Songs"], ["years", "Year in review"], ["map", "Map"]];
 
@@ -832,7 +838,7 @@
       "</div></section>" +
       onThisDay() +
       '<section aria-labelledby="h-fun"><h2 id="h-fun" style="margin:0 0 14px;font:500 22px/1.2 var(--display)">Fun facts</h2><div class="grid fun-grid" style="--min:240px">' +
-        (topSong ? fun("Most heard song live", esc(topSong.name), esc(topSong.artist) + " · " + topSong.count + " times", fattr("song", topSong.artist + "||" + topSong.name)) : "") +
+        (topSong ? fun("Most heard song live", esc(topSong.name), esc(topSong.artist) + " · " + topSong.count + " times", sattr(topSong.key)) : "") +
         (pjSong && pjSong !== topSong ? fun("Top Pearl Jam song live", esc(pjSong.name), pjSong.count + " times", fattr("song", pjSong.artist + "||" + pjSong.name)) : "") +
         (yearsTop ? fun("Busiest year", yearsTop.key, yearsTop.count + " concerts", yrAttr(yearsTop.key)) : "") +
         (byMonth[0] ? fun("Busiest month", new Date(byMonth[0].key + "-15").toLocaleDateString("en-GB", { month: "long", year: "numeric" }), byMonth[0].count + " concerts", fattr("month", byMonth[0].key)) : "") +
@@ -925,7 +931,7 @@
     const setlist = groups.length ?
       '<section><div class="card-head"><h3 class="sec-title">Setlist</h3><span class="muted">' + summary + "</span></div>" +
       groups.map((g, i) => '<div><div class="set-label' + (/^Encore/.test(g.set) ? " encore" : "") + '">' + esc(g.set) + '</div><ol class="setlist">' +
-        g.songs.map((x) => (x.tape ? '<li class="tape" title="Tape"><span class="n" aria-hidden="true"></span>' : '<li><span class="n">' + (++num) + ".</span>") + "<span>" + esc(x.name) +
+        g.songs.map((x) => (x.tape ? '<li class="tape" title="Tape"><span class="n" aria-hidden="true"></span>' : '<li><span class="n">' + (++num) + ".</span>") + "<span>" + (x.tape ? esc(x.name) : '<span role="button" tabindex="0" class="inline-link"' + sattr(songKey(x, c)) + ">" + esc(x.name) + "</span>") +
           (nth > 1 && isNew(x) ? ' <span class="badge">new for you</span>' : "") +
           (x.cover ? ' <span class="badge cover">' + esc(x.cover) + (x.tape ? " song" : " cover") + "</span>" : "") +
           (x.with ? ' <span class="tag">· with ' + esc(x.with) + "</span>" : "") +
@@ -1106,7 +1112,9 @@
       const where = [...new Set(l.map((c) => c.venue))].join(", ");
       return '<div class="edition"><div class="edition-head"><button type="button" class="year-link"' + fattr("festival", name, y) + ">" + y + "</button>" +
         '<span class="muted">' + when + " · " + esc(where) + " · " + plural(l.length, "concert", "concerts") + "</span></div>" +
-        '<div class="history-list">' + l.map((c) => '<button type="button" class="hist"' + openAttr(c) + ' title="' + esc(fmtDate(c.date)) + '">' + esc(c.artist) + "</button>").join("") + "</div></div>";
+        // one line per day, so the line-up reads like the festival poster
+        [...new Set(l.map((c) => c.date))].map((d) => '<div class="fday">' + (a === b ? "" : '<span class="fday-date">' + weekdayOf(d).slice(0, 3) + " " + fmtDate(d).slice(0, 6) + "</span>") +
+          '<div class="history-list">' + l.filter((c) => c.date === d).map((c) => '<button type="button" class="hist"' + openAttr(c) + ">" + esc(c.artist) + "</button>").join("") + "</div></div>").join("") + "</div>";
     }).join("");
     const facts = [
       busiest && busiest.count > 1 ? "Busiest day: " + plural(busiest.count, "concert", "concerts") + " on " + fmtDate(busiest.key) : "",
@@ -1139,7 +1147,54 @@
         (r) => ({ rank: r[0].h, title: r[1].h, sub: [plural(r[2].s, "edition", "editions")], tag: '<span class="tag">' + r.yrs + "</span>", value: r[3].h, unit: r[3].s === 1 ? "concert" : "concerts" }));
   }
 
+  const sattr = (key) => ' data-song="' + esc(key) + '"';
+  // every time João heard one song, whoever played it, with where it fell in the setlist
+  function songPage(key) {
+    const s = songs.find((x) => x.key === key);
+    if (!s) return "";
+    const plays = [];
+    for (const c of concerts) {
+      const p = (c.songs || []).filter((x) => !x.tape && x.name);
+      p.forEach((x, i) => { if (songKey(x, c) === key) plays.push({ c, i, n: p.length, set: x.set, info: x.info, with: x.with }); });
+    }
+    const first = plays[plays.length - 1], last = plays[0];
+    const opened = plays.filter((x) => x.i === 0 && x.n > 2).length, closed = plays.filter((x) => x.i === x.n - 1 && x.n > 2).length;
+    const encores = plays.filter((x) => /^Encore/.test(x.set || "")).length;
+    const performers = countBy(plays, (x) => x.c.artist);
+    const yrs = new Set(plays.map((x) => x.c.date.slice(0, 4))).size;
+    const seenOwner = artists.some((a) => a.key === s.artist);
+    const pos = (x) => x.n > 2 && x.i === 0 ? "Opener" : x.n > 2 && x.i === x.n - 1 ? "Closer" : "#" + (x.i + 1) + " of " + x.n;
+    const rows = plays.map((x) => [
+      cell('<span style="white-space:nowrap">' + fmtDate(x.c.date) + "</span>", x.c.date),
+      cell('<button type="button" class="open" data-open="' + esc(x.c.id) + '">' + esc(x.c.artist) + "</button>", x.c.artist),
+      cell(esc(x.c.festival || x.c.venue), x.c.festival || x.c.venue),
+      cell(esc(pos(x)) + (/^Encore/.test(x.set || "") ? ' <span class="tag">· encore</span>' : "") + (x.with ? ' <span class="tag">· with ' + esc(x.with) + "</span>" : ""), x.i)]);
+    const facts = [
+      opened ? "Opened the show " + plural(opened, "time", "times") : "",
+      closed ? "Closed the show " + plural(closed, "time", "times") : "",
+      encores ? "Played in the encore " + plural(encores, "time", "times") : "",
+      performers.length > 1 ? "Played by " + performers.map((a) => esc(a.key) + (a.count > 1 ? " ×" + a.count : "")).join(", ") : "",
+    ].filter(Boolean);
+    return '<div class="detail-wide">' +
+      '<button class="btn" id="backSongs">← All songs</button>' +
+      '<div><div class="eyebrow">' + (s.count > 1 ? "#" + s.rank + " most heard song" : "Heard once") + "</div>" +
+      '<h2 style="margin:4px 0 0;font:600 40px/1.1 var(--display)">' + esc(s.name) + "</h2>" +
+      '<div class="muted">' + (seenOwner ? "by " + artistBtn(s.artist, "text-link") : esc(s.artist) + " cover") + "</div></div>" +
+      '<section class="grid kpis" aria-label="Song summary">' +
+        kpi("Times heard", '<span class="accent">' + s.count + "</span>", "", fattr("song", s.artist + "||" + s.name)) +
+        kpi("First heard", fmtDate(first.c.date).slice(-4), esc(first.c.artist) + " · " + fmtDate(first.c.date).slice(0, 6), openAttr(first.c)) +
+        kpi("Last heard", fmtDate(last.c.date).slice(-4), esc(last.c.artist) + " · " + fmtDate(last.c.date).slice(0, 6), openAttr(last.c)) +
+        kpi("Years", yrs + "", "with this song live") +
+      "</section>" +
+      (facts.length ? '<section class="card"><h2>Song facts</h2><ul class="facts-list">' + facts.map((f) => "<li>" + f + "</li>").join("") + "</ul></section>" : "") +
+      '<section class="card"><div class="card-head"><h2>Every time you heard it</h2><button class="link"' + fattr("song", s.artist + "||" + s.name) + ">Open in concert list</button></div>" +
+        table("song-plays", [{ label: "Date", cls: "muted" }, { label: "Artist" }, { label: "Where", cls: "muted" }, { label: "In the setlist" }], rows, 0,
+          (r) => ({ title: r[1].h, sub: [r[0].h, r[2].h], tag: r[3].h })) + "</section>" +
+      "</div>";
+  }
+
   function songList() {
+    if (state.song) return songPage(state.song);
     const q = plain(state.songQ);
     // songs whose title matches come first, then songs by matching artists
     const list = q ? songs.filter((s) => plain(s.name).includes(q)).concat(songs.filter((s) => !plain(s.name).includes(q) && [s.artist, ...s.by].some((a) => plain(a).includes(q)))) : songs;
@@ -1148,7 +1203,7 @@
     const songArtist = (s) => seen(s.artist)
       ? artistBtn(s.artist, "open muted-btn") + (s.by.size ? ' <span class="tag">· also by ' + [...s.by].map(esc).join(", ") + "</span>" : "")
       : [...s.by].map((a) => artistBtn(a, "open muted-btn")).join(", ") + ' <span class="tag">· ' + esc(s.artist) + " cover</span>";
-    const rows = list.map((s) => [cell(String(s.rank), s.rank), cell(esc(s.name), s.name), cell(songArtist(s), seen(s.artist) ? s.artist : [...s.by][0]), cell(String(s.count), s.count)]);
+    const rows = list.map((s) => [cell(String(s.rank), s.rank), cell('<button type="button" class="open"' + sattr(s.key) + ">" + esc(s.name) + "</button>", s.name), cell(songArtist(s), seen(s.artist) ? s.artist : [...s.by][0]), cell(String(s.count), s.count)]);
     const coverRows = covers.map((x) => [cell(esc(x.name), x.name), cell(esc(x.original), x.original), cell(artistBtn(x.artist, "open muted-btn"), x.artist), cell(String(x.count), x.count)]);
     const debutRows = debuts.slice().sort((a, b) => b.date.localeCompare(a.date)).map((d) => [cell('<button type="button" class="open muted-btn" data-open="' + esc(d.id) + '">' + fmtDate(d.date) + "</button>", d.date), cell(esc(d.name), d.name), cell(esc(d.artist), d.artist), cell(esc(d.info), d.info)]);
     return '<div class="list-head"><div class="list-title"><h2>Songs you heard most</h2><span class="muted">' + fmtN(songs.length) + " different songs, " + fmtN(songsHeard) + " in total, " + fmtN(heardOnce) + " heard only once</span></div>" + searchBox("sq", "Search songs", "Search song or artist", state.songQ) + "</div>" +
@@ -1177,6 +1232,14 @@
     const first = list[list.length - 1], last = list[0];
     const yi = byYear.findIndex((x) => x.key === y);
     const prev = byYear[yi - 1], next = byYear[yi + 1];
+    // the same numbers for the calendar year before, to show the change
+    const py = String(+y - 1);
+    const pList = concerts.filter((c) => c.date.startsWith(py));
+    const delta = (cur, before) => pList.length ? '<span class="delta' + (cur > before ? " up" : "") + '" title="' + py + ": " + fmtN(before) + '">' + (cur === before ? "=" : (cur > before ? "+" : "−") + fmtN(Math.abs(cur - before))) + " vs ’" + py.slice(2) + "</span>" : "";
+    const pArtists = new Set(pList.map((c) => c.artist)).size;
+    const pVenues = new Set(pList.filter((c) => !c.festival).map(venueKey)).size;
+    const pFest = new Set(pList.filter((c) => c.festival).map((c) => c.festival)).size;
+    const pSongs = pList.reduce((n, c) => n + (c.songs || []).filter((s) => !s.tape).length, 0);
     return '<div class="list-head"><div class="list-title"><h2 style="font-size:40px">' + esc(y) + "</h2>" +
       '<span class="muted">' + plural(list.length, "concert", "concerts") + "</span></div>" +
       '<div class="year-nav">' + (prev ? '<button class="btn" data-year="' + prev.key + '">← ' + prev.key + "</button>" : "") +
@@ -1184,11 +1247,11 @@
       (next ? '<button class="btn" data-year="' + next.key + '">' + next.key + " →</button>" : "") +
       '<button class="btn" id="shareYear">Share</button>' + "</div></div>" +
       '<section class="grid kpis" aria-label="Year summary">' +
-        kpi("Concerts", '<span class="accent">' + list.length + "</span>", '<span class="go">See them all</span>', fattr("year", y)) +
-        kpi("Artists", yArtists.length + "", newArtists.length + " seen for the first time", fattr("newArtists", y)) +
-        kpi("Venues", yVenues.length + "", plural(new Set(list.map((c) => c.city)).size, "city", "cities") + " · " + plural(new Set(list.map((c) => c.country)).size, "country", "countries"), fattr("venues", y)) +
-        kpi("Festivals", yFest.length + "", list.filter((c) => c.festival).length + " festival concerts", fattr("festivals", y)) +
-        (ySongs ? kpi("Songs heard", fmtN(ySongs), "", fattr("year", y)) : "") +
+        kpi("Concerts", '<span class="accent">' + list.length + "</span>" + delta(list.length, pList.length), '<span class="go">See them all</span>', fattr("year", y)) +
+        kpi("Artists", yArtists.length + delta(yArtists.length, pArtists), newArtists.length + " seen for the first time", fattr("newArtists", y)) +
+        kpi("Venues", yVenues.length + delta(yVenues.length, pVenues), plural(new Set(list.map((c) => c.city)).size, "city", "cities") + " · " + plural(new Set(list.map((c) => c.country)).size, "country", "countries"), fattr("venues", y)) +
+        kpi("Festivals", yFest.length + delta(yFest.length, pFest), list.filter((c) => c.festival).length + " festival concerts", fattr("festivals", y)) +
+        (ySongs ? kpi("Songs heard", fmtN(ySongs) + delta(ySongs, pSongs), "", fattr("year", y)) : "") +
       "</section>" +
       '<div class="grid fun-grid" style="--min:240px">' +
         fun("First concert", esc(first.artist), fmtDate(first.date) + " · " + esc(first.festival || first.venue), openAttr(first)) +
@@ -1369,10 +1432,10 @@
   // on touch screens it is an in-app stack, so the iPhone edge swipe does not navigate inside the app.
   const useHistory = !window.matchMedia("(pointer: coarse)").matches;
   const stack = [];
-  const snap = (n) => ({ n, tab: state.tab, detail: state.detail, filter: state.filter, artist: state.artist, venue: state.venue, festival: state.festival, year: state.year, q: state.q, shelfOnly: state.shelfOnly, artistSet: state.artistSet, scroll: window.scrollY });
+  const snap = (n) => ({ n, tab: state.tab, detail: state.detail, filter: state.filter, artist: state.artist, venue: state.venue, festival: state.festival, song: state.song, year: state.year, q: state.q, shelfOnly: state.shelfOnly, artistSet: state.artistSet, scroll: window.scrollY });
   const depth = () => useHistory ? (history.state && history.state.n) || 0 : stack.length;
   const restore = (h) => {
-    Object.assign(state, { tab: h.tab, detail: h.detail, filter: h.filter, artist: h.artist, venue: h.venue || null, festival: h.festival || null, year: h.year, q: h.q, shelfOnly: !!h.shelfOnly, artistSet: h.artistSet || null });
+    Object.assign(state, { tab: h.tab, detail: h.detail, filter: h.filter, artist: h.artist, venue: h.venue || null, festival: h.festival || null, song: h.song || null, year: h.year, q: h.q, shelfOnly: !!h.shelfOnly, artistSet: h.artistSet || null });
     render(); window.scrollTo(0, h.scroll || 0);
   };
   const go = (fn) => {
@@ -1397,17 +1460,18 @@
     const t = e.target.closest('button, [role="button"]');
     if (!t) return;
     const d = t.dataset;
-    if (d.tab) go(() => { state.tab = d.tab; state.detail = null; state.filter = null; state.artist = null; state.venue = null; state.festival = null; state.artistSet = null; });
+    if (d.tab) go(() => { state.tab = d.tab; state.detail = null; state.filter = null; state.artist = null; state.venue = null; state.festival = null; state.song = null; state.artistSet = null; });
     else if (d.open) go(() => { state.tab = "concerts"; state.detail = d.open; });
     else if (d.swap) { state.detail = d.swap; if (useHistory) history.replaceState(snap(depth()), ""); render(); window.scrollTo(0, 0); }
     else if (d.artist) go(() => { state.tab = "artists"; state.artist = d.artist; state.detail = null; });
     else if (d.venue) go(() => { state.tab = "venues"; state.venue = d.venue; state.detail = null; });
+    else if (d.song) go(() => { state.tab = "songs"; state.song = d.song; state.detail = null; });
     else if (d.fest) go(() => { state.tab = "festivals"; state.festival = d.fest; state.detail = null; });
     else if (d.f) go(() => { state.tab = "concerts"; state.detail = null; state.filter = { f: d.f, v: d.v, y: d.y || null }; state.q = ""; state.limits.concerts = 0; });
     else if (d.aset !== undefined) go(() => { state.tab = "artists"; state.artist = null; state.detail = null; state.artistSet = d.aset || null; state.shelfOnly = false; state.artistQ = ""; state.limits.artists = 0; });
     else if (d.shelf) go(() => { state.tab = "artists"; state.artist = null; state.detail = null; state.shelfOnly = d.shelf === "1"; });
     else if (d.year) go(() => { state.year = d.year; });
-    else if (d.yr) go(() => { state.tab = "years"; state.year = d.yr; state.detail = null; state.filter = null; state.artist = null; state.venue = null; state.festival = null; });
+    else if (d.yr) go(() => { state.tab = "years"; state.year = d.yr; state.detail = null; state.filter = null; state.artist = null; state.venue = null; state.festival = null; state.song = null; });
     else if (d.sort) {
       const [id, col, num] = d.sort.split("|");
       const cur = state.sorts[id];
@@ -1420,12 +1484,13 @@
     else if (t.id === "clearf") { state.filter = null; state.limits.concerts = 0; render(); }
     else if (t.id === "back") { if (depth() > 0) goBack(); else go(() => { state.detail = null; }); }
     else if (t.id === "toAbout") {
-      if (state.tab !== "overview" || state.detail || state.artist || state.venue || state.festival) go(() => { state.tab = "overview"; state.detail = null; state.filter = null; state.artist = null; state.venue = null; state.festival = null; });
+      if (state.tab !== "overview" || state.detail || state.artist || state.venue || state.festival || state.song) go(() => { state.tab = "overview"; state.detail = null; state.filter = null; state.artist = null; state.venue = null; state.festival = null; state.song = null; });
       const el = document.getElementById("about"); if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
     }
     else if (t.id === "backArtists") go(() => { state.artist = null; });
     else if (t.id === "backVenues") go(() => { state.venue = null; });
     else if (t.id === "backFestivals") go(() => { state.festival = null; });
+    else if (t.id === "backSongs") go(() => { state.song = null; });
     else if (t.id === "shareYear") shareYear(state.year);
   }, true);
   document.addEventListener("change", (e) => {
