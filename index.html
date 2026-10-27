@@ -530,6 +530,11 @@
     const p = playedMap.get(pk) || { name: s.name, artist: c.artist, count: 0 };
     p.count++; playedMap.set(pk, p);
   }
+  // artists seen both in Portugal and abroad (the "Home and away" fun fact and artist list)
+  const homeAwaySet = new Set([...new Set(concerts.map((c) => c.artist))].filter((a) => {
+    const l = concerts.filter((c) => c.artist === a);
+    return l.some((c) => c.country === "Portugal") && l.some((c) => c.country && c.country !== "Portugal");
+  }));
   const songs = [...songMap.values()].sort((a, b) => b.count - a.count);
   const songsOnStage = [...playedMap.values()].sort((a, b) => b.count - a.count);
 
@@ -776,6 +781,7 @@
     const span = topArtist ? artistSpan(topArtist.key) : null;
     const maxYear = Math.max(...byYear.map((y) => y.count));
     const yearsTop = byYear.slice().sort((a, b) => b.count - a.count)[0];
+    const homeAway = artists.filter((a) => homeAwaySet.has(a.key));
     const okSong = (s) => !s.tape && s.name;
     const longest = concerts.reduce((b, c) => { const n = (c.songs || []).filter(okSong).length; return n > b.n ? { c, n } : b; }, { c: null, n: 0 });
     const onceArtists = artists.filter((a) => a.count === 1).length;
@@ -786,8 +792,6 @@
     const furthest = concerts.reduce((b, c) => { if (c.lat == null || c.lng == null) return b; const k = kmFrom(+c.lat, +c.lng); return k > b.k ? { c, k } : b; }, { c: null, k: 0 });
     const abroad = concerts.filter((c) => c.country && c.country !== "Portugal");
     const cityAbroad = countBy(abroad, (c) => c.city)[0];
-    // artists seen both in Portugal and abroad, most seen first
-    const homeAway = artists.filter((a) => { const l = concerts.filter((c) => c.artist === a.key); return l.some((c) => c.country === "Portugal") && l.some((c) => c.country && c.country !== "Portugal"); });
     return '' +
       '<div class="duo">' + nextUp() + lastSeen() + "</div>" +
       '<section class="grid kpis" aria-label="Summary">' +
@@ -825,7 +829,7 @@
         (furthest.c ? fun("Furthest from home", fmtN(Math.round(furthest.k)) + " km", esc(furthest.c.artist) + " · " + esc(furthest.c.city) + ", " + fmtDate(furthest.c.date).slice(-4), openAttr(furthest.c)) : "") +
         fun("Calendar coverage", daysCovered + " of 366", (366 - daysCovered) + " days still without a concert") +
         fun("Cities", fmtN(cities.length), esc(cities[0].key) + " leads with " + fmtN(cities[0].count) + " concerts", tabAttr("map")) +
-        (homeAway.length ? fun("Home and away", plural(homeAway.length, "artist", "artists"), "Seen in Portugal and abroad · " + homeAway.slice(0, 2).map((a) => esc(a.key)).join(", ") + (homeAway.length > 2 ? "…" : ""), aattr(homeAway[0].key)) : "") +
+        (homeAway.length ? fun("Home and away", plural(homeAway.length, "artist", "artists"), "Seen in Portugal and abroad · " + homeAway.slice(0, 2).map((a) => esc(a.key)).join(", ") + (homeAway.length > 2 ? "…" : ""), ' data-aset="homeAway"') : "") +
         (cityAbroad ? fun("Favourite city abroad", esc(cityAbroad.key), plural(cityAbroad.count, "concert", "concerts") + " · " + fmtN(abroad.length) + " outside Portugal", fattr("city", cityAbroad.key)) : "") +
         (reunion ? fun("Longest wait for an encore", esc(reunion.artist), Math.floor(reunion.days / 365.25) + " years between " + fmtDate(reunion.from) + " and " + fmtDate(reunion.to), aattr(reunion.artist)) : "") +
         (songs.length ? fun("One-time songs", fmtN(heardOnce), "Songs you only heard live once", tabAttr("songs")) : "") +
@@ -934,13 +938,14 @@
   function artistList() {
     if (state.artist) return artistPage(state.artist);
     const q = state.artistQ.trim().toLowerCase();
-    const list = artists.filter((a) => (!q || a.key.toLowerCase().includes(q)) && (!state.shelfOnly || onShelf(a.key)));
+    const list = artists.filter((a) => (!q || a.key.toLowerCase().includes(q)) && (!state.shelfOnly || onShelf(a.key)) && (state.artistSet !== "homeAway" || homeAwaySet.has(a.key)));
     const mark = (k) => onShelf(k) ? ' <span class="on-shelf" title="On the record shelf">' + VINYL(14) + "</span>" : "";
     const rows = list.map((a) => { const s = artistSpan(a.key); return [
       cell(String(a.rank), a.rank), cell(artistBtn(a.key) + mark(a.key), a.key), cell(String(a.count), a.count),
       cell(fmtDate(s.first), s.first), cell(fmtDate(s.last), s.last)]; });
     const toggle = shelf.size ? '<button type="button" class="toggle' + (state.shelfOnly ? " on" : "") + '" data-shelf="' + (state.shelfOnly ? "0" : "1") + '" aria-pressed="' + !!state.shelfOnly + '">' + VINYL(14) + " On the shelf</button>" : "";
-    return '<div class="list-head"><div class="list-title"><h2>' + plural(list.length, "artist", "artists") + "</h2>" + toggle + "</div>" + searchBox("aq", "Search artist", "Search artist", state.artistQ) + "</div>" +
+    const setChip = state.artistSet === "homeAway" ? '<button type="button" class="toggle on" data-aset="" aria-label="Show all artists">Seen in Portugal and abroad ×</button>' : "";
+    return '<div class="list-head"><div class="list-title"><h2>' + plural(list.length, "artist", "artists") + "</h2>" + setChip + toggle + "</div>" + searchBox("aq", "Search artist", "Search artist", state.artistQ) + "</div>" +
       table("artists", [{ label: "#", num: true, cls: "num" }, { label: "Artist" }, { label: "Concerts", num: true, cls: "num" }, { label: "First seen", cls: "muted" }, { label: "Last seen", cls: "muted" }], rows, limitOf("artists", 100),
         (r) => ({ rank: r[0].h, title: r[1].h, sub: [r[3].s.slice(0, 4) === r[4].s.slice(0, 4) ? r[3].s.slice(0, 4) : r[3].s.slice(0, 4) + " – " + r[4].s.slice(0, 4)], value: r[2].h, unit: r[2].s === 1 ? "concert" : "concerts" }));
   }
@@ -1348,10 +1353,10 @@
   // on touch screens it is an in-app stack, so the iPhone edge swipe does not navigate inside the app.
   const useHistory = !window.matchMedia("(pointer: coarse)").matches;
   const stack = [];
-  const snap = (n) => ({ n, tab: state.tab, detail: state.detail, filter: state.filter, artist: state.artist, venue: state.venue, festival: state.festival, year: state.year, q: state.q, shelfOnly: state.shelfOnly, scroll: window.scrollY });
+  const snap = (n) => ({ n, tab: state.tab, detail: state.detail, filter: state.filter, artist: state.artist, venue: state.venue, festival: state.festival, year: state.year, q: state.q, shelfOnly: state.shelfOnly, artistSet: state.artistSet, scroll: window.scrollY });
   const depth = () => useHistory ? (history.state && history.state.n) || 0 : stack.length;
   const restore = (h) => {
-    Object.assign(state, { tab: h.tab, detail: h.detail, filter: h.filter, artist: h.artist, venue: h.venue || null, festival: h.festival || null, year: h.year, q: h.q, shelfOnly: !!h.shelfOnly });
+    Object.assign(state, { tab: h.tab, detail: h.detail, filter: h.filter, artist: h.artist, venue: h.venue || null, festival: h.festival || null, year: h.year, q: h.q, shelfOnly: !!h.shelfOnly, artistSet: h.artistSet || null });
     render(); window.scrollTo(0, h.scroll || 0);
   };
   const go = (fn) => {
@@ -1376,13 +1381,14 @@
     const t = e.target.closest('button, [role="button"]');
     if (!t) return;
     const d = t.dataset;
-    if (d.tab) go(() => { state.tab = d.tab; state.detail = null; state.filter = null; state.artist = null; state.venue = null; state.festival = null; });
+    if (d.tab) go(() => { state.tab = d.tab; state.detail = null; state.filter = null; state.artist = null; state.venue = null; state.festival = null; state.artistSet = null; });
     else if (d.open) go(() => { state.tab = "concerts"; state.detail = d.open; });
     else if (d.swap) { state.detail = d.swap; if (useHistory) history.replaceState(snap(depth()), ""); render(); window.scrollTo(0, 0); }
     else if (d.artist) go(() => { state.tab = "artists"; state.artist = d.artist; state.detail = null; });
     else if (d.venue) go(() => { state.tab = "venues"; state.venue = d.venue; state.detail = null; });
     else if (d.fest) go(() => { state.tab = "festivals"; state.festival = d.fest; state.detail = null; });
     else if (d.f) go(() => { state.tab = "concerts"; state.detail = null; state.filter = { f: d.f, v: d.v, y: d.y || null }; state.q = ""; state.limits.concerts = 0; });
+    else if (d.aset !== undefined) go(() => { state.tab = "artists"; state.artist = null; state.detail = null; state.artistSet = d.aset || null; state.shelfOnly = false; state.artistQ = ""; state.limits.artists = 0; });
     else if (d.shelf) go(() => { state.tab = "artists"; state.artist = null; state.detail = null; state.shelfOnly = d.shelf === "1"; });
     else if (d.year) go(() => { state.year = d.year; });
     else if (d.yr) go(() => { state.tab = "years"; state.year = d.yr; state.detail = null; state.filter = null; state.artist = null; state.venue = null; state.festival = null; });
