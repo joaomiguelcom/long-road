@@ -771,6 +771,11 @@
     const span = topArtist ? artistSpan(topArtist.key) : null;
     const maxYear = Math.max(...byYear.map((y) => y.count));
     const yearsTop = byYear.slice().sort((a, b) => b.count - a.count)[0];
+    const okSong = (s) => !s.tape && s.name;
+    const longest = concerts.reduce((b, c) => { const n = (c.songs || []).filter(okSong).length; return n > b.n ? { c, n } : b; }, { c: null, n: 0 });
+    const onceArtists = artists.filter((a) => a.count === 1).length;
+    const favMonth = countBy(concerts, (c) => c.date.slice(5, 7))[0];
+    const monthName = (mm) => new Date("2000-" + mm + "-15").toLocaleDateString("en-GB", { month: "long" });
     return '' +
       '<div class="duo">' + nextUp() + lastSeen() + "</div>" +
       '<section class="grid kpis" aria-label="Summary">' +
@@ -786,7 +791,7 @@
         bars(venues.slice(0, 10), (v) => esc(v.name) + ' <span class="muted">· ' + esc(v.city) + "</span>", (v) => vattr(v.key)) +
         '<p class="tag" style="margin:12px 0 0">Festival concerts are not counted here.</p></section>' +
       '<section class="card"><div class="card-head"><h2>Festivals</h2><button class="link" data-tab="festivals">See all</button></div>' +
-        bars(festivals.slice(0, 10), (f) => esc(f.name) + ' <span class="muted">· ' + f.concerts + " concerts</span>", (f) => ["festival", f.name]) +
+        bars(festivals.slice(0, 10), (f) => esc(f.name) + ' <span class="muted">· ' + f.concerts + " concerts</span>", (f) => fesattr(f.name)) +
         '<p class="tag" style="margin:12px 0 0">Bars show editions attended.</p></section>' +
       '<section class="card"><div class="card-head"><h2>Countries</h2><button class="link" data-tab="map">See map</button></div>' +
         bars(countries, (c) => esc(c.key) + ' <span class="muted">· ' + plural(countryCities(c.key), "city", "cities") + "</span>", (c) => ["country", c.key]) + "</section>" +
@@ -803,9 +808,9 @@
         (topDay ? fun("Most concerts in one day", topDay.count, fmtDate(topDay.key), fattr("day", topDay.key)) : "") +
         (weekdays[0] ? fun("Favourite night out", weekdays[0].key, weekdays[0].count + " concerts", fattr("weekday", weekdays[0].key)) : "") +
         (gap.days ? fun("Longest break", gap.days + " days", fmtDate(gap.from) + " to " + fmtDate(gap.to), fattr("range", gap.from + "|" + gap.to)) : "") +
-        (oldest ? fun("Where it all began", esc(oldest.artist), fmtDate(oldest.date) + " · " + esc(oldest.venue), openAttr(oldest)) : "") +
-        (span ? fun("Most loyal to", esc(topArtist.key), "Seen " + topArtist.count + " times, " + span.first.slice(0, 4) + "–" + span.last.slice(0, 4), aattr(topArtist.key)) : "") +
-        (covers.length ? fun("Covers heard live", fmtN(covers.reduce((n, x) => n + x.count, 0)), "Most heard: " + esc(covers[0].name) + " by " + esc(covers[0].artist), tabAttr("songs")) : "") +
+        (longest.c ? fun("Longest setlist", longest.n + " songs", esc(longest.c.artist) + " · " + fmtDate(longest.c.date), openAttr(longest.c)) : "") +
+        (artists.length ? fun("One and done", Math.round(onceArtists / artists.length * 100) + "%", fmtN(onceArtists) + " of " + fmtN(artists.length) + " artists seen only once", tabAttr("artists")) : "") +
+        (favMonth ? fun("Favourite month", monthName(favMonth.key), fmtN(favMonth.count) + " concerts over the years") : "") +
         (reunion ? fun("Longest wait for an encore", esc(reunion.artist), Math.floor(reunion.days / 365.25) + " years between " + fmtDate(reunion.from) + " and " + fmtDate(reunion.to), aattr(reunion.artist)) : "") +
         (songs.length ? fun("One-time songs", fmtN(heardOnce), "Songs you only heard live once", tabAttr("songs")) : "") +
       "</div></section>" +
