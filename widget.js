@@ -33,29 +33,51 @@ function header(w) {
   const n = h.addText("NEXT UP"); n.font = Font.mediumSystemFont(10); n.textColor = MUT;
 }
 
+// refresh after midnight so the day count stays right
+function setRefresh(w) { const next = new Date(); next.setHours(24, 5, 0, 0); w.refreshAfterDate = next; }
+
+// Tapping opens the site in Safari. iOS has no link that opens a home-screen web app, so the widget's
+// Parameter can name a Shortcut that opens it (Shortcuts "Open App" → Long Road); then the tap runs that.
+const tapUrl = () => {
+  const name = (typeof args !== "undefined" && args.widgetParameter || "").trim();
+  return name ? "shortcuts://run-shortcut?name=" + encodeURIComponent(name) : SITE;
+};
+
 async function build() {
   const w = new ListWidget();
   w.backgroundColor = BG;
-  w.url = SITE;
+  w.url = tapUrl();
   w.setPadding(14, 14, 14, 14);
+  const family = config.widgetFamily || "medium";
   let shows = [];
   try { shows = await loadShows(); } catch (e) { /* offline: show the empty state */ }
   header(w);
-  w.addSpacer(6);
+  w.addSpacer(family === "small" ? 8 : 6);
   if (!shows.length) {
     const t = w.addText("No shows booked"); t.font = Font.mediumSystemFont(14); t.textColor = MUT;
     w.addSpacer();
     return w;
   }
-  const family = config.widgetFamily || "medium";
   if (family === "small") {
+    // artist first, the countdown at the bottom, and the show after it to fill the space
     const s = shows[0];
+    const a = w.addText(s.artist); a.font = Font.boldSystemFont(19); a.textColor = TXT; a.lineLimit = 2; a.minimumScaleFactor = 0.6;
+    const p = w.addText(shortDate(s.day) + " · " + s.place.split(", ")[0]); p.font = Font.systemFont(12); p.textColor = MUT; p.lineLimit = 1;
     w.addSpacer();
-    const big = w.addText(s.days === 0 ? "Tonight" : String(s.days)); big.font = Font.heavySystemFont(s.days === 0 ? 30 : 40); big.textColor = ACC;
-    if (s.days > 0) { const u = w.addText(s.days === 1 ? "day to go" : "days to go"); u.font = Font.mediumSystemFont(11); u.textColor = MUT; }
-    w.addSpacer(4);
-    const a = w.addText(s.artist); a.font = Font.boldSystemFont(15); a.textColor = TXT; a.lineLimit = 2; a.minimumScaleFactor = 0.7;
-    const p = w.addText(shortDate(s.day) + " · " + s.place.split(", ")[0]); p.font = Font.systemFont(11); p.textColor = MUT; p.lineLimit = 1;
+    const row = w.addStack(); row.bottomAlignContent();
+    const big = row.addText(s.days === 0 ? "Tonight" : String(s.days)); big.font = Font.heavySystemFont(s.days === 0 ? 28 : 36); big.textColor = ACC;
+    if (s.days > 0) {
+      row.addSpacer(5);
+      const u = row.addStack(); u.layoutVertically();
+      const u1 = u.addText(s.days === 1 ? "day" : "days"); u1.font = Font.mediumSystemFont(11); u1.textColor = MUT;
+      const u2 = u.addText("to go"); u2.font = Font.mediumSystemFont(11); u2.textColor = MUT;
+      u.addSpacer(4);
+    }
+    if (shows[1]) {
+      w.addSpacer(4);
+      const t = w.addText("Then " + shortDate(shows[1].day) + " · " + shows[1].artist); t.font = Font.systemFont(10); t.textColor = MUT; t.lineLimit = 1;
+    }
+    setRefresh(w);
     return w;
   }
   const max = family === "large" ? 7 : 3;
@@ -77,8 +99,7 @@ async function build() {
     const more = w.addText("+ " + (shows.length - max) + " more booked"); more.font = Font.systemFont(10); more.textColor = MUT;
   }
   w.addSpacer();
-  // refresh after midnight so "in N days" stays right
-  const next = new Date(); next.setHours(24, 5, 0, 0); w.refreshAfterDate = next;
+  setRefresh(w);
   return w;
 }
 
