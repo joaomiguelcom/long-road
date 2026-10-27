@@ -184,11 +184,16 @@
   .qpick:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
   .fday { display: grid; grid-template-columns: 76px minmax(0, 1fr); gap: 8px; align-items: baseline; }
   .fday + .fday { margin-top: 8px; }
-  .fday-date { font-size: 13px; color: var(--muted); white-space: nowrap; }
+  .fday-date { font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); white-space: nowrap; }
+  /* festival editions: a clear hierarchy (year, dates and site, numbers, day labels, line-up) */
+  .edition-meta { flex-basis: 100%; font-size: 15px; color: var(--text); }
+  .edition-stats { flex-basis: 100%; font-size: 13px; color: var(--muted); }
+  .edition .hist { color: var(--text); background: var(--line); }
+  .new-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); margin-right: 6px; vertical-align: 2px; }
   .delta { font: 500 14px/1 Inter, system-ui, sans-serif; margin-left: 8px; vertical-align: middle; color: var(--muted); white-space: nowrap; }
   .delta.up { color: var(--ok); }
   .delta.down { color: var(--bad); }
-  .edition-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; margin-bottom: 8px; }
+  .edition-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; margin-bottom: 12px; }
   .year-link { background: none; border: 0; padding: 0; font: 600 22px/1.1 var(--display); color: var(--text); cursor: pointer; }
   .hist { text-align: left; font: inherit; font-size: 13px; background: var(--line); border: 0; border-radius: 6px; padding: 4px 9px; color: var(--muted); cursor: pointer; }
   span.hist { cursor: default; } /* plain labels (openers, closers): not links */
@@ -292,7 +297,7 @@
     .kpis { grid-template-columns: 1fr 1fr; gap: 12px; }
     .kpis .card { padding: 16px; }
     .kpis > :first-child:nth-last-child(odd) { grid-column: 1 / -1; }
-    .mlist { display: block; } .msort { display: flex; } .mchip { display: contents; } .table-box.has-mlist { display: none; }
+    .mlist { display: block; } .msort { display: flex; margin-bottom: 12px; } .mchip { display: contents; } .table-box.has-mlist { display: none; }
   }
   /* hover only where a real pointer exists, so taps on touch screens do not leave items highlighted */
   @media (hover: hover) {
@@ -1267,10 +1272,11 @@
       const eNew = l.filter((c) => firstSeen.get(c.artist) === c.date).length;
       const eSongs = l.reduce((n, c) => n + (c.songs || []).filter((s) => !s.tape && s.name).length, 0);
       return '<div class="edition"><div class="edition-head"><button type="button" class="year-link"' + fattr("festival", name, y) + ">" + y + "</button>" +
-        '<span class="muted">' + when + " · " + esc(where) + " · " + plural(l.length, "concert", "concerts") + (eNew ? " · " + eNew + " new to you" : "") + (eSongs ? " · " + fmtN(eSongs) + " songs" : "") + "</span></div>" +
+        '<span class="edition-meta">' + when + " · " + esc(where) + "</span>" +
+        '<span class="edition-stats">' + plural(l.length, "concert", "concerts") + (eNew ? ' · <span class="new-dot" aria-hidden="true"></span>' + eNew + " new to you" : "") + (eSongs ? " · " + fmtN(eSongs) + " songs" : "") + "</span></div>" +
         // one line per day, so the line-up reads like the festival poster
         [...new Set(l.map((c) => c.date))].map((d) => '<div class="fday"><span class="fday-date">' + weekdayOf(d).slice(0, 3) + " " + fmtDate(d).slice(0, 6) + "</span>" +
-          '<div class="history-list">' + l.filter((c) => c.date === d).map((c) => '<button type="button" class="hist"' + openAttr(c) + ">" + esc(c.artist) + "</button>").join("") + "</div></div>").join("") + "</div>";
+          '<div class="history-list">' + l.filter((c) => c.date === d).map((c) => { const fresh = firstSeen.get(c.artist) === c.date; return '<button type="button" class="hist' + (fresh ? ' fresh" title="First time you saw them"' : '"') + openAttr(c) + ">" + (fresh ? '<span class="new-dot" aria-hidden="true"></span>' : "") + esc(c.artist) + "</button>"; }).join("") + "</div></div>").join("") + "</div>";
     }).join("");
     const facts = [
       busiest && busiest.count > 1 ? "Busiest day: " + plural(busiest.count, "concert", "concerts") + " on " + fmtDate(busiest.key) : "",
