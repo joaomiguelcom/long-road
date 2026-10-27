@@ -55,7 +55,7 @@ async function build() {
     // artist first, the countdown at the bottom, and the show after it to fill the space
     const s = shows[0];
     const a = w.addText(s.artist); a.font = Font.boldSystemFont(22); a.textColor = TXT; a.lineLimit = 2; a.minimumScaleFactor = 0.6;
-    const p = w.addText(shortDate(s.day) + " · " + s.place.split(", ")[0]); p.font = Font.systemFont(13); p.textColor = MUT; p.lineLimit = 1;
+    const p = w.addText(shortDate(s.day) + " · " + s.place.split(", ").slice(0, 2).join(", ")); p.font = Font.systemFont(13); p.textColor = MUT; p.lineLimit = 1; p.minimumScaleFactor = 0.75;
     w.addSpacer(4);
     const row = w.addStack(); row.centerAlignContent();
     const big = row.addText(s.days === 0 ? "Tonight" : String(s.days)); big.font = Font.heavySystemFont(s.days === 0 ? 32 : 46); big.textColor = ACC; big.minimumScaleFactor = 0.7;
