@@ -42,6 +42,10 @@
   }
   :root[data-theme="light"] header { background: linear-gradient(180deg, rgba(176,104,12,.08), rgba(176,104,12,0) 70%); }
   :root[data-theme="light"] .seg button.on { box-shadow: 0 1px 3px rgba(0,0,0,.12); }
+  /* back to top: shows up once a long page has been scrolled */
+  .to-top { position: fixed; right: 16px; bottom: max(16px, env(safe-area-inset-bottom)); z-index: 1000; width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--line-2); background: var(--surface); color: var(--text);
+    display: inline-flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; box-shadow: 0 4px 14px rgba(0,0,0,.3); opacity: 0; transform: translateY(8px); pointer-events: none; transition: opacity .2s, transform .2s; }
+  .to-top.show { opacity: 1; transform: none; pointer-events: auto; }
   .head-side { display: flex; align-items: center; gap: 8px; }
   .theme-btn { width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--line-2); background: var(--surface); color: var(--muted); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; flex: none; }
   .theme-btn svg { flex: none; }
@@ -327,6 +331,7 @@
   </div>
 </header>
 <main class="wrap" id="app"></main>
+<button type="button" class="to-top" id="toTop" aria-label="Back to top" title="Back to top" tabindex="-1"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
 <footer><div class="wrap">Long Road, like the Pearl Jam song. Data from <a href="https://www.setlist.fm/concerts/ojoaomiguel" target="_blank" rel="noopener">setlist.fm</a>.</div></footer>
 
 <script>
@@ -788,6 +793,13 @@
     fadeTabs();
   }
   // fade the right edge only while there are more tabs to scroll to
+  const tabScroll = {};
+  const toTop = document.getElementById("toTop");
+  let topTick = false;
+  window.addEventListener("scroll", () => {
+    if (topTick) return; topTick = true;
+    requestAnimationFrame(() => { const on = window.scrollY > 1200; toTop.classList.toggle("show", on); toTop.tabIndex = on ? 0 : -1; topTick = false; });
+  }, { passive: true });
   const fadeTabs = () => { const nav = document.getElementById("tabs"); nav.classList.toggle("more-right", nav.scrollLeft + nav.clientWidth < nav.scrollWidth - 4); };
   document.getElementById("tabs").addEventListener("scroll", fadeTabs, { passive: true });
   window.addEventListener("resize", fadeTabs);
@@ -1648,7 +1660,14 @@
     const t = e.target.closest('button, [role="button"]');
     if (!t) return;
     const d = t.dataset;
-    if (d.tab) go(() => { state.tab = d.tab; state.detail = null; state.filter = null; state.artist = null; state.venue = null; state.festival = null; state.song = null; state.artistSet = null; state.kind = ""; state.country = ""; state.cYear = ""; });
+    if (d.tab) {
+      // a tab's list keeps its scroll position when you come back to it (only the plain list, not a page opened from it)
+      const atList = !state.detail && !state.filter && !state.artist && !state.venue && !state.festival && !state.song;
+      if (atList) tabScroll[state.tab] = window.scrollY; else delete tabScroll[state.tab];
+      const back = d.tab !== state.tab ? tabScroll[d.tab] : 0;
+      go(() => { state.tab = d.tab; state.detail = null; state.filter = null; state.artist = null; state.venue = null; state.festival = null; state.song = null; state.artistSet = null; });
+      if (back) window.scrollTo(0, back);
+    }
     else if (d.open) go(() => { state.tab = "concerts"; state.detail = d.open; });
     else if (d.swap) { state.detail = d.swap; if (useHistory) history.replaceState(snap(depth()), ""); render(); window.scrollTo(0, 0); }
     else if (d.artist) go(() => { state.tab = "artists"; state.artist = d.artist; state.detail = null; });
@@ -1682,6 +1701,7 @@
     else if (t.id === "nextAll") { state.nextAll = !state.nextAll; render(); }
     else if (t.id === "clearf") { state.filter = null; state.limits.concerts = 0; render(); }
     else if (t.id === "back") { if (depth() > 0) goBack(); else go(() => { state.detail = null; }); }
+    else if (t.id === "toTop") window.scrollTo({ top: 0, behavior: "smooth" });
     else if (t.id === "theme") setTheme(!isLight());
     else if (t.id === "toAbout") {
       if (state.tab !== "overview" || state.detail || state.artist || state.venue || state.festival || state.song) go(() => { state.tab = "overview"; state.detail = null; state.filter = null; state.artist = null; state.venue = null; state.festival = null; state.song = null; });
