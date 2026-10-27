@@ -294,6 +294,7 @@
 <script src="upcoming.js?v=__BUILD__"></script>
 <script src="extra.js?v=__BUILD__"></script>
 <script src="data/discogs.js?v=__BUILD__"></script>
+<script src="data/popularity.js?v=__BUILD__"></script>
 <script>
 (function () {
   "use strict";
@@ -318,6 +319,10 @@
 
   // Discogs: records João owns, by artist (data/discogs.js, exported by the GitHub Action)
   const DISCOGS = window.LONG_ROAD_DISCOGS || null;
+  // Deezer fans per artist (data/popularity.js, exported by the GitHub Action): breaks ties in the
+  // Year in review top artists, bigger artist first; without the file the most recently seen stays first
+  const FANS = (window.LONG_ROAD_POPULARITY && window.LONG_ROAD_POPULARITY.fans) || {};
+  const byPopularity = (list) => list.slice().sort((a, b) => b.count - a.count || (FANS[b.key] || 0) - (FANS[a.key] || 0));
   const shelfKey = (s) => String(s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/^the /, "").replace(/&/g, "and").replace(/[^a-z0-9]/g, "");
   const shelf = new Map();
   if (DISCOGS) for (const rec of DISCOGS.records) for (const a of rec.artists) { const k = shelfKey(a); if (!shelf.has(k)) shelf.set(k, []); if (!shelf.get(k).includes(rec)) shelf.get(k).push(rec); }
@@ -1163,7 +1168,7 @@
     if (!list.length) return '<div class="empty">No concerts in ' + esc(y) + ".</div>";
     const firstEver = new Map();
     for (let i = concerts.length - 1; i >= 0; i--) if (!firstEver.has(concerts[i].artist)) firstEver.set(concerts[i].artist, concerts[i].date);
-    const yArtists = withRank(countBy(list, (c) => c.artist));
+    const yArtists = withRank(byPopularity(countBy(list, (c) => c.artist)));
     const newArtists = yArtists.filter((a) => firstEver.get(a.key).startsWith(y));
     const yVenues = withRank(countBy(list.filter((c) => !c.festival), venueKey).map((v) => { const [name, city] = v.key.split("||"); return { ...v, name, city }; }));
     const yFest = withRank(countBy(list, (c) => c.festival));
@@ -1200,7 +1205,7 @@
   // Instagram covers roughly the top 150px and bottom 120px with its own buttons
   async function shareYear(y) {
     const list = concerts.filter((c) => c.date.startsWith(y));
-    const yArtists = withRank(countBy(list, (c) => c.artist));
+    const yArtists = withRank(byPopularity(countBy(list, (c) => c.artist)));
     const firstEver = new Map();
     for (let i = concerts.length - 1; i >= 0; i--) if (!firstEver.has(concerts[i].artist)) firstEver.set(concerts[i].artist, concerts[i].date);
     const nNew = yArtists.filter((a) => firstEver.get(a.key).startsWith(y)).length;

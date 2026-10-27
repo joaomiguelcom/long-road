@@ -39,6 +39,11 @@ jobs:
         continue-on-error: true   # a Discogs hiccup must not block the concert backup
         run: node tools/discogs.mjs
 
+      - name: Export artist popularity
+        if: github.event_name != 'push'
+        continue-on-error: true   # only used to break ties in the Year in review
+        run: node tools/popularity.mjs
+
       - name: Commit backup
         if: github.event_name != 'push'
         run: |
@@ -56,8 +61,8 @@ jobs:
         run: |
           mkdir -p _site
           cp index.html upcoming.js extra.js manifest.webmanifest sw.js _site/
-          # the app only reads these two; the raw exports stay in the repo
-          mkdir -p _site/data && cp data/data.js _site/data/ && { cp data/discogs.js _site/data/ || true; }
+          # the app only reads these three; the raw exports stay in the repo
+          mkdir -p _site/data && cp data/data.js _site/data/ && { cp data/discogs.js _site/data/ || true; } && { cp data/popularity.js _site/data/ || true; }
           if [ -d img ]; then cp -r img _site/; fi
           # Build id: lets the home-screen app notice new deploys and skip stale caches
           BUILD="$(date -u +%Y%m%d%H%M%S)-${GITHUB_SHA::7}"
