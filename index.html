@@ -1585,21 +1585,24 @@
         if (labels && x.set !== lastSet) rows.push({ label: setName(x.set), encore: /^Encore/.test(x.set) });
         lastSet = x.set; rows.push({ name: x.name });
       }
-      // one column while the rows fit at 40px or more, else two columns sharing the rows evenly
+      // one column while the rows fit at 40px or more, else two columns: the first one full, the rest in the second
       const top = yy + 20, bottom = 1760, space = bottom - top, cols = rows.length * 40 > space ? 2 : 1;
       const lh = cols > 1 ? 44 : Math.max(40, Math.min(52, Math.floor(space / rows.length))), maxCol = Math.floor(space / lh);
       const colW = (R - X) / cols, fs = lh >= 50 ? 34 : lh >= 44 ? 30 : 28;
-      const perCol = cols > 1 ? Math.min(maxCol, Math.ceil(rows.length / 2)) : maxCol;
+      const perCol = maxCol;
+      // a set title never sits alone at the bottom of the first column: it moves to the top of the second
+      for (let i = 0; i < rows.length; i++) if (rows[i].label && i % perCol === perCol - 1) rows.splice(i, 0, { blank: true });
       const room = perCol * cols, shown = rows.length > room ? rows.slice(0, room - 1) : rows;
       let n = 0;
       shown.forEach((r, i) => {
         const x = X + Math.floor(i / perCol) * colW, ry = top + (i % perCol) * lh + lh * 0.7;
+        if (r.blank) return;
         if (r.label) { g.fillStyle = r.encore ? ACC : MUT; g.font = "600 " + (fs - 8) + "px " + BODY; g.letterSpacing = "3px"; g.fillText(fit(r.label.toUpperCase(), colW - 20), x, ry); g.letterSpacing = "0px"; return; }
         n++;
         g.fillStyle = MUT; g.font = "500 " + (fs - 4) + "px " + BODY; g.textAlign = "right"; g.fillText(n + ".", x + 44, ry); g.textAlign = "left";
         g.fillStyle = TXT; g.font = "400 " + fs + "px " + BODY; g.fillText(fit(r.name, colW - 76), x + 58, ry);
       });
-      const left = rows.filter((r) => !r.label).length - n;
+      const left = rows.filter((r) => r.name).length - n;
       if (left > 0) { g.fillStyle = MUT; g.font = "400 " + (fs - 2) + "px " + BODY; g.fillText("+ " + left + " more", X + (cols - 1) * colW + 58, top + (perCol - 1) * lh + lh * 0.7); }
     }
     g.fillStyle = MUT; g.font = "400 26px " + BODY; g.textAlign = "right"; g.fillText("longroad.joaomiguel.com", R, 1815); g.textAlign = "left";
