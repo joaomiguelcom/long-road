@@ -1579,15 +1579,13 @@
       const sets = [...new Set(played.map((x) => x.set))], encores = sets.filter((x) => /^Encore/.test(x)).length;
       const setName = (x) => x === "Main" ? "Main set" : /^Encore/.test(x) && encores === 1 ? "Encore" : x.replace(/:$/, "");
       const labels = sets.length > 1 || sets[0] !== "Main";
-      // the notes shown on the concert page: cover, guest, setlist.fm's info
-      const note = (x) => [x.cover ? x.cover + " cover" : "", x.with ? "with " + x.with : "", x.info || ""].filter(Boolean).join(" · ");
       const rows = [];
       let lastSet = null;
       for (const x of played) {
         if (labels && x.set !== lastSet) rows.push({ label: setName(x.set), encore: /^Encore/.test(x.set) });
-        lastSet = x.set; rows.push({ name: x.name, note: note(x) });
+        lastSet = x.set; rows.push({ name: x.name });
       }
-      // one column while the rows fit at 40px or more (the notes need the width), else two columns sharing the rows evenly
+      // one column while the rows fit at 40px or more, else two columns sharing the rows evenly
       const top = yy + 20, bottom = 1760, space = bottom - top, cols = rows.length * 40 > space ? 2 : 1;
       const lh = cols > 1 ? 44 : Math.max(40, Math.min(52, Math.floor(space / rows.length))), maxCol = Math.floor(space / lh);
       const colW = (R - X) / cols, fs = lh >= 50 ? 34 : lh >= 44 ? 30 : 28;
@@ -1599,11 +1597,7 @@
         if (r.label) { g.fillStyle = r.encore ? ACC : MUT; g.font = "600 " + (fs - 8) + "px " + BODY; g.letterSpacing = "3px"; g.fillText(fit(r.label.toUpperCase(), colW - 20), x, ry); g.letterSpacing = "0px"; return; }
         n++;
         g.fillStyle = MUT; g.font = "500 " + (fs - 4) + "px " + BODY; g.textAlign = "right"; g.fillText(n + ".", x + 44, ry); g.textAlign = "left";
-        g.fillStyle = TXT; g.font = "400 " + fs + "px " + BODY;
-        const nm = fit(r.name, colW - 76), w = g.measureText(nm).width;
-        g.fillText(nm, x + 58, ry);
-        // the note follows the title in grey, cut to the room left on the line
-        if (r.note && colW - 76 - w > 60) { g.fillStyle = MUT; g.font = "400 " + (fs - 6) + "px " + BODY; g.fillText(fit("· " + r.note, colW - 76 - w - 12), x + 58 + w + 12, ry); }
+        g.fillStyle = TXT; g.font = "400 " + fs + "px " + BODY; g.fillText(fit(r.name, colW - 76), x + 58, ry);
       });
       const left = rows.filter((r) => !r.label).length - n;
       if (left > 0) { g.fillStyle = MUT; g.font = "400 " + (fs - 2) + "px " + BODY; g.fillText("+ " + left + " more", X + (cols - 1) * colW + 58, top + (perCol - 1) * lh + lh * 0.7); }
