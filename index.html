@@ -54,7 +54,6 @@
   .to-top.show { opacity: 1; transform: none; pointer-events: auto; }
   .head-side { display: flex; align-items: center; gap: 8px; }
   .head-btns { display: flex; gap: 8px; }
-  .year-line { margin: -4px 0 0; font-size: 19px; line-height: 1.45; max-width: 62ch; text-wrap: pretty; }
   .next-foot { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 10px; }
   .next-foot a.link { text-decoration: none; }
   .head-btns [hidden] { display: none; }
@@ -316,7 +315,6 @@
   @media (max-width: 600px) {
     /* on a phone the concerts go under the name, so every row has the same shape */
     .bar-aside { display: block; margin: 1px 0 0 24px; }
-    .year-line { font-size: 17px; }
     /* festival days: the date sits above its line-up so the names get the full width */
     .seg { display: flex; flex-basis: 100%; } .seg button { flex: 1; }
     .fday { display: block; } .fday-date { display: block; margin-bottom: 6px; } .fday + .fday { margin-top: 12px; }
@@ -1523,61 +1521,6 @@
   }
 
   // ---------- year in review ----------
-  // one line on top of the year: finds what stood out (a crazy day, a band seen again and again, a packed month,
-  // lots of first-timers, trips abroad) and writes about the two strongest, with a few wordings per fact.
-  // The wording is picked from the year itself, so it stays the same on every visit.
-  const WORDS = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve"];
-  const word = (n) => WORDS[n] || fmtN(n);
-  const cap = (t) => t.charAt(0).toUpperCase() + t.slice(1);
-  function yearLine(y, list, yArtists, newArtists, ySongs, running) {
-    const pick = (id, opts) => { let h = 0; for (const ch of y + id) h = (h * 31 + ch.charCodeAt(0)) >>> 0; return opts[h % opts.length]; };
-    // "Festival Paredes de Coura" reads as "Paredes de Coura"; "Festival do Sudoeste" keeps its name
-    const short = (f) => f.replace(/^Festival (?=[A-Z])/, "");
-    const facts = [];
-    const day = countBy(list, (c) => c.date)[0];
-    if (day && day.count >= 4) {
-      const dl = list.filter((c) => c.date === day.key), fest = dl[0].festival, where = fest ? short(fest) : venueKey(dl[0]).split("||")[0];
-      facts.push({ score: day.count / 3, text: pick("day", [
-        cap(word(day.count)) + " bands in one day at " + where + ". Pace yourself? Never heard of it.",
-        cap(word(day.count)) + " concerts on " + fmtDate(day.key).slice(0, 6).replace(/^0/, "") + " alone. Sleep was optional.",
-        "One day at " + where + ", " + word(day.count) + " bands. Stamina of a roadie."]) });
-    }
-    const top = yArtists[0];
-    if (top && top.count >= 3) facts.push({ score: top.count / 2, text: pick("rep", [
-      top.key + " " + word(top.count) + " times. At this point they should know your name.",
-      top.key + ", " + word(top.count) + " times. Some call it loyalty, others call it a problem.",
-      cap(word(top.count)) + " rounds of " + top.key + ". Still not enough."]) });
-    const month = countBy(list, (c) => c.date.slice(0, 7))[0];
-    if (month && month.count >= 12) {
-      const m = new Date(month.key + "-15").toLocaleDateString("en-GB", { month: "long" });
-      facts.push({ score: month.count / 12, text: pick("mon", [
-        m + " alone had " + month.count + " concerts. Your ears want a word.",
-        cap(word(month.count)) + " concerts in " + m + ". Your liver filed a complaint.",
-        m + ": " + month.count + " concerts. Home was where you slept, occasionally."]) });
-    }
-    const n = newArtists.length;
-    if (y === byYear[0].key) facts.push({ score: 5, text: pick("first", ["The year it all began. Every band was a first.", "Year one of the long road. Everything was new."]) });
-    else if (yArtists.length >= 10 && n / yArtists.length >= 0.5) facts.push({ score: n / yArtists.length * 2, text: pick("new", [
-      cap(word(n)) + " bands you had never seen before. Comfort zone, left behind.",
-      cap(word(n)) + " first-timers out of " + yArtists.length + " artists. Curiosity wins.",
-      cap(word(n)) + " new names on the list. The ears were open."]) });
-    const abroad = [...new Set(list.filter((c) => c.country && c.country !== "Portugal").map((c) => c.city))];
-    if (abroad.length) {
-      const cities = abroad.length > 3 ? abroad.slice(0, 3).join(", ") + " and more" : abroad.length > 1 ? abroad.slice(0, -1).join(", ") + " and " + abroad[abroad.length - 1] : abroad[0];
-      facts.push({ score: 0.8 + abroad.length / 4, text: pick("abr", ["Passport out: " + cities + ".", "Took the show on the road to " + cities + ".", "Some nights were far from home: " + cities + "."]) });
-    }
-    if (list.length <= 5) facts.push({ score: 2, text: pick("few", [
-      "Just " + word(list.length) + " " + (list.length === 1 ? "concert" : "concerts") + ". A quiet year, by your standards.",
-      cap(word(list.length)) + " " + (list.length === 1 ? "concert" : "concerts") + ", and every one of them counted."]) });
-    // about four minutes a song
-    if (ySongs >= 100) facts.push({ score: 0.6, text: pick("song", [
-      fmtN(ySongs) + " songs heard live, roughly " + Math.round(ySongs * 4 / 60) + " hours on your feet.",
-      fmtN(ySongs) + " songs live. That is about " + Math.round(ySongs * 4 / 60) + " hours of standing and singing along."]) });
-    const best = facts.sort((a, b) => b.score - a.score).slice(0, 2).map((f) => f.text);
-    if (!best.length) return "";
-    return '<p class="year-line">' + (running ? '<span class="muted">So far: </span>' : "") + esc(best.join(" ")) + "</p>";
-  }
-
   function yearReview() {
     const y = state.year;
     const list = concerts.filter((c) => c.date.startsWith(y));
@@ -1610,7 +1553,6 @@
       '<label for="ysel" class="sr-only">Year</label><select id="ysel">' + byYear.slice().reverse().map((x) => '<option value="' + x.key + '"' + (x.key === y ? " selected" : "") + ">" + x.key + "</option>").join("") + "</select>" +
       (next ? '<button class="btn" data-year="' + next.key + '">' + next.key + " →</button>" : "") +
       '<button type="button" class="icon-btn" id="shareYear" aria-label="Share this year as an image" title="Share as image">' + SHARE_ICON + "</button>" + "</div></div>" +
-      yearLine(y, list, yArtists, newArtists, ySongs, running) +
       '<section class="grid kpis" aria-label="Year summary">' +
         kpi("Concerts", '<span class="accent">' + list.length + "</span>" + delta(list.length, pList.length), '<span class="go">See them all</span>', fattr("year", y)) +
         kpi("Artists", yArtists.length + delta(yArtists.length, pArtists), newArtists.length + " seen for the first time", fattr("newArtists", y)) +
