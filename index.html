@@ -1748,7 +1748,7 @@
       return '<button type="button" class="' + (state.mapKind === k ? "on" : "") + '" data-mkind="' + k + '" aria-pressed="' + (state.mapKind === k) + '"' + (none && state.mapKind !== k ? " disabled" : "") + ">" + label + "</button>"; };
     const sel = '<div class="quick"><div class="seg" role="group" aria-label="Type">' + mKind("", "All") + mKind("shows", "Shows") + mKind("fest", "Festivals") + "</div>" + qpick("msel", "Year", mOpts, state.mapYears) + clearAll(state.mapKind || state.mapYears, "map") + "</div>";
     return '<div class="list-head"><div class="list-title"><h2>Map</h2><span class="muted">' + plural(new Set(list.map((c) => c.city)).size, "city", "cities") + " · " + plural(new Set(list.map((c) => c.country)).size, "country", "countries") + "</span></div></div>" + sel + '<div id="map" role="region" aria-label="Map of concert cities"></div>' +
-      '<p class="tag" style="margin:0">Circles are cities (setlist.fm gives coordinates per city, not per venue). Bigger means more concerts; ' + (isLight() ? "dark" : "white") + ' circles are cities you went to only once. Click a circle to see its concerts.</p>';
+      '<p class="tag" style="margin:0">Circles are cities (setlist.fm gives coordinates per city, not per venue). Bigger means more concerts. Click a circle to see its concerts.</p>';
   }
   function loadLeaflet(cb) {
     if (window.L) return cb();
@@ -1786,14 +1786,11 @@
       const street = L.tileLayer(esri + "World_Street_Map/MapServer/tile/{z}/{y}/{x}", { maxZoom: 18, attribution: "Tiles &copy; Esri" });
       (isLight() ? street : dark).addTo(map);
       L.control.layers({ Dark: dark, Streets: street }, null, { position: "topright" }).addTo(map);
-      // one-visit cities stand out from the amber: white on the dark map, near black on the streets map
-      const ONCE = isLight() ? "#1A1C20" : "#ECEDEE";
       const pts = [];
       for (const e of byCity.values()) {
         pts.push([e.lat, e.lng]);
-        const once = e.count === 1;
         const top = [...e.venues.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5);
-        L.circleMarker([e.lat, e.lng], { radius: 5 + Math.sqrt(e.count) * 2, color: once ? ONCE : "#F2A541", weight: 1.5, fillColor: once ? ONCE : "#F2A541", fillOpacity: once ? 0.25 : 0.45 })
+        L.circleMarker([e.lat, e.lng], { radius: 5 + Math.sqrt(e.count) * 2, color: "#F2A541", weight: 1.5, fillColor: "#F2A541", fillOpacity: 0.45 })
           .bindPopup('<div class="pop"><strong>' + esc(e.city) + '</strong> <span class="muted">' + esc(e.country) + "</span><br>" + plural(e.count, "concert", "concerts") +
             "<ul>" + top.map(([n, k]) => "<li>" + esc(n) + " · " + k + "</li>").join("") + "</ul>" +
             '<button type="button" class="link"' + fattr("city", e.city) + ">See concerts</button></div>")
