@@ -96,7 +96,14 @@ const today = new Date().toISOString().slice(0, 10);
 
 const esc = (s) => String(s).replace(/\\/g, "\\\\").replace(/;/g, "\;").replace(/,/g, "\\,").replace(/\n/g, "\\n");
 // lines longer than 75 octets continue on the next line after a space (RFC 5545)
+// the map pin: same shape as the events Apple's own Calendar exports. The line is not folded (iOS drops a folded one)
+// and the visible text leaves out the postcode, which the phone took for a phone number
+const placeLines = (name, g, radius) => [
+  "LOCATION:" + esc(name + "\n" + g.address.replace(/\s*\d{4}-\d{3}\s*/, " ").replace(/^.*?,\s*/, (m) => g.address.startsWith(name) ? "" : m).trim()),
+  "X-APPLE-STRUCTURED-LOCATION;VALUE=URI;X-ADDRESS=" + esc(g.address) + ";X-APPLE-RADIUS=" + radius + ";X-APPLE-REFERENCEFRAME=1;X-TITLE=" + esc(name) + ":geo:" + g.lat + "," + g.lng,
+];
 const fold = (line) => {
+  if (line.startsWith("X-APPLE-STRUCTURED-LOCATION")) return line;
   const parts = []; let cur = "";
   for (const ch of line) {
     if (Buffer.byteLength(cur + ch) > (parts.length ? 74 : 75)) { parts.push(cur); cur = ""; }
@@ -143,7 +150,7 @@ for (const [edition, items] of editions) {
   const ev = ["BEGIN:VEVENT", "UID:" + slug(edition) + "@longroad.joaomiguel.com", "DTSTAMP:" + stamp, "SUMMARY:" + esc(edition),
     "DTSTART;VALUE=DATE:" + ymd(first.date), "DTEND;VALUE=DATE:" + ymd(nextDay(last.date)), "TRANSP:TRANSPARENT"];
   const name = first.location.split(", ")[0], g = geo[name];
-  if (g) ev.push("LOCATION:" + esc(name + "\n" + g.address), 'X-APPLE-STRUCTURED-LOCATION;VALUE=URI;X-ADDRESS="' + g.address.replace(/"/g, "") + '";X-APPLE-RADIUS=300;X-TITLE="' + name.replace(/"/g, "") + '":geo:' + g.lat + "," + g.lng);
+  if (g) ev.push(...placeLines(name, g, 300));
   else ev.push("LOCATION:" + esc(first.location));
   ev.push("DESCRIPTION:" + esc(blocks.map((b) => b.join("\n")).join("\n\n")), "END:VEVENT");
   lines.push(...ev);
@@ -163,8 +170,7 @@ shows.forEach((s, i) => {
   // with coordinates the phone shows the venue on a map, like a place picked by hand
   const where = s.location || s.place || "", name = where.split(", ")[0], g = geo[name];
   if (g) {
-    ev.push("LOCATION:" + esc(name + "\n" + g.address));
-    ev.push('X-APPLE-STRUCTURED-LOCATION;VALUE=URI;X-ADDRESS="' + g.address.replace(/"/g, "") + '";X-APPLE-RADIUS=100;X-TITLE="' + name.replace(/"/g, "") + '":geo:' + g.lat + "," + g.lng);
+    ev.push(...placeLines(name, g, 100));
   } else ev.push("LOCATION:" + esc(where));
   const blocks = describe(s, i).filter((b) => b.length);
   ev.push("DESCRIPTION:" + esc(blocks.map((b) => b.join("\n")).join("\n\n")));
