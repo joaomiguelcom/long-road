@@ -96,14 +96,17 @@ const today = new Date().toISOString().slice(0, 10);
 
 const esc = (s) => String(s).replace(/\\/g, "\\\\").replace(/;/g, "\;").replace(/,/g, "\\,").replace(/\n/g, "\\n");
 // lines longer than 75 octets continue on the next line after a space (RFC 5545)
-// the map pin: same shape as the events Apple's own Calendar exports. The line is not folded (iOS drops a folded one)
-// and the visible text leaves out the postcode, which the phone took for a phone number
-const ascii = (t) => String(t).normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-const placeLines = (name, g, radius) => [
-  "LOCATION:" + esc(name + "\n" + g.address.replace(/\s*\d{4}-\d{3}\s*/, " ").replace(/^.*?,\s*/, (m) => g.address.startsWith(name) ? "" : m).trim()),
-  // iOS drops the pin when these two values have accents (Casa da Música, Algés), so they go without them
-  "X-APPLE-STRUCTURED-LOCATION;VALUE=URI;X-ADDRESS=" + esc(ascii(g.address)) + ";X-APPLE-RADIUS=" + radius + ";X-APPLE-REFERENCEFRAME=1;X-TITLE=" + esc(ascii(name)) + ":geo:" + g.lat + "," + g.lng,
-];
+// the map pin: same shape as the events Apple's own Calendar exports, where LOCATION is the pin's title and address
+// on two lines. The pin line is not folded (iOS drops a folded one), the postcode is left out (the phone took it for
+// a phone number) and the title has no room suffix ("Casa da Música (Sala 2)" is not a place Maps knows)
+const placeLines = (name, g, radius) => {
+  const title = name.replace(/\s*\(.*?\)$/, "");
+  const addr = g.address.replace(/\s*\d{4}-\d{3}\s*/, " ").replace(/^.*?,\s*/, (m) => g.address.startsWith(title) ? "" : m).trim();
+  return [
+    "LOCATION:" + esc(title + "\n" + addr),
+    "X-APPLE-STRUCTURED-LOCATION;VALUE=URI;X-ADDRESS=" + esc(addr) + ";X-APPLE-RADIUS=" + radius + ";X-APPLE-REFERENCEFRAME=1;X-TITLE=" + esc(title) + ":geo:" + g.lat + "," + g.lng,
+  ];
+};
 const fold = (line) => {
   if (line.startsWith("X-APPLE-STRUCTURED-LOCATION")) return line;
   const parts = []; let cur = "";
@@ -150,7 +153,7 @@ for (const [edition, items] of editions) {
   }
   if (allDone) blocks.push([SITE + "#t=festivals&fest=" + encodeURIComponent(edition.replace(/ \d{4}$/, ""))]);
   // iOS keeps an event's old location until its UID changes, so bump the version when the pin data changes
-  const ev = ["BEGIN:VEVENT", "UID:" + slug(edition) + "-v2@longroad.joaomiguel.com", "DTSTAMP:" + stamp, "SUMMARY:" + esc(edition),
+  const ev = ["BEGIN:VEVENT", "UID:" + slug(edition) + "-v3@longroad.joaomiguel.com", "DTSTAMP:" + stamp, "SUMMARY:" + esc(edition),
     "DTSTART;VALUE=DATE:" + ymd(first.date), "DTEND;VALUE=DATE:" + ymd(nextDay(last.date)), "TRANSP:TRANSPARENT"];
   const name = first.location.split(", ")[0], g = geo[name];
   if (g) ev.push(...placeLines(name, g, 100));
@@ -161,7 +164,7 @@ for (const [edition, items] of editions) {
 
 shows.forEach((s, i) => {
   if (s.date < cutoff || s.location) return;
-  const ev = ["BEGIN:VEVENT", "UID:" + s.date + "-" + slug(s.artist) + "-v2@longroad.joaomiguel.com", "DTSTAMP:" + stamp, "SUMMARY:" + esc(s.artist)];
+  const ev = ["BEGIN:VEVENT", "UID:" + s.date + "-" + slug(s.artist) + "-v3@longroad.joaomiguel.com", "DTSTAMP:" + stamp, "SUMMARY:" + esc(s.artist)];
   if (s.time) {
     const [h, m] = s.time.split(":").map(Number), end = h * 60 + m + 150;
     const endDate = end >= 1440 ? nextDay(s.date) : s.date, e = end % 1440;
