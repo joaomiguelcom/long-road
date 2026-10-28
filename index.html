@@ -97,6 +97,8 @@
   .bars .row span:last-child, .num { color: var(--muted); font-variant-numeric: tabular-nums; }
   .track { height: 6px; background: var(--line); border-radius: 3px; margin-top: 4px; }
   .fill { height: 6px; background: var(--accent); border-radius: 3px; }
+  .bar-aside { margin-left: 6px; font-size: 12px; color: var(--muted); opacity: .75; white-space: nowrap; }
+  .bars .row span:last-child { white-space: nowrap; }
   .rank { display: inline-block; min-width: 24px; color: var(--muted); font-variant-numeric: tabular-nums; }
   .barbtn { display: block; width: 100%; background: none; border: 0; padding: 3px 0; color: inherit; text-align: left; cursor: pointer; font: inherit; }
   button.year { background: none; border: 0; padding: 0; color: inherit; cursor: pointer; font: inherit; }
@@ -309,6 +311,8 @@
   footer a { color: inherit; }
   .empty { padding: 48px 0; color: var(--muted); }
   @media (max-width: 600px) {
+    /* on a phone the concerts go under the name, so every row has the same shape */
+    .bar-aside { display: block; margin: 1px 0 0 24px; }
     /* festival days: the date sits above its line-up so the names get the full width */
     .seg { display: flex; flex-basis: 100%; } .seg button { flex: 1; }
     .fday { display: block; } .fday-date { display: block; margin-bottom: 6px; } .fday + .fday { margin-top: 12px; }
@@ -759,11 +763,12 @@
   const fattr = (f, v, y) => ' data-f="' + f + '" data-v="' + esc(v) + '"' + (y ? ' data-y="' + esc(y) + '"' : "");
   const aattr = (name) => ' data-artist="' + esc(name) + '"';
   // attrFn(x) returns [field, value, year?] (opens the concert list filtered) or an attribute string
-  const bars = (list, labelFn, attrFn) => {
+  // valueFn: optional text for the number on the right (default: the count)
+  const bars = (list, labelFn, attrFn, valueFn) => {
     const top = list[0] ? list[0].count : 1;
     return '<ol class="bars">' + list.map((x) => {
       const at = attrFn ? attrFn(x) : null;
-      const inner = '<div class="row"><span>' + (x.rank ? '<span class="rank">' + x.rank + "</span>" : "") + labelFn(x) + "</span><span>" + x.count + "</span></div>" +
+      const inner = '<div class="row"><span>' + (x.rank ? '<span class="rank">' + x.rank + "</span>" : "") + labelFn(x) + "</span><span>" + (valueFn ? valueFn(x) : x.count) + "</span></div>" +
         '<div class="track"><div class="fill" style="width:' + Math.max(2, Math.round(x.count / top * 100)) + '%"></div></div>';
       return "<li>" + (at ? '<button type="button" class="barbtn"' + (typeof at === "string" ? at : fattr(...at)) + ">" + inner + "</button>" : '<div class="barbtn static">' + inner + "</div>") + "</li>";
     }).join("") + "</ol>";
@@ -1042,8 +1047,7 @@
         bars(venues.slice(0, 10), (v) => esc(v.name) + ' <span class="muted">· ' + esc(v.city) + "</span>", (v) => vattr(v.key)) +
         '<p class="tag" style="margin:12px 0 0">Festival concerts are not counted here.</p></section>' +
       '<section class="card"><div class="card-head"><h2>Festivals</h2><button class="link" data-tab="festivals">See all</button></div>' +
-        bars(festivals.slice(0, 10), (f) => esc(f.name) + ' <span class="muted">· ' + f.concerts + " concerts</span>", (f) => fesattr(f.name)) +
-        '<p class="tag" style="margin:12px 0 0">Bars show editions attended.</p></section>' +
+        bars(festivals.slice(0, 10), (f) => esc(f.name) + ' <span class="bar-aside">' + f.concerts + " concerts</span>", (f) => fesattr(f.name), (f) => plural(f.count, "edition", "editions")) + "</section>" +
       '<section class="card"><div class="card-head"><h2>Countries</h2><button class="link" data-tab="map">See map</button></div>' +
         bars(countries, (c) => esc(c.key) + ' <span class="muted">· ' + plural(countryCities(c.key), "city", "cities") + "</span>", (c) => ["country", c.key]) + "</section>" +
       '<section class="card" aria-labelledby="h-year"><div class="card-head"><h2 id="h-year">Concerts per year</h2><button class="link" data-tab="years">Year in review</button></div><div class="years">' +
