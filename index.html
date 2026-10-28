@@ -138,11 +138,6 @@
   .mlist { list-style: none; margin: 0; padding: 0; border: 1px solid var(--line); border-radius: 12px; }
   .mlist li { position: relative; display: flex; align-items: center; gap: 12px; padding: 12px 14px; }
   .mlist li + li { border-top: 1px solid var(--line); }
-  /* festival day header in concert lists: festival, day and site written once */
-  .mlist li.m-group { display: block; padding: 10px 14px 8px; font-size: 13px; color: var(--muted); background: rgba(255,255,255,.03); }
-  .mlist li.in-group { padding-top: 10px; padding-bottom: 10px; }
-  tr.t-group td { font-size: 13px; color: var(--muted); background: rgba(255,255,255,.03); padding-top: 10px; padding-bottom: 8px; }
-  :root[data-theme="light"] .mlist li.m-group, :root[data-theme="light"] tr.t-group td { background: rgba(0,0,0,.03); }
   .m-rank { flex: none; min-width: 22px; color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; }
   .m-main { flex: 1; min-width: 0; }
   .m-title { font-weight: 600; overflow-wrap: anywhere; }
@@ -779,21 +774,16 @@
       return st.dir * r;
     });
     const shown = limit ? rows.slice(0, limit) : rows;
-    // rows that carry the same .grp key next to each other (a festival day) share one header,
-    // so the festival, day and site are written once instead of on every row
-    const gk = (r) => r && r.grp ? r.grp.key : null;
-    const inGroup = (i) => gk(shown[i]) && (gk(shown[i - 1]) === gk(shown[i]) || gk(shown[i + 1]) === gk(shown[i]));
-    const opens = (i) => inGroup(i) && gk(shown[i - 1]) !== gk(shown[i]);
     const sortChips = m ? '<span class="mchip">' + qpick("ms-" + id, "Sort", [["", "Default"]].concat(cols.map((c, i) => c.label === "#" ? null : [String(i), c.label, ' data-num="' + (c.num ? 1 : 0) + '"']).filter(Boolean)),
       st ? String(st.col) : "", "", ' data-sortsel="' + id + '"') +
       (st ? '<button type="button" class="toggle on icon-chip" data-sortdir="' + id + '" aria-label="' + (st.dir > 0 ? "Ascending, switch to descending" : "Descending, switch to ascending") + '">' + (st.dir > 0 ? "↑" : "↓") + "</button>" : "") + "</span>" : "";
     const sortBar = bar ? '<div class="quick">' + bar + sortChips + "</div>" : m ? '<div class="quick msort">' + sortChips + "</div>" : "";
     // a filtered list that ends up empty says so and offers the way back
     if (bar && !rows.length) return sortBar + '<div class="empty empty-filters"><p>Nothing matches these filters.</p><button type="button" class="toggle on" data-clear="' + id + '">Clear filters</button></div>';
-    const mlist = m ? '<ul class="mlist">' + shown.map((r, i) => {
+    const mlist = m ? '<ul class="mlist">' + shown.map((r) => {
       // links in the second line are spans: Safari keeps a button as one block, so a long name broke the line apart
-      const x = m(r, inGroup(i)), sub = (x.sub || []).filter(Boolean).map((h) => h.replace(/<button type="button"/g, '<span role="button" tabindex="0"').replace(/<\/button>/g, "</span>"));
-      return (opens(i) ? '<li class="m-group">' + r.grp.head + "</li>" : "") + '<li' + (inGroup(i) ? ' class="in-group"' : "") + ">" + (x.rank !== undefined ? '<span class="m-rank">' + x.rank + "</span>" : "") +
+      const x = m(r), sub = (x.sub || []).filter(Boolean).map((h) => h.replace(/<button type="button"/g, '<span role="button" tabindex="0"').replace(/<\/button>/g, "</span>"));
+      return '<li>' + (x.rank !== undefined ? '<span class="m-rank">' + x.rank + "</span>" : "") +
         '<div class="m-main"><div class="m-title">' + x.title + "</div>" +
         (sub.length ? '<div class="m-sub">' + sub.join(" · ") + "</div>" : "") + (x.tag ? '<div class="m-tag">' + x.tag + "</div>" : "") + "</div>" +
         (x.value ? '<span class="m-val">' + x.value + (x.unit ? "<small>" + x.unit + "</small>" : "") + "</span>" : "") + "</li>";
@@ -804,8 +794,7 @@
         '><button type="button" class="th-btn" data-sort="' + id + "|" + i + "|" + (c.num ? 1 : 0) + '">' + c.label +
         '<span class="arrow" aria-hidden="true">' + (on ? (st.dir > 0 ? "↑" : "↓") : "↕") + "</span></button></th>";
     }).join("") + "</tr></thead><tbody>" +
-      shown.map((r, j) => (opens(j) ? '<tr class="t-group"><td colspan="' + cols.length + '">' + r.grp.head + "</td></tr>" : "") +
-        "<tr" + (inGroup(j) ? ' class="in-group"' : "") + ">" + r.map((c, i) => "<td" + (cols[i].cls ? ' class="' + cols[i].cls + '"' : "") + ">" + (inGroup(j) && i in r.grp.alt ? r.grp.alt[i] : c.h) + "</td>").join("") + "</tr>").join("") +
+      shown.map((r) => "<tr>" + r.map((c, i) => "<td" + (cols[i].cls ? ' class="' + cols[i].cls + '"' : "") + ">" + c.h + "</td>").join("") + "</tr>").join("") +
       "</tbody></table></div>" +
       (limit && rows.length > limit ? '<div class="more"><button class="btn" data-more="' + id + '" data-shown="' + limit + '">Show more</button></div>' : "");
   }
@@ -817,18 +806,10 @@
     cell(esc(c.city), c.city),
     cell((fresh && fresh.has(c) ? '<span class="first-time">First time</span>' + (notes(c) ? " · " : "") : "") + notes(c), (c.festival || "") + (c.tour || "")),
     cell(String((c.songs || []).length || ""), (c.songs || []).length)
-  ], {
-    // festival concerts of one day group under a header; in the group the row keeps the artist, the tour and the songs
-    grp: c.festival ? { key: c.festival + "|" + c.date, alt: { 0: "", 2: "", 3: "", 4: [fresh && fresh.has(c) ? '<span class="first-time">First time</span>' : "", c.tour ? '<span class="tag">' + esc(c.tour) + "</span>" : ""].filter(Boolean).join(" · ") },
-      head: '<span class="accent">' + esc(c.festival) + "</span> · " + weekdayOf(c.date).slice(0, 3) + " " + fmtDate(c.date) + " · " + esc(c.venue) + (c.city ? ", " + esc(c.city) : "") } : null,
-    tour: c.tour ? '<span class="tag">' + esc(c.tour) + "</span>" : "",
-    first: fresh && fresh.has(c) ? '<span class="first-time">First time</span>' : "",
-  }));
-  const concertM = (r, g) => g
-    ? { title: r[1].h, tag: [r.first, r.tour].filter(Boolean).join(" · "), value: r[5].h, unit: r[5].s === 1 ? "song" : "songs" }
-    : { title: r[1].h, sub: [r[0].h, r[2].h, r[3].h], tag: r[4].h, value: r[5].h, unit: r[5].s === 1 ? "song" : "songs" };
+  ], { id: c.id }));
+  const concertM = (r) => ({ title: r[1].h, sub: [r[0].h, r[2].h, r[3].h], tag: r[4].h, value: r[5].h, unit: r[5].s === 1 ? "song" : "songs" });
   // on an artist page the artist is the page: the venue leads each row
-  const artistConcertM = (r) => ({ title: r[2].h, sub: [r[0].h, r[3].h], tag: r[4].h, value: r[5].h, unit: r[5].s === 1 ? "song" : "songs" });
+  const artistConcertM = (r) => ({ title: '<button type="button" class="open" data-open="' + esc(r.id) + '">' + r[2].h + "</button>", sub: [r[0].h, r[3].h], tag: r[4].h, value: r[5].h, unit: r[5].s === 1 ? "song" : "songs" });
   const CONCERT_COLS = [{ label: "Date", cls: "muted" }, { label: "Artist" }, { label: "Venue" }, { label: "City", cls: "muted" }, { label: "Notes" }, { label: "Songs", num: true, cls: "num" }];
 
   const FILTERS = {
