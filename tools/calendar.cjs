@@ -1,6 +1,7 @@
 // Builds concerts.ics from upcoming.js: a calendar João subscribes to once (webcal://), so booked shows
 // show up in his phone's calendar. Shows with a `time` get a start time (Lisbon time, 2h30 long);
-// the others are all-day events. `location` overrides `place` (festivals list the edition as the place).
+// the others are all-day events. `location` overrides `place` (festivals list the edition as the place);
+// venues in venue-geo.json get a map pin. Past shows stay in upcoming.js so their events keep the time.
 // Usage: node tools/calendar.cjs <site dir>
 const fs = require("fs");
 const path = require("path");
@@ -8,6 +9,13 @@ const out = process.argv[2] || ".";
 const window = {};
 new Function("window", fs.readFileSync(path.join(__dirname, "..", "upcoming.js"), "utf8"))(window);
 const shows = (window.LONG_ROAD_UPCOMING || {}).shows || [];
+// past shows point to their page in the app once the export has them (same date and artist)
+const data = {};
+try { new Function("window", fs.readFileSync(path.join(__dirname, "..", "data", "data.js"), "utf8"))(data); } catch (e) {}
+const seen = new Map(((data.LONG_ROAD || {}).concerts || []).map((c) => [c.date + "|" + c.artist.toLowerCase(), c.id]));
+const geo = JSON.parse(fs.readFileSync(path.join(__dirname, "venue-geo.json"), "utf8"));
+const SITE = "https://longroad.joaomiguel.com/";
+const today = new Date().toISOString().slice(0, 10);
 
 const esc = (s) => String(s).replace(/\\/g, "\\\\").replace(/;/g, "\;").replace(/,/g, "\\,").replace(/\n/g, "\\n");
 // lines longer than 75 octets continue on the next line after a space (RFC 5545)
@@ -45,9 +53,19 @@ for (const s of shows) {
   } else {
     ev.push("DTSTART;VALUE=DATE:" + ymd(s.date), "DTEND;VALUE=DATE:" + ymd(nextDay(s.date)), "TRANSP:TRANSPARENT");
   }
-  ev.push("LOCATION:" + esc(s.location || s.place || ""));
-  if (s.location && s.place) ev.push("DESCRIPTION:" + esc(s.place));
-  if (s.url) ev.push("URL:" + s.url);
+  // with coordinates the phone shows the venue on a map, like a place picked by hand
+  const where = s.location || s.place || "", name = where.split(", ")[0], g = geo[name];
+  if (g) {
+    ev.push("LOCATION:" + esc(name + "\n" + g.address));
+    ev.push('X-APPLE-STRUCTURED-LOCATION;VALUE=URI;X-ADDRESS="' + g.address.replace(/"/g, "") + '";X-APPLE-RADIUS=100;X-TITLE="' + name.replace(/"/g, "") + '":geo:' + g.lat + "," + g.lng);
+  } else ev.push("LOCATION:" + esc(where));
+  // before the show: the setlist.fm page; after it, once the export has it: the concert in the app
+  const id = s.date < today ? seen.get(s.date + "|" + String(s.artist).toLowerCase()) : null;
+  const desc = [];
+  if (s.location && s.place) desc.push(s.place);
+  if (id) desc.push("Long Road: " + SITE + "#t=concerts&c=" + id);
+  else if (s.url) desc.push("setlist.fm: " + s.url);
+  if (desc.length) ev.push("DESCRIPTION:" + esc(desc.join("\n")));
   ev.push("END:VEVENT");
   lines.push(...ev);
 }
