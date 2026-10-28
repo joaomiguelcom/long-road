@@ -24,7 +24,8 @@ const chrome = process.env.CHROME_PATH; // the GitHub runner has Chrome installe
     await page.waitForTimeout(800);
     await check(page, name + " overview");
     for (const tab of await page.locator("#tabs [data-tab]").evaluateAll((l) => l.map((b) => b.dataset.tab))) {
-      await page.click('#tabs [data-tab="' + tab + '"]');
+      // phones hide the top tabs (the bottom bar takes over), so the tab is clicked from script
+      await page.evaluate((t) => document.querySelector('#tabs [data-tab="' + t + '"]').click(), tab);
       await page.waitForTimeout(300);
       await check(page, name + " " + tab);
     }
@@ -33,6 +34,13 @@ const chrome = process.env.CHROME_PATH; // the GitHub runner has Chrome installe
       await page.waitForTimeout(300);
       await check(page, name + " " + what);
     };
+    if (name === "phone") {
+      // bottom bar: "More" opens the menu and one of its tabs is shown
+      await page.click("#bMore");
+      await page.click('.more-sheet [data-tab="songs"]');
+      await page.waitForTimeout(300);
+      await check(page, "phone bottom bar");
+    }
     await open("artist", "Pearl Jam", "Pearl Jam page");
     const venue = await page.evaluate(() => { const b = document.querySelector("[data-venue]"); return b ? b.dataset.venue : null; });
     if (venue) await open("venue", venue, "venue page");

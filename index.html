@@ -50,6 +50,7 @@
   /* back to top: shows up once a long page has been scrolled */
   .to-top { position: fixed; right: 16px; bottom: max(16px, env(safe-area-inset-bottom)); z-index: 1000; width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--line-2); background: var(--surface); color: var(--text);
     display: inline-flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; box-shadow: 0 4px 14px rgba(0,0,0,.3); opacity: 0; transform: translateY(8px); pointer-events: none; transition: opacity .2s, transform .2s; }
+  .bottom-nav { display: none; }
   .to-top.show { opacity: 1; transform: none; pointer-events: auto; }
   .head-side { display: flex; align-items: center; gap: 8px; }
   .theme-btn { width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--line-2); background: var(--surface); color: var(--muted); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; flex: none; }
@@ -165,7 +166,6 @@
   .toolbar { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 12px; }
   .toolbar h2 { margin: 0; font: 500 26px/1.2 var(--display); }
   .detail { display: flex; flex-direction: column; gap: 18px; }
-  .nav-logo { display: none; }
   .detail-top { display: flex; justify-content: space-between; align-items: center; }
   .detail-nav { display: flex; gap: 8px; }
   .icon-btn { width: 44px; height: 44px; display: grid; place-items: center; background: none; border: 1px solid var(--line-2); border-radius: 10px; color: var(--text); font-size: 20px; line-height: 1; cursor: pointer; }
@@ -228,6 +228,10 @@
   ol.setlist { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 4px; }
   ol.setlist li { display: grid; grid-template-columns: 2em minmax(0, 1fr); column-gap: .45em; align-items: baseline; }
   ol.setlist .n { text-align: right; font-variant-numeric: tabular-nums; }
+  /* songs open their page: no underline on every line, a small arrow instead (accent on hover) */
+  ol.setlist .inline-link { text-decoration: none; }
+  ol.setlist .inline-link::after { content: "\203A"; margin-left: 6px; color: var(--muted); opacity: .6; }
+  ol.setlist .inline-link:empty::after { content: none; }
   ol.setlist li.tape { color: var(--muted); }
   /* a cassette in the number column for recorded music played before or after the set */
   ol.setlist li.tape .n { align-self: center; height: 1.1em; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239AA0A6' stroke-width='1.8' stroke-linejoin='round'%3E%3Crect x='2.5' y='5' width='19' height='14' rx='2'/%3E%3Ccircle cx='8.5' cy='11' r='1.8'/%3E%3Ccircle cx='15.5' cy='11' r='1.8'/%3E%3Cpath d='M10.3 11h3.4M7 19l1.5-3.5h7L17 19'/%3E%3C/svg%3E") right center / contain no-repeat; }
@@ -315,11 +319,19 @@
     .sync .dot { width: 6px; height: 6px; box-shadow: 0 0 0 2px rgba(123,198,126,.18); }
     .sync-long { display: none; }
     nav { margin: 16px -16px 0; padding: 0 16px; }
-    header { position: sticky; z-index: 1050; background: linear-gradient(180deg, rgba(242,165,65,.07), rgba(242,165,65,0) 70%), var(--bg); }
-    :root[data-theme="light"] header { background: linear-gradient(180deg, rgba(176,104,12,.08), rgba(176,104,12,0) 70%), var(--bg); }
-    header.compact { background: var(--bg); box-shadow: 0 6px 16px rgba(0,0,0,.25); }
-    .nav-logo { display: none; flex: none; align-items: center; background: none; border: 0; padding: 0 10px 0 0; cursor: pointer; }
-    header.compact .nav-logo { display: inline-flex; }
+    /* tabs move to a bar at the bottom, within reach of the thumb */
+    #tabs { display: none; }
+    .head { padding-bottom: 16px; }
+    .bottom-nav { display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 1100; background: var(--surface); border-top: 1px solid var(--line); padding: 4px 4px max(6px, env(safe-area-inset-bottom)); }
+    .bottom-nav > button { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; background: none; border: 0; color: var(--muted); font-size: 11px; padding: 6px 0 4px; min-height: 52px; cursor: pointer; }
+    .bottom-nav > button[aria-current="page"] { color: var(--accent); font-weight: 600; }
+    .bottom-nav > button span { max-width: 74px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .more-sheet { display: none; position: absolute; right: 8px; bottom: calc(100% + 8px); background: var(--surface); border: 1px solid var(--line-2); border-radius: 14px; padding: 6px; box-shadow: 0 10px 30px rgba(0,0,0,.35); min-width: 190px; }
+    .more-sheet.open { display: flex; flex-direction: column; }
+    .more-sheet button { display: flex; align-items: center; gap: 12px; background: none; border: 0; color: var(--text); font-size: 15px; padding: 11px 12px; border-radius: 9px; cursor: pointer; text-align: left; }
+    .more-sheet button[aria-current="page"] { color: var(--accent); font-weight: 600; }
+    footer { padding-bottom: calc(80px + env(safe-area-inset-bottom)); }
+    .to-top { bottom: calc(76px + env(safe-area-inset-bottom)); }
     nav.more-right { -webkit-mask-image: linear-gradient(90deg, #000 85%, transparent); mask-image: linear-gradient(90deg, #000 85%, transparent); }
     nav button { padding: 12px 12px; }
     .kpis { grid-template-columns: 1fr 1fr; gap: 12px; }
@@ -366,11 +378,12 @@
         <button type="button" class="theme-btn" id="theme" aria-label="Switch theme"></button>
       </div>
     </div>
-    <nav aria-label="Sections" id="tabs"><button type="button" class="nav-logo" id="navLogo" aria-label="Back to top"><svg width="26" height="26" viewBox="6 8 52 52" aria-hidden="true"><circle cx="32" cy="19" r="9" fill="#F2A541" opacity=".35"/><path fill-rule="evenodd" d="M29.5 19h5L54 58H10zM31.4 23h1.2l.3 5h-1.8zM31 33h2l.5 8h-3zM30.3 46h3.4l.6 12h-4.6z" fill="#F2A541"/></svg></button><button type="button" data-tab="overview" aria-current="page">Overview</button><button type="button" data-tab="concerts">Concerts</button><button type="button" data-tab="artists">Artists</button><button type="button" data-tab="venues">Venues</button><button type="button" data-tab="festivals">Festivals</button><button type="button" data-tab="songs">Songs</button><button type="button" data-tab="years">Year in review</button><button type="button" data-tab="map">Map</button></nav>
+    <nav aria-label="Sections" id="tabs"><button type="button" data-tab="overview" aria-current="page">Overview</button><button type="button" data-tab="concerts">Concerts</button><button type="button" data-tab="artists">Artists</button><button type="button" data-tab="venues">Venues</button><button type="button" data-tab="festivals">Festivals</button><button type="button" data-tab="songs">Songs</button><button type="button" data-tab="years">Year in review</button><button type="button" data-tab="map">Map</button></nav>
   </div>
 </header>
 <main class="wrap" id="app"></main>
 <button type="button" class="to-top" id="toTop" aria-label="Back to top" title="Back to top" tabindex="-1"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
+<div class="bottom-nav" id="bnav" role="navigation" aria-label="Sections"></div>
 <footer><div class="wrap">Long Road, like the Pearl Jam song. Data from <a href="https://www.setlist.fm/concerts/ojoaomiguel" target="_blank" rel="noopener">setlist.fm</a>.</div></footer>
 
 <script>
@@ -833,15 +846,39 @@
   const limitOf = (id, def) => state.limits[id] || def;
   const TABS = [["overview", "Overview"], ["concerts", "Concerts"], ["artists", "Artists"], ["venues", "Venues"], ["festivals", "Festivals"], ["songs", "Songs"], ["years", "Year in review"], ["map", "Map"]];
 
-  // small logo shown at the start of the tabs once the header has scrolled away (phones)
-  const NAV_LOGO = '<button type="button" class="nav-logo" id="navLogo" aria-label="Back to top"><svg width="26" height="26" viewBox="6 8 52 52" aria-hidden="true"><circle cx="32" cy="19" r="9" fill="#F2A541" opacity=".35"/><path fill-rule="evenodd" d="M29.5 19h5L54 58H10zM31.4 23h1.2l.3 5h-1.8zM31 33h2l.5 8h-3zM30.3 46h3.4l.6 12h-4.6z" fill="#F2A541"/></svg></button>';
   function renderTabs() {
-    document.getElementById("tabs").innerHTML = NAV_LOGO + TABS.map(([id, label]) =>
+    document.getElementById("tabs").innerHTML = TABS.map(([id, label]) =>
       '<button type="button" data-tab="' + id + '"' + (state.tab === id ? ' aria-current="page"' : "") + ">" + label + "</button>").join("");
     // keep the active tab visible when the tab bar scrolls sideways (phones)
     const nav = document.getElementById("tabs"), cur = nav.querySelector("[aria-current]");
     if (cur && nav.scrollWidth > nav.clientWidth) nav.scrollLeft = cur.offsetLeft - (nav.clientWidth - cur.offsetWidth) / 2;
     fadeTabs();
+    renderBottomNav();
+  }
+  // phones: a fixed bar at the bottom with the four main tabs and "More" for the rest
+  const ICONS = {
+    overview: '<path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',
+    concerts: '<path d="M3 8a2 2 0 0 0 0 4v4a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1v-4a2 2 0 0 1 0-4V4a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1z" transform="translate(0 2)"/><path d="M14 5v2M14 10v2M14 15v2"/>',
+    artists: '<rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v4M8 22h8"/>',
+    years: '<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/>',
+    venues: '<path d="M12 21s-7-6.2-7-12a7 7 0 0 1 14 0c0 5.8-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/>',
+    festivals: '<path d="M4 21 12 4l8 17M8 13h8"/><path d="M12 4V2"/>',
+    songs: '<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>',
+    map: '<path d="m9 4-6 2v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/>',
+    more: '<circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/>',
+  };
+  const icon = (k) => '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + ICONS[k] + "</svg>";
+  const MAIN_TABS = ["overview", "concerts", "artists", "years"];
+  const SHORT = { overview: "Overview", concerts: "Concerts", artists: "Artists", years: "Year" };
+  let moreOpen = false;
+  function renderBottomNav() {
+    const el = document.getElementById("bnav");
+    if (!el) return;
+    const inMore = !MAIN_TABS.includes(state.tab);
+    el.innerHTML = MAIN_TABS.map((id) => '<button type="button" data-tab="' + id + '"' + (state.tab === id ? ' aria-current="page"' : "") + ">" + icon(id) + "<span>" + SHORT[id] + "</span></button>").join("") +
+      '<button type="button" id="bMore" aria-haspopup="true" aria-expanded="' + moreOpen + '"' + (inMore ? ' aria-current="page"' : "") + ">" + icon("more") + "<span>" + (inMore ? TABS.find((t) => t[0] === state.tab)[1] : "More") + "</span></button>" +
+      '<div class="more-sheet' + (moreOpen ? " open" : "") + '" role="menu">' + TABS.filter(([id]) => !MAIN_TABS.includes(id)).map(([id, label]) =>
+        '<button type="button" role="menuitem" data-tab="' + id + '"' + (state.tab === id ? ' aria-current="page"' : "") + ">" + icon(id) + "<span>" + label + "</span></button>").join("") + "</div>";
   }
   // fade the right edge only while there are more tabs to scroll to
   const tabScroll = {};
@@ -879,21 +916,8 @@
   let topTick = false;
   window.addEventListener("scroll", () => {
     if (topTick) return; topTick = true;
-    requestAnimationFrame(() => { const on = window.scrollY > 1200; toTop.classList.toggle("show", on); toTop.tabIndex = on ? 0 : -1; compactHead(); topTick = false; });
+    requestAnimationFrame(() => { const on = window.scrollY > 1200; toTop.classList.toggle("show", on); toTop.tabIndex = on ? 0 : -1; topTick = false; });
   }, { passive: true });
-  // phones: the header is sticky with a negative top, so the title block scrolls away and only the tabs stay,
-  // with a small logo; nothing in the page moves, because the header keeps its height
-  const headEl = document.querySelector("header"), phone = window.matchMedia("(max-width: 600px)");
-  let headLift = 0;
-  const placeHead = () => {
-    headLift = phone.matches ? document.getElementById("tabs").getBoundingClientRect().top - headEl.getBoundingClientRect().top : 0;
-    headEl.style.top = phone.matches ? -headLift + "px" : "";
-    compactHead();
-  };
-  function compactHead() { headEl.classList.toggle("compact", phone.matches && window.scrollY > headLift - 1); }
-  window.addEventListener("resize", placeHead);
-  placeHead();
-  if (document.fonts) document.fonts.ready.then(placeHead);
   const fadeTabs = () => { const nav = document.getElementById("tabs"); nav.classList.toggle("more-right", nav.scrollLeft + nav.clientWidth < nav.scrollWidth - 4); };
   document.getElementById("tabs").addEventListener("scroll", fadeTabs, { passive: true });
   window.addEventListener("resize", fadeTabs);
@@ -1481,8 +1505,11 @@
     const prev = byYear[yi - 1], next = byYear[yi + 1];
     // the same numbers for the calendar year before, to show the change
     const py = String(+y - 1);
-    const pList = concerts.filter((c) => c.date.startsWith(py));
-    const delta = (cur, before) => pList.length ? '<span class="delta' + (cur > before ? " up" : cur < before ? " down" : "") + '" title="' + py + ": " + fmtN(before) + '">' + (cur === before ? "=" : (cur > before ? "+" : "−") + fmtN(Math.abs(cur - before))) + " vs ’" + py.slice(2) + "</span>" : "";
+    // a year still running is compared with the same days of the year before (1 Jan to today's date), not the whole year
+    const todayIso = new Date().toISOString().slice(0, 10), running = todayIso.startsWith(y), cutoff = py + todayIso.slice(4);
+    const pList = concerts.filter((c) => c.date.startsWith(py) && (!running || c.date <= cutoff));
+    const toDate = running ? " up to " + fmtDate(cutoff).slice(0, 6).replace(/^0/, "") : "";
+    const delta = (cur, before) => pList.length ? '<span class="delta' + (cur > before ? " up" : cur < before ? " down" : "") + '" title="' + py + toDate + ": " + fmtN(before) + '">' + (cur === before ? "=" : (cur > before ? "+" : "−") + fmtN(Math.abs(cur - before))) + " vs ’" + py.slice(2) + "</span>" : "";
     const pArtists = new Set(pList.map((c) => c.artist)).size;
     const pVenues = new Set(pList.filter((c) => !c.festival).map(venueKey)).size;
     const pFest = new Set(pList.filter((c) => c.festival).map((c) => c.festival)).size;
@@ -1500,6 +1527,7 @@
         kpi("Festivals", yFest.length + delta(yFest.length, pFest), list.filter((c) => c.festival).length + " festival concerts", fattr("festivals", y)) +
         (ySongs ? kpi("Songs heard", fmtN(ySongs) + delta(ySongs, pSongs), "", fattr("year", y)) : "") +
       "</section>" +
+      (running && pList.length ? '<p class="tag list-note">The year is not over: changes compare with ' + py + " up to " + fmtDate(cutoff).slice(0, 6).replace(/^0/, "") + ".</p>" : "") +
       '<div class="grid fun-grid" style="--min:240px">' +
         fun("First concert", esc(first.artist), fmtDate(first.date) + " · " + esc(first.festival || first.venue), openAttr(first)) +
         fun("Last concert", esc(last.artist), fmtDate(last.date) + " · " + esc(last.festival || last.venue), openAttr(last)) +
@@ -1889,6 +1917,8 @@
     if ((e.key === "Enter" || e.key === " ") && e.target.matches && e.target.matches('[role="button"]')) { e.preventDefault(); e.target.click(); }
   });
   document.addEventListener("click", (e) => {
+    // a tap anywhere else closes the "More" menu of the bottom bar
+    if (moreOpen && !e.target.closest("#bMore")) { moreOpen = false; renderBottomNav(); }
     const t = e.target.closest('button, [role="button"]');
     if (!t) return;
     const d = t.dataset;
@@ -1934,7 +1964,8 @@
     else if (t.id === "nextAll") { state.nextAll = !state.nextAll; render(); }
     else if (t.id === "clearf") { state.filter = null; state.limits.concerts = 0; render(); }
     else if (t.id === "back") { if (depth() > 0) goBack(); else go(() => { state.detail = null; }); }
-    else if (t.id === "toTop" || t.id === "navLogo") window.scrollTo({ top: 0, behavior: "smooth" });
+    else if (t.id === "bMore") { moreOpen = !moreOpen; renderBottomNav(); }
+    else if (t.id === "toTop") window.scrollTo({ top: 0, behavior: "smooth" });
     else if (t.id === "theme") setTheme(!isLight());
     else if (t.id === "toAbout") {
       if (state.tab !== "overview" || state.detail || state.artist || state.venue || state.festival || state.song) go(() => { state.tab = "overview"; state.detail = null; state.filter = null; state.artist = null; state.venue = null; state.festival = null; state.song = null; });
