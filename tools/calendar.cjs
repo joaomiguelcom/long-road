@@ -99,6 +99,10 @@ const esc = (s) => String(s).replace(/\\/g, "\\\\").replace(/;/g, "\;").replace(
 // the map pin: same shape as the events Apple's own Calendar exports, where LOCATION is the pin's title and address
 // on two lines. The pin line is not folded (iOS drops a folded one), the postcode is left out (the phone took it for
 // a phone number) and the title has no room suffix ("Casa da Música (Sala 2)" is not a place Maps knows)
+// reminder on the day: 2 hours before a timed show, 10:00 otherwise (all-day start is midnight, so +10h).
+// Only for shows still ahead; past events keep none
+const alarm = (date, timed) => date < today ? [] : ["BEGIN:VALARM", "ACTION:DISPLAY", "DESCRIPTION:Concert today",
+  "TRIGGER:" + (timed ? "-PT2H" : "PT10H"), "END:VALARM"];
 const placeLines = (name, g, radius) => {
   const title = name.replace(/\s*\(.*?\)$/, "");
   const addr = g.address.replace(/\s*\d{4}-\d{3}\s*/, " ").replace(/^.*?,\s*/, (m) => g.address.startsWith(title) ? "" : m).trim();
@@ -158,7 +162,7 @@ for (const [edition, items] of editions) {
   const name = first.location.split(", ")[0], g = geo[name];
   if (g) ev.push(...placeLines(name, g, 100));
   else ev.push("LOCATION:" + esc(first.location));
-  ev.push("DESCRIPTION:" + esc(blocks.map((b) => b.join("\n")).join("\n\n")), "END:VEVENT");
+  ev.push("DESCRIPTION:" + esc(blocks.map((b) => b.join("\n")).join("\n\n")), ...alarm(first.date, false), "END:VEVENT");
   lines.push(...ev);
 }
 
@@ -180,7 +184,7 @@ shows.forEach((s, i) => {
   } else ev.push("LOCATION:" + esc(where));
   const blocks = describe(s, i).filter((b) => b.length);
   ev.push("DESCRIPTION:" + esc(blocks.map((b) => b.join("\n")).join("\n\n")));
-  ev.push("END:VEVENT");
+  ev.push(...alarm(s.date, !!s.time), "END:VEVENT");
   lines.push(...ev);
 });
 lines.push("END:VCALENDAR");
