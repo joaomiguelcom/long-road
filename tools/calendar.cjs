@@ -41,33 +41,36 @@ function describe(s, i) {
     const n = pos.get(done.id), list = songs(done);
     const heard = new Set(before.flatMap((c) => songs(c).map((x) => plain(x.name) + "|" + plain(x.cover || c.artist))));
     const fresh = list.filter((x) => !heard.has(plain(x.name) + "|" + plain(x.cover || done.artist))).length;
-    out.push(["Concert #" + fmtN(n)].concat(list.length ? [list.length + " songs"] : [], fresh ? [fresh + " new for you"] : []).join(" · "));
-    if (list.length > 1) out.push("Opened with " + list[0].name + ", closed with " + list[list.length - 1].name);
-    out.push("Long Road: " + SITE + "#t=concerts&c=" + done.id);
+    out.push([["Concert #" + fmtN(n)].concat(list.length ? [list.length + " songs"] : [], fresh ? [fresh + " new for you"] : []).join(" • ")]);
+    if (list.length > 1) out.push(["Opened with " + list[0].name + ", closed with " + list[list.length - 1].name]);
+    out.push([SITE + "#t=concerts&c=" + done.id]);
     return out;
   }
   // its number: the archive so far plus the booked shows before it that are not in the archive yet
   const pending = shows.filter((x, j) => (x.date < s.date || (x.date === s.date && j < i)) && !(x.date < today && seen.has(x.date + "|" + plain(x.artist))));
   const n = before.length + pending.length + 1;
-  out.push(isMilestone(n) ? "This will be concert #" + fmtN(n) + ". A milestone!" : "This will be concert #" + fmtN(n));
-  if (!mine.length) out.push("First time seeing " + s.artist + " live!");
-  else {
-    out.push(ordinal(mine.length + 1) + " time seeing " + s.artist);
+  // three blocks with a blank line between them: the headline, the history, the link
+  const head = "This will be concert #" + fmtN(n) + (isMilestone(n) ? " (a milestone!)" : "") + " • " +
+    (mine.length ? ordinal(mine.length + 1) + " time seeing " + s.artist : "First time seeing " + s.artist + " live!");
+  out.push([head]);
+  const hist = [];
+  out.push(hist);
+  if (mine.length) {
     const last = mine[mine.length - 1], first = mine[0];
-    out.push("Last time: " + fmtDate(last.date) + ", " + last.venue);
-    if (mine.length > 1) out.push("First time: " + fmtDate(first.date) + ", " + first.venue);
+    hist.push("Last time: " + fmtDate(last.date) + ", " + last.venue);
+    if (mine.length > 1) hist.push("First time: " + fmtDate(first.date) + ", " + first.venue);
     const count = new Map();
     for (const c of mine) for (const x of songs(c)) count.set(x.name, (count.get(x.name) || 0) + 1);
     const top = [...count].filter((x) => x[1] > 1).sort((a, b) => b[1] - a[1]).slice(0, 3);
-    if (top.length) out.push("Most heard live: " + top.map(([k, v]) => k + " (" + v + ")").join(", "));
+    if (top.length) hist.push("Most heard live: " + top.map(([k, v]) => k + " (" + v + ")").join(", "));
   }
   if (venue) {
     const placeOf = (x) => { const w = (x.location || x.place || "").split(", ")[0]; return plain(w.replace(/ \(.*\)$/, "")) === plain(venue) || plain(w) === plain(venue); };
     const dates = new Set(before.filter((c) => plain(c.venue) === plain(venue)).map((c) => c.date).concat(pending.filter(placeOf).map((x) => x.date)));
     const nights = dates.size + (dates.has(s.date) ? 0 : 1);
-    out.push(nights === 1 ? "First time at " + venue : "Your " + ordinal(nights) + " " + (s.location ? "day" : "night") + " at " + venue);
+    hist.push(nights === 1 ? "First time at " + venue : "Your " + ordinal(nights) + " " + (s.location ? "day" : "night") + " at " + venue);
   }
-  if (s.url) out.push("setlist.fm: " + s.url);
+  if (s.url) out.push([s.url]);
   return out;
 }
 const geo = JSON.parse(fs.readFileSync(path.join(__dirname, "venue-geo.json"), "utf8"));
@@ -119,7 +122,9 @@ shows.forEach((s, i) => {
     ev.push("LOCATION:" + esc(name + "\n" + g.address));
     ev.push('X-APPLE-STRUCTURED-LOCATION;VALUE=URI;X-ADDRESS="' + g.address.replace(/"/g, "") + '";X-APPLE-RADIUS=100;X-TITLE="' + name.replace(/"/g, "") + '":geo:' + g.lat + "," + g.lng);
   } else ev.push("LOCATION:" + esc(where));
-  ev.push("DESCRIPTION:" + esc((s.location && s.place ? [s.place] : []).concat(describe(s, i)).join("\n")));
+  const blocks = describe(s, i).filter((b) => b.length);
+  if (s.location && s.place) blocks[0].unshift(s.place);
+  ev.push("DESCRIPTION:" + esc(blocks.map((b) => b.join("\n")).join("\n\n")));
   ev.push("END:VEVENT");
   lines.push(...ev);
 });
