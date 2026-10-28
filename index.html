@@ -363,6 +363,7 @@
     .sbar { max-width: none; }
     .sbar .search input[type=search] { padding-right: 112px; }
     .fbtn { display: inline-flex; align-items: center; gap: 6px; position: absolute; right: 6px; top: 50%; transform: translateY(-50%); background: var(--line); color: var(--text); border: 0; border-radius: 8px; padding: 6px 10px; min-height: 34px; font: inherit; font-size: 14px; cursor: pointer; }
+    .list-head > .fbtn, .year-nav .fbtn { margin-left: auto; }
     .list-head > .fbtn, .year-nav .fbtn { position: static; transform: none; min-height: 40px; }
     .year-nav .btn[data-year], .year-nav #ysel { display: none; }
     .fbtn .badge { min-width: 18px; height: 18px; border-radius: 9px; background: var(--accent); color: var(--on-accent); font-size: 11px; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; padding: 0 5px; }
@@ -372,19 +373,19 @@
     .fchips .link { padding: 4px 2px; }
     #app .fsheet { display: none; }
     body.fs-open { overflow: hidden; }
-    body.fs-open #app .fsheet { display: block; position: fixed; inset: 0; z-index: 1200; margin: 0; }
+    body.fs-open #app .fsheet.open { display: block; position: fixed; inset: 0; z-index: 1200; margin: 0; }
     .fs-scrim { display: block; position: absolute; inset: 0; width: 100%; background: rgba(0,0,0,.5); border: 0; padding: 0; }
     .fs-panel { display: flex; flex-direction: column; gap: 14px; position: absolute; left: 0; right: 0; bottom: 0; max-height: 85vh; overflow-y: auto; background: var(--surface); border-top: 1px solid var(--line-2); border-radius: 20px 20px 0 0; padding: 10px 16px calc(16px + env(safe-area-inset-bottom)); }
     .fs-grab { display: block; width: 36px; height: 4px; border-radius: 2px; background: var(--line-2); align-self: center; }
     .fs-head { display: block; font: 600 20px/1.2 var(--display); }
     .fs-head { display: flex; justify-content: space-between; align-items: baseline; }
     .fs-head .link { font: 500 14px/1 Inter, system-ui, sans-serif; padding: 4px 0; }
-    .fs-done { display: block; background: rgba(242,165,65,.12); color: var(--accent); border: 1px solid rgba(242,165,65,.35); border-radius: 10px; padding: 11px; font: inherit; font-size: 15px; font-weight: 600; cursor: pointer; }
+    .fs-done { margin-top: 10px; display: block; background: rgba(242,165,65,.12); color: var(--accent); border: 1px solid rgba(242,165,65,.35); border-radius: 10px; padding: 11px; font: inherit; font-size: 15px; font-weight: 600; cursor: pointer; }
     .fs-panel .icon-chip { display: none; }
     .fs-panel .fs-dir { margin-top: -4px; } .fs-panel .fs-dir button { padding: 6px 0; font-size: 13px; }
     .fs-panel .seg { display: flex; } .fs-panel .seg button { flex: 1; padding: 8px 0; font-size: 14px; }
     .fs-panel .mchip { display: flex; align-items: center; gap: 10px; }
-    .fs-panel .qpick, .fs-panel .qpick.on { flex: 1; display: flex; justify-content: flex-end; width: 100%; background: none; border: 0; border-top: 1px solid var(--line); border-radius: 0; padding: 12px 0 2px; font-size: 15px; color: var(--muted); }
+    .fs-panel .qpick, .fs-panel .qpick.on { flex: 1; display: flex; justify-content: flex-end; width: 100%; background: none; border: 0; border-top: 1px solid var(--line); border-radius: 0; padding: 12px 0 0; min-height: 44px; font-size: 15px; color: var(--muted); }
     .fs-panel .qpick::before { content: attr(data-label); color: var(--text); margin-right: auto; }
     .fs-panel .qpick.on > span:first-child { color: var(--accent); }
     .fs-panel .qpick:not(.on) > span:first-child { font-size: 0; }
@@ -830,7 +831,9 @@
   // A Filters button sits in the search box and the active filters show as chips under it; desktop keeps the row of chips.
   const SLIDERS = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>';
   const fsCount = (scope, n) => n + (state.sorts[scope] ? 1 : 0);
-  const fsBtn = (n, label) => '<button type="button" class="fbtn" data-fs="open" aria-label="' + (label || "Filters") + (n ? ", " + n + " on" : "") + '">' + SLIDERS + (label || "Filters") + (n ? '<span class="badge">' + n + "</span>" : "") + "</button>";
+  // target: which panel the button opens ("main" is the page's own; the Songs page has one per list)
+  let fsOpen = null;
+  const fsBtn = (n, label, target) => '<button type="button" class="fbtn" data-fs="' + (target || "main") + '" aria-label="' + (label || "Filters") + (n ? ", " + n + " on" : "") + '">' + SLIDERS + (label || "Filters") + (n ? '<span class="badge">' + n + "</span>" : "") + "</button>";
   // chips: [label, state key]; × clears that one filter
   const SORT_LABELS = {};
   const sortChip = (scope) => { const st = state.sorts[scope]; return st ? [[(SORT_LABELS[scope] || [])[st.col] || "Sorted", st.dir > 0 ? " ↑" : " ↓"].join(""), "sort:" + scope] : null; };
@@ -839,10 +842,11 @@
     (chips.length > 1 ? '<button type="button" class="link" data-clear="' + scope + '">Clear all</button>' : "") + "</div>" : "";
   // on desktop the panel is the usual row (.fs-panel is display: contents there)
   // clear: scope of the "Clear all" link shown in the panel's head while anything is set
-  const fsSheet = (inner, done, head, cls, clear) => '<div class="quick fsheet' + (cls ? " " + cls : "") + '"><button type="button" class="fs-scrim" data-fs="close" tabindex="-1" aria-label="Close"></button><div class="fs-panel" role="dialog" aria-label="' + (head || "Filters") + '">' +
+  const fsSheet = (inner, done, head, cls, clear, sid) => '<div class="quick fsheet' + (cls ? " " + cls : "") + (fsOpen === (sid || "main") ? " open" : "") + '" data-sheet="' + (sid || "main") + '"><button type="button" class="fs-scrim" data-fs="close" tabindex="-1" aria-label="Close"></button><div class="fs-panel" role="dialog" aria-label="' + (head || "Filters") + '">' +
     '<div class="fs-grab" aria-hidden="true"></div><div class="fs-head">' + (head || "Filters") + (clear ? '<button type="button" class="link" data-clear="' + clear + '">Clear all</button>' : "") + "</div>" + inner + (done ? '<button type="button" class="fs-done" data-fs="close">' + done + "</button>" : "") + "</div></div>";
   // lists whose filter row becomes the panel, with the noun for its "Show N …" button
-  const SHEETS = { concerts: "concert", artists: "artist", venues: "venue", festivals: "festival", songs: "song" };
+  const SHEETS = { concerts: "concert", artists: "artist", venues: "venue", festivals: "festival", songs: "song", covers: "cover", debuts: "debut" };
+  const SUB_SHEETS = ["covers", "debuts"];
   const artistBtn = (name, cls) => '<button type="button" class="' + (cls || "open") + '"' + aattr(name) + ">" + esc(name) + "</button>";
   const notes = (c) => (c.festival ? '<span class="accent">' + esc(c.festival) + "</span>" : "") + (c.festival && c.tour ? "<br>" : "") + (c.tour ? '<span class="tag">' + esc(c.tour) + "</span>" : "");
   // "Show all N" under a list cut to its first items; open lists are kept per key while the page lives
@@ -872,7 +876,7 @@
     let sortBar = bar ? '<div class="quick">' + bar + sortChips + "</div>" : m ? '<div class="quick msort">' + sortChips + "</div>" : "";
     // in the panel the direction is a two-way switch under the sort row, instead of the arrow chip
     const dirSeg = st ? '<div class="seg fs-dir" role="group" aria-label="Order">' + [[1, "Ascending"], [-1, "Descending"]].map(([v, l]) => '<button type="button" class="' + (st.dir === v ? "on" : "") + '"' + (st.dir === v ? "" : ' data-sortdir="' + id + '"') + ' aria-pressed="' + (st.dir === v) + '">' + l + "</button>").join("") + "</div>" : "";
-    if (SHEETS[id] && (bar || m)) sortBar = fsSheet((bar || "") + sortChips + dirSeg, "Show " + plural(rows.length, SHEETS[id], SHEETS[id] + "s"), bar ? "" : "Sort", bar ? "" : "msort", (bar || "").includes("clear-all") || st ? id : "");
+    if (SHEETS[id] && (bar || m)) sortBar = fsSheet((bar || "") + sortChips + dirSeg, "Show " + plural(rows.length, SHEETS[id], SHEETS[id] + "s"), bar ? "" : "Sort", bar ? "" : "msort", (bar || "").includes("clear-all") || st ? id : "", SUB_SHEETS.includes(id) ? id : "main");
     // a filtered list that ends up empty says so and offers the way back
     if (bar && !rows.length) return sortBar + '<div class="empty empty-filters"><p>Nothing matches these filters.</p><button type="button" class="toggle on" data-clear="' + id + '">Clear filters</button></div>';
     const mlist = m ? '<ul class="mlist">' + shown.map((r) => {
@@ -1574,9 +1578,9 @@
       (q && !list.length ? '<div class="empty">No songs match.</div>' : "") +
       table("songs", [{ label: "#", num: true, cls: "num" }, { label: "Song" }, { label: "Artist" }, { label: "Times", num: true, cls: "num" }], rows, limitOf("songs", 25),
         (r) => ({ rank: r[0].h, title: r[1].h, sub: [r[2].h], value: r[3].h, unit: r[3].s === 1 ? "time" : "times" })) +
-      '<div class="list-head"><div class="list-title"><h2>Covers heard live</h2></div></div>' + (coverRows.length ? table("covers", [{ label: "Song" }, { label: "Original by", cls: "muted" }, { label: "Played by" }, { label: "Times", num: true, cls: "num" }], coverRows, limitOf("covers", 10),
+      '<div class="list-head"><div class="list-title"><h2>Covers heard live</h2></div>' + (coverRows.length ? fsBtn(fsCount("covers", 0), "Sort", "covers") + fsChips("covers", []) : "") + "</div>" + (coverRows.length ? table("covers", [{ label: "Song" }, { label: "Original by", cls: "muted" }, { label: "Played by" }, { label: "Times", num: true, cls: "num" }], coverRows, limitOf("covers", 10),
         (r) => ({ title: r[0].h, sub: [r[1].h + " → " + r[2].h], value: r[3].h, unit: r[3].s === 1 ? "time" : "times" })) : '<p class="muted" style="margin:0">None found yet.</p>') +
-      '<div class="list-head"><div class="list-title"><h2>Live debuts you saw</h2></div></div>' + (debutRows.length ? table("debuts", [{ label: "Date", cls: "muted" }, { label: "Song" }, { label: "Artist" }, { label: "Note", cls: "muted" }], debutRows, limitOf("debuts", 10),
+      '<div class="list-head"><div class="list-title"><h2>Live debuts you saw</h2></div>' + (debutRows.length ? fsBtn(fsCount("debuts", 0), "Sort", "debuts") + fsChips("debuts", []) : "") + "</div>" + (debutRows.length ? table("debuts", [{ label: "Date", cls: "muted" }, { label: "Song" }, { label: "Artist" }, { label: "Note", cls: "muted" }], debutRows, limitOf("debuts", 10),
         (r) => ({ title: r[1].h, sub: [r[0].h, esc(r[2].s), r[3].h] })) : '<p class="muted" style="margin:0">No songs marked as a live debut on setlist.fm yet.</p>');
   }
 
@@ -1996,7 +2000,7 @@
     render(); window.scrollTo(0, h.scroll || 0);
   };
   const go = (fn) => {
-    document.body.classList.remove("fs-open");
+    document.body.classList.remove("fs-open"); fsOpen = null;
     if (useHistory) history.replaceState(snap(depth()), ""); else stack.push(snap(depth()));
     fn();
     if (useHistory) history.pushState(snap(depth() + 1), "");
@@ -2023,7 +2027,12 @@
     const t = e.target.closest('button, [role="button"]');
     if (!t) return;
     const d = t.dataset;
-    if (d.fs) { document.body.classList.toggle("fs-open", d.fs === "open"); return; }
+    if (d.fs) {
+      fsOpen = d.fs === "close" ? null : d.fs;
+      document.body.classList.toggle("fs-open", !!fsOpen);
+      app.querySelectorAll(".fsheet").forEach((el) => el.classList.toggle("open", el.dataset.sheet === fsOpen));
+      return;
+    }
     if (d.unset && d.unset.startsWith("sort:")) { delete state.sorts[d.unset.slice(5)]; render(); return; }
     if (d.unset) { const k = d.unset; state[k] = typeof state[k] === "boolean" ? false : ""; if (k === "venueCountry") state.venueCity = ""; state.limits = {}; render(); return; }
     if (d.tab) {
