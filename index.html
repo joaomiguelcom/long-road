@@ -1005,10 +1005,7 @@
     const topArtist = artists[0];
     const span = topArtist ? artistSpan(topArtist.key) : null;
     const maxYear = Math.max(...byYear.map((y) => y.count));
-    const yearsTop = byYear.slice().sort((a, b) => b.count - a.count)[0];
     const homeAway = artists.filter((a) => homeAwaySet.has(a.key));
-    const okSong = (s) => !s.tape && s.name;
-    const longest = concerts.reduce((b, c) => { const n = (c.songs || []).filter(okSong).length; return n > b.n ? { c, n } : b; }, { c: null, n: 0 });
     const onceArtists = artists.filter((a) => a.count === 1).length;
     const daysCovered = new Set(concerts.map((c) => c.date.slice(5))).size;
     // straight-line distance from home (Porto)
@@ -1041,15 +1038,12 @@
       "</div></section>" +
       onThisDay() +
       '<section class="card fun-card" aria-labelledby="h-fun"><h2 id="h-fun">Fun facts</h2><div class="grid fun-grid" style="--min:240px">' +
-        (topSong ? fun("Most heard song live", esc(topSong.name), esc(topSong.artist) + " · " + topSong.count + " times", sattr(topSong.key)) : "") +
         (pjSong && pjSong !== topSong ? fun("Top Pearl Jam song live", esc(pjSong.name), pjSong.count + " times", fattr("song", pjSong.artist + "||" + pjSong.name)) : "") +
-        (yearsTop ? fun("Busiest year", yearsTop.key, yearsTop.count + " concerts", yrAttr(yearsTop.key)) : "") +
         (byMonth[0] ? fun("Busiest month", new Date(byMonth[0].key + "-15").toLocaleDateString("en-GB", { month: "long", year: "numeric" }), byMonth[0].count + " concerts", fattr("month", byMonth[0].key)) : "") +
         (best.len > 1 ? fun("Longest streak", best.len + " nights in a row", fmtDate(best.start) + " to " + fmtDate(best.end), fattr("range", best.start + "|" + best.end)) : "") +
         (topDay ? fun("Most concerts in one day", topDay.count, fmtDate(topDay.key), fattr("day", topDay.key)) : "") +
         (weekdays[0] ? fun("Favourite night out", weekdays[0].key, weekdays[0].count + " concerts", fattr("weekday", weekdays[0].key)) : "") +
         (gap.days ? fun("Longest break", gap.days + " days", fmtDate(gap.from) + " to " + fmtDate(gap.to), fattr("range", gap.from + "|" + gap.to)) : "") +
-        (longest.c ? fun("Longest setlist", longest.n + " songs", esc(longest.c.artist) + " · " + fmtDate(longest.c.date), openAttr(longest.c)) : "") +
         (artists.length ? fun("One and done", Math.round(onceArtists / artists.length * 100) + "%", fmtN(onceArtists) + " of " + fmtN(artists.length) + " artists seen only once", tabAttr("artists")) : "") +
         (furthest.c ? fun("Furthest from home", fmtN(Math.round(furthest.k)) + " km", esc(furthest.c.artist) + " · " + esc(furthest.c.city) + ", " + fmtDate(furthest.c.date).slice(-4), openAttr(furthest.c)) : "") +
         fun("Calendar coverage", daysCovered + " of 366", (366 - daysCovered) + " days still without a concert") +
@@ -1057,7 +1051,6 @@
         (homeAway.length ? fun("Home and away", plural(homeAway.length, "artist", "artists"), "Seen in Portugal and abroad", ' data-aset="homeAway"') : "") +
         (cityAbroad ? fun("Favourite city abroad", esc(cityAbroad.key), plural(cityAbroad.count, "concert", "concerts") + " · " + fmtN(abroad.length) + " outside Portugal", fattr("city", cityAbroad.key)) : "") +
         (reunion ? fun("Longest wait to return", esc(reunion.artist), Math.floor(reunion.days / 365.25) + " years · " + reunion.from.slice(0, 4) + " to " + reunion.to.slice(0, 4), aattr(reunion.artist)) : "") +
-        (songs.length ? fun("One-time songs", fmtN(heardOnce), "Songs you only heard live once", tabAttr("songs")) : "") +
       "</div></section>" +
       milestones() + about();
   }
