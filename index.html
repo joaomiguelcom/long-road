@@ -1193,11 +1193,11 @@
     if (state.artist) return artistPage(state.artist);
     const q = state.artistQ.trim().toLowerCase();
     const list = artists.filter((a) => (!q || a.key.toLowerCase().includes(q)) && (!state.shelfOnly || onShelf(a.key)) && (state.artistSet !== "homeAway" || homeAwaySet.has(a.key)));
-    const mark = (k) => onShelf(k) ? ' <span class="on-shelf" title="On the record shelf">' + VINYL(14) + "</span>" : "";
+    const mark = (k) => onShelf(k) ? ' <span class="on-shelf" title="On my record shelf">' + VINYL(14) + "</span>" : "";
     const rows = list.map((a) => { const s = artistSpan(a.key); return [
       cell(String(a.rank), a.rank), cell(artistBtn(a.key) + mark(a.key), a.key), cell(String(a.count), a.count),
       cell(fmtDate(s.first), s.first), cell(fmtDate(s.last), s.last)]; });
-    const toggle = shelf.size ? '<button type="button" class="toggle' + (state.shelfOnly ? " on" : "") + '" data-shelf="' + (state.shelfOnly ? "0" : "1") + '" aria-pressed="' + !!state.shelfOnly + '">' + VINYL(14) + " On the shelf</button>" : "";
+    const toggle = shelf.size ? '<button type="button" class="toggle' + (state.shelfOnly ? " on" : "") + '" data-shelf="' + (state.shelfOnly ? "0" : "1") + '" aria-pressed="' + !!state.shelfOnly + '">' + VINYL(14) + " On my shelf</button>" : "";
     const clearA = clearAll(state.shelfOnly || state.artistQ || state.artistSet, "artists");
     const setChip = state.artistSet === "homeAway" ? '<button type="button" class="toggle on" data-aset="" aria-label="Show all artists">Seen in Portugal and abroad ×</button>' : "";
     return '<div class="list-head"><div class="list-title"><h2>' + plural(list.length, "artist", "artists") + "</h2>" + setChip + "</div>" + searchBox("aq", "Search artist", "Search artist", state.artistQ) + "</div>" +
@@ -1210,7 +1210,7 @@
     const recs = onShelf(name);
     if (!recs) return "";
     const list = recs.slice().sort((a, b) => (a.year || 9999) - (b.year || 9999));
-    return '<section class="card"><div class="card-head"><h2>On the shelf</h2><a class="link" href="https://www.discogs.com/user/' + esc(DISCOGS.user) + '/collection" target="_blank" rel="noopener">Discogs</a></div>' +
+    return '<section class="card"><div class="card-head"><h2>On my shelf</h2><a class="link" href="https://www.discogs.com/user/' + esc(DISCOGS.user) + '/collection" target="_blank" rel="noopener">Discogs</a></div>' +
       '<ul class="records">' + list.map((r) => '<li><a href="' + esc(r.url) + '" target="_blank" rel="noopener">' + VINYL(18) + '<span><span class="r-title">' + esc(r.title) + '</span><span class="muted">' + [r.year, r.format.split(", ").filter((f) => f !== "All Media").join(", ")].filter(Boolean).map(esc).join(" · ") + "</span></span></a></li>").join("") + "</ul></section>";
   }
 
