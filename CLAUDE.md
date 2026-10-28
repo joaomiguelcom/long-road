@@ -6,6 +6,8 @@ Personal concert archive of João Miguel (setlist.fm user `ojoaomiguel`). UI tex
 
 The setlist.fm API has no festival field. Festivals live in `FESTIVAL_EDITIONS` in `index.html`.
 
+0. Check that the export worked: the latest scheduled or manual run of `.github/workflows/update.yml` (`gh run list --workflow update.yml` or the Actions API) must be `success` and from today. If it failed or did not run, tell João in the project thread what failed (step name and the error line from the log) and fix it if the fix is in the repo; never print the API key. If it is fine, say nothing about it.
+   Then save the backup outside GitHub: zip `data/concerts.json`, `data/concerts.csv`, `extra.js` and `upcoming.js` into `/mnt/project-files/long-road/backup/long-road-YYYY.zip` (YYYY = current year; overwrite this year's file, keep the other years).
 1. `git pull`, then run `node tools/festival-check.js`. It prints the concerts that are not in any festival edition and were not reviewed yet, grouped by date + venue. If it prints `[]`, stop: nothing to do.
 2. For each group, search the web to find out whether that date at that venue was part of a festival. Look for the festival's own site, the line-up, news and setlist.fm's festival pages.
    - NEVER decide from the venue alone. Venues like Coliseu, Alfândega or Serralves host normal concerts too.

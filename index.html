@@ -429,6 +429,8 @@
 (function () {
   "use strict";
   const DATA = window.LONG_ROAD;
+  // the published data.js leaves out empty fields and the default set name (tools/slim-data.cjs): put back what the app reads
+  if (DATA) for (const c of DATA.concerts) { c.songs = c.songs || []; for (const s of c.songs) { s.name = s.name || ""; s.set = s.set || "Main"; } }
   const app = document.getElementById("app");
   const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const fmtN = (n) => n.toLocaleString("en-GB");
