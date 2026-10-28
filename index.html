@@ -356,6 +356,8 @@
     .th-btn:hover { color: var(--text); }
     .title-link:hover { color: var(--accent); }
     select:hover { border-color: var(--accent); }
+    /* the open list is drawn by the browser; Chrome and Edge on Windows honour option padding (macOS menus ignore it) */
+    select option { padding: 6px 14px; }
     .barbtn.static:hover .fill { background: var(--accent); }
     .barbtn.static:hover .row span:first-child { color: inherit; }
     .ms-item:hover { background: var(--line); }
