@@ -1,6 +1,7 @@
 // Builds concerts.ics from upcoming.js: a calendar João subscribes to once (webcal://), so booked shows
 // show up in his phone's calendar. Shows with a `time` get a start time (Lisbon time, 2h30 long);
-// the others are all-day events. `location` overrides `place` (festivals list the edition as the place);
+// the others are all-day events. Shows with a `location` are festival days: one all-day event per edition (`place`),
+// with the line-up day by day;
 // venues in venue-geo.json get a map pin. Past shows stay in upcoming.js for two years so their events keep the time.
 // Usage: node tools/calendar.cjs <site dir>
 const fs = require("fs");
@@ -27,6 +28,22 @@ const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "
 const fmtDate = (d) => +d.slice(8) + " " + MONTHS[+d.slice(5, 7) - 1] + " " + d.slice(0, 4);
 const songs = (c) => c.songs.filter((x) => !x.tape && x.name);
 const isMilestone = (n) => n >= 1000 ? n % 250 === 0 : n % 100 === 0;
+
+// shared by single shows and festivals: is it in the archive yet, its concert number, times seeing the artist, days at the venue
+const doneOf = (s) => s.date < today ? seen.get(s.date + "|" + plain(s.artist)) : null;
+const pendingBefore = (s, i) => shows.filter((x, j) => (x.date < s.date || (x.date === s.date && j < i)) && !(x.date < today && seen.has(x.date + "|" + plain(x.artist))));
+const numberOf = (s, i) => { const d = doneOf(s); return d ? pos.get(d.id) : archive.filter((c) => c.date < s.date).length + pendingBefore(s, i).length + 1; };
+const timesOf = (s) => archive.filter((c) => c.date < s.date && plain(c.artist) === plain(s.artist)).length + 1;
+const venueOf = (s) => {
+  // setlist.fm writes rooms as "Casa da Música (Sala 2)"; the archive counts the room as the building
+  const where = (s.location || s.place || "").split(", "), room = where[0].replace(/ \(.*\)$/, "");
+  return archive.some((c) => plain(c.venue) === plain(where[0])) ? venueName(where[0], where[1]) : venueName(room, where[1]);
+};
+const nightsAt = (s, i, venue) => {
+  const placeOf = (x) => { const w = (x.location || x.place || "").split(", ")[0]; return plain(w.replace(/ \(.*\)$/, "")) === plain(venue) || plain(w) === plain(venue); };
+  const dates = new Set(archive.filter((c) => c.date < s.date && plain(c.venue) === plain(venue)).map((c) => c.date).concat(pendingBefore(s, i).filter(placeOf).map((x) => x.date)));
+  return dates.size + (dates.has(s.date) ? 0 : 1);
+};
 
 // the text under the event: what the archive says about this artist and venue before the show,
 // and how the night went once the export has it
@@ -105,8 +122,35 @@ const lines = [
 ];
 // shows older than two years leave the calendar even if upcoming.js still has them
 const cutoff = new Date(Date.now() - 2 * 365.25 * 864e5).toISOString().slice(0, 10);
+// a festival is one event for the whole edition, not one per band: shows with a `location` share their `place` (the edition)
+const WD = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const dayLabel = (d) => WD[new Date(d + "T12:00:00Z").getUTCDay()] + " " + +d.slice(8) + " " + MONTHS[+d.slice(5, 7) - 1];
+const editions = new Map();
+shows.forEach((s, i) => { if (s.location && s.date >= cutoff) { const k = s.place; if (!editions.has(k)) editions.set(k, []); editions.get(k).push({ s, i }); } });
+for (const [edition, items] of editions) {
+  const first = items[0].s, last = items[items.length - 1].s, days = [...new Set(items.map((x) => x.s.date))];
+  const nums = items.map((x) => numberOf(x.s, x.i)), allDone = items.every((x) => doneOf(x.s));
+  const range = nums.length === 1 ? "#" + fmtN(nums[0]) : nums.length === 2 ? "#" + fmtN(nums[0]) + " and #" + fmtN(nums[1]) : "#" + fmtN(nums[0]) + "–#" + fmtN(nums[nums.length - 1]);
+  const blocks = [[(allDone ? (nums.length > 1 ? "Concerts " : "Concert ") : nums.length > 1 ? "These will be concerts " : "This will be concert ") + range +
+    (nums.some(isMilestone) ? " (a milestone!)" : "") + " • " + items.length + (items.length === 1 ? " band" : " bands")]];
+  blocks.push(days.map((d) => dayLabel(d) + ": " + items.filter((x) => x.s.date === d).map((x) => { const t = timesOf(x.s); return x.s.artist + (t === 1 ? " (first time!)" : " (" + ordinal(t) + " time)"); }).join(", ")));
+  const venue = venueOf(first);
+  if (venue) {
+    const n = days.map((d) => nightsAt(items.find((x) => x.s.date === d).s, items.find((x) => x.s.date === d).i, venue));
+    blocks.push([n.length === 1 ? "Your " + ordinal(n[0]) + " day at " + venue : "Your " + ordinal(n[0]) + (n.length === 2 ? " and " : " to ") + ordinal(n[n.length - 1]) + " days at " + venue]);
+  }
+  if (allDone) blocks.push([SITE + "#t=festivals&fest=" + encodeURIComponent(edition.replace(/ \d{4}$/, ""))]);
+  const ev = ["BEGIN:VEVENT", "UID:" + slug(edition) + "@longroad.joaomiguel.com", "DTSTAMP:" + stamp, "SUMMARY:" + esc(edition),
+    "DTSTART;VALUE=DATE:" + ymd(first.date), "DTEND;VALUE=DATE:" + ymd(nextDay(last.date)), "TRANSP:TRANSPARENT"];
+  const name = first.location.split(", ")[0], g = geo[name];
+  if (g) ev.push("LOCATION:" + esc(name + "\n" + g.address), 'X-APPLE-STRUCTURED-LOCATION;VALUE=URI;X-ADDRESS="' + g.address.replace(/"/g, "") + '";X-APPLE-RADIUS=300;X-TITLE="' + name.replace(/"/g, "") + '":geo:' + g.lat + "," + g.lng);
+  else ev.push("LOCATION:" + esc(first.location));
+  ev.push("DESCRIPTION:" + esc(blocks.map((b) => b.join("\n")).join("\n\n")), "END:VEVENT");
+  lines.push(...ev);
+}
+
 shows.forEach((s, i) => {
-  if (s.date < cutoff) return;
+  if (s.date < cutoff || s.location) return;
   const ev = ["BEGIN:VEVENT", "UID:" + s.date + "-" + slug(s.artist) + "@longroad.joaomiguel.com", "DTSTAMP:" + stamp, "SUMMARY:" + esc(s.artist)];
   if (s.time) {
     const [h, m] = s.time.split(":").map(Number), end = h * 60 + m + 150;
@@ -123,7 +167,6 @@ shows.forEach((s, i) => {
     ev.push('X-APPLE-STRUCTURED-LOCATION;VALUE=URI;X-ADDRESS="' + g.address.replace(/"/g, "") + '";X-APPLE-RADIUS=100;X-TITLE="' + name.replace(/"/g, "") + '":geo:' + g.lat + "," + g.lng);
   } else ev.push("LOCATION:" + esc(where));
   const blocks = describe(s, i).filter((b) => b.length);
-  if (s.location && s.place) blocks[0].unshift(s.place);
   ev.push("DESCRIPTION:" + esc(blocks.map((b) => b.join("\n")).join("\n\n")));
   ev.push("END:VEVENT");
   lines.push(...ev);

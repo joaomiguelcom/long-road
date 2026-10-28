@@ -4,10 +4,34 @@
 // Past shows stay for 2 years (the calendar keeps their time and links them to the app).
 // Optional: "time" (HH:MM, Lisbon) when the venue or ticket page publishes it, and "location" when the place
 // is not a venue (festivals); both feed the calendar (tools/calendar.cjs).
+// "test": true marks past shows added only to try the calendar (João, 2026-10-28); remove them when he is done.
 window.LONG_ROAD_UPCOMING = {
   "updatedAt": "2026-10-23",
   "source": "https://www.setlist.fm/attended/ojoaomiguel",
   "shows": [
+    {
+      "date": "2026-08-12",
+      "artist": "Wet Leg",
+      "place": "Festival Paredes de Coura 2026",
+      "location": "Praia Fluvial do Taboão, Paredes de Coura, Portugal",
+      "url": "https://www.setlist.fm/setlist/wet-leg/2026/praia-fluvial-do-taboao-paredes-de-coura-portugal-3376d0bd.html",
+      "test": true
+    },
+    {
+      "date": "2026-08-14",
+      "artist": "Bloc Party",
+      "place": "Festival Paredes de Coura 2026",
+      "location": "Praia Fluvial do Taboão, Paredes de Coura, Portugal",
+      "url": "https://www.setlist.fm/setlist/bloc-party/2026/praia-fluvial-do-taboao-paredes-de-coura-portugal-3b76d0a4.html",
+      "test": true
+    },
+    {
+      "date": "2026-10-12",
+      "artist": "Marquise",
+      "place": "Coliseu do Porto, Porto, Portugal",
+      "url": "https://www.setlist.fm/setlist/marquise/2026/coliseu-porto-ageas-porto-portugal-37c814b.html",
+      "test": true
+    },
     {
       "date": "2026-11-07",
       "artist": "Gurriers",
