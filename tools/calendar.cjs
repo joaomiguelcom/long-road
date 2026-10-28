@@ -98,9 +98,11 @@ const esc = (s) => String(s).replace(/\\/g, "\\\\").replace(/;/g, "\;").replace(
 // lines longer than 75 octets continue on the next line after a space (RFC 5545)
 // the map pin: same shape as the events Apple's own Calendar exports. The line is not folded (iOS drops a folded one)
 // and the visible text leaves out the postcode, which the phone took for a phone number
+const ascii = (t) => String(t).normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 const placeLines = (name, g, radius) => [
   "LOCATION:" + esc(name + "\n" + g.address.replace(/\s*\d{4}-\d{3}\s*/, " ").replace(/^.*?,\s*/, (m) => g.address.startsWith(name) ? "" : m).trim()),
-  "X-APPLE-STRUCTURED-LOCATION;VALUE=URI;X-ADDRESS=" + esc(g.address) + ";X-APPLE-RADIUS=" + radius + ";X-APPLE-REFERENCEFRAME=1;X-TITLE=" + esc(name) + ":geo:" + g.lat + "," + g.lng,
+  // iOS drops the pin when these two values have accents (Casa da Música, Algés), so they go without them
+  "X-APPLE-STRUCTURED-LOCATION;VALUE=URI;X-ADDRESS=" + esc(ascii(g.address)) + ";X-APPLE-RADIUS=" + radius + ";X-APPLE-REFERENCEFRAME=1;X-TITLE=" + esc(ascii(name)) + ":geo:" + g.lat + "," + g.lng,
 ];
 const fold = (line) => {
   if (line.startsWith("X-APPLE-STRUCTURED-LOCATION")) return line;
