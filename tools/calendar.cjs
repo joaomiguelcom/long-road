@@ -49,7 +49,7 @@ function describe(s, i) {
   // its number: the archive so far plus the booked shows before it that are not in the archive yet
   const pending = shows.filter((x, j) => (x.date < s.date || (x.date === s.date && j < i)) && !(x.date < today && seen.has(x.date + "|" + plain(x.artist))));
   const n = before.length + pending.length + 1;
-  // three blocks with a blank line between them: the headline, the history, the link
+  // blocks with a blank line between them: the headline, first and last time, most heard songs, the venue, the link
   const head = "This will be concert #" + fmtN(n) + (isMilestone(n) ? " (a milestone!)" : "") + " • " +
     (mine.length ? ordinal(mine.length + 1) + " time seeing " + s.artist : "First time seeing " + s.artist + " live!");
   out.push([head]);
@@ -62,13 +62,13 @@ function describe(s, i) {
     const count = new Map();
     for (const c of mine) for (const x of songs(c)) count.set(x.name, (count.get(x.name) || 0) + 1);
     const top = [...count].filter((x) => x[1] > 1).sort((a, b) => b[1] - a[1]).slice(0, 3);
-    if (top.length) hist.push("Most heard live: " + top.map(([k, v]) => k + " (" + v + ")").join(", "));
+    if (top.length) out.push(["Most heard live: " + top.map(([k, v]) => k + " (" + v + ")").join(", ")]);
   }
   if (venue) {
     const placeOf = (x) => { const w = (x.location || x.place || "").split(", ")[0]; return plain(w.replace(/ \(.*\)$/, "")) === plain(venue) || plain(w) === plain(venue); };
     const dates = new Set(before.filter((c) => plain(c.venue) === plain(venue)).map((c) => c.date).concat(pending.filter(placeOf).map((x) => x.date)));
     const nights = dates.size + (dates.has(s.date) ? 0 : 1);
-    hist.push(nights === 1 ? "First time at " + venue : "Your " + ordinal(nights) + " " + (s.location ? "day" : "night") + " at " + venue);
+    out.push([nights === 1 ? "First time at " + venue : "Your " + ordinal(nights) + " " + (s.location ? "day" : "night") + " at " + venue]);
   }
   if (s.url) out.push([s.url]);
   return out;
