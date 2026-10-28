@@ -83,6 +83,8 @@
   nav button[aria-current="page"] { color: var(--text); border-bottom-color: var(--accent); font-weight: 600; }
   main.wrap { padding-top: 18px; padding-bottom: 48px; display: flex; flex-direction: column; gap: 24px; }
   .grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--min, 220px)), 1fr)); }
+  /* ten fun facts: two rows of five on wide screens (João, 2026-10-28) */
+  @media (min-width: 1100px) { .fun-card .fun-grid { grid-template-columns: repeat(5, 1fr); } }
   .card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 20px; min-width: 0; }
   .card h2 { margin: 0 0 14px; font: 500 22px/1.2 var(--display); }
   .card-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 0 12px; margin-bottom: 14px; }
@@ -375,7 +377,11 @@
     .fs-panel { display: flex; flex-direction: column; gap: 14px; position: absolute; left: 0; right: 0; bottom: 0; max-height: 85vh; overflow-y: auto; background: var(--surface); border-top: 1px solid var(--line-2); border-radius: 20px 20px 0 0; padding: 10px 16px calc(16px + env(safe-area-inset-bottom)); }
     .fs-grab { display: block; width: 36px; height: 4px; border-radius: 2px; background: var(--line-2); align-self: center; }
     .fs-head { display: block; font: 600 20px/1.2 var(--display); }
-    .fs-done { display: block; background: var(--accent); color: var(--on-accent); border: 0; border-radius: 10px; padding: 13px; font: inherit; font-size: 16px; font-weight: 600; cursor: pointer; }
+    .fs-head { display: flex; justify-content: space-between; align-items: baseline; }
+    .fs-head .link { font: 500 14px/1 Inter, system-ui, sans-serif; padding: 4px 0; }
+    .fs-done { display: block; background: rgba(242,165,65,.12); color: var(--accent); border: 1px solid rgba(242,165,65,.35); border-radius: 10px; padding: 11px; font: inherit; font-size: 15px; font-weight: 600; cursor: pointer; }
+    .fs-panel .icon-chip { display: none; }
+    .fs-panel .fs-dir { margin-top: -4px; } .fs-panel .fs-dir button { padding: 6px 0; font-size: 13px; }
     .fs-panel .seg { display: flex; } .fs-panel .seg button { flex: 1; padding: 8px 0; font-size: 14px; }
     .fs-panel .mchip { display: flex; align-items: center; gap: 10px; }
     .fs-panel .qpick, .fs-panel .qpick.on { flex: 1; display: flex; justify-content: flex-end; width: 100%; background: none; border: 0; border-top: 1px solid var(--line); border-radius: 0; padding: 12px 0 2px; font-size: 15px; color: var(--muted); }
@@ -684,7 +690,6 @@
   const countries = countBy(concerts, (c) => c.country);
   const byYear = countBy(concerts, (c) => c.date.slice(0, 4)).sort((a, b) => a.key.localeCompare(b.key));
   const byMonth = countBy(concerts, (c) => c.date.slice(0, 7));
-  const byDay = countBy(concerts, (c) => c.date);
   // artist with the longest gap between two consecutive shows
   const reunion = (() => {
     const last = new Map(); let best = null;
@@ -824,14 +829,18 @@
   // Phones (João, 2026-10-28): the filters of a list live in a panel that slides up from the bottom (body.fs-open).
   // A Filters button sits in the search box and the active filters show as chips under it; desktop keeps the row of chips.
   const SLIDERS = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>';
+  const fsCount = (scope, n) => n + (state.sorts[scope] ? 1 : 0);
   const fsBtn = (n, label) => '<button type="button" class="fbtn" data-fs="open" aria-label="' + (label || "Filters") + (n ? ", " + n + " on" : "") + '">' + SLIDERS + (label || "Filters") + (n ? '<span class="badge">' + n + "</span>" : "") + "</button>";
   // chips: [label, state key]; × clears that one filter
-  const fsChips = (scope, chips) => chips.length ? '<div class="fchips">' + chips.map(([label, key]) => '<button type="button" class="fchip" data-unset="' + key + '" aria-label="Remove ' + esc(label) + '">' + esc(label) +
+  const SORT_LABELS = {};
+  const sortChip = (scope) => { const st = state.sorts[scope]; return st ? [[(SORT_LABELS[scope] || [])[st.col] || "Sorted", st.dir > 0 ? " ↑" : " ↓"].join(""), "sort:" + scope] : null; };
+  const fsChips = (scope, chips) => (chips = sortChip(scope) ? chips.concat([sortChip(scope)]) : chips) && chips.length ? '<div class="fchips">' + chips.map(([label, key]) => '<button type="button" class="fchip" data-unset="' + key + '" aria-label="Remove ' + esc(label) + '">' + esc(label) +
     '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>').join("") +
     (chips.length > 1 ? '<button type="button" class="link" data-clear="' + scope + '">Clear all</button>' : "") + "</div>" : "";
   // on desktop the panel is the usual row (.fs-panel is display: contents there)
-  const fsSheet = (inner, done, head, cls) => '<div class="quick fsheet' + (cls ? " " + cls : "") + '"><button type="button" class="fs-scrim" data-fs="close" tabindex="-1" aria-label="Close"></button><div class="fs-panel" role="dialog" aria-label="' + (head || "Filters") + '">' +
-    '<div class="fs-grab" aria-hidden="true"></div><div class="fs-head">' + (head || "Filters") + "</div>" + inner + (done ? '<button type="button" class="fs-done" data-fs="close">' + done + "</button>" : "") + "</div></div>";
+  // clear: scope of the "Clear all" link shown in the panel's head while anything is set
+  const fsSheet = (inner, done, head, cls, clear) => '<div class="quick fsheet' + (cls ? " " + cls : "") + '"><button type="button" class="fs-scrim" data-fs="close" tabindex="-1" aria-label="Close"></button><div class="fs-panel" role="dialog" aria-label="' + (head || "Filters") + '">' +
+    '<div class="fs-grab" aria-hidden="true"></div><div class="fs-head">' + (head || "Filters") + (clear ? '<button type="button" class="link" data-clear="' + clear + '">Clear all</button>' : "") + "</div>" + inner + (done ? '<button type="button" class="fs-done" data-fs="close">' + done + "</button>" : "") + "</div></div>";
   // lists whose filter row becomes the panel, with the noun for its "Show N …" button
   const SHEETS = { concerts: "concert", artists: "artist", venues: "venue", festivals: "festival", songs: "song" };
   const artistBtn = (name, cls) => '<button type="button" class="' + (cls || "open") + '"' + aattr(name) + ">" + esc(name) + "</button>";
@@ -856,11 +865,14 @@
       return st.dir * r;
     });
     const shown = limit ? rows.slice(0, limit) : rows;
+    SORT_LABELS[id] = cols.map((c) => c.label);
     const sortChips = m ? '<span class="mchip">' + qpick("ms-" + id, "Sort", [["", "Default"]].concat(cols.map((c, i) => c.label === "#" ? null : [String(i), c.label, ' data-num="' + (c.num ? 1 : 0) + '"']).filter(Boolean)),
       st ? String(st.col) : "", "", ' data-sortsel="' + id + '"') +
       (st ? '<button type="button" class="toggle on icon-chip" data-sortdir="' + id + '" aria-label="' + (st.dir > 0 ? "Ascending, switch to descending" : "Descending, switch to ascending") + '">' + (st.dir > 0 ? "↑" : "↓") + "</button>" : "") + "</span>" : "";
     let sortBar = bar ? '<div class="quick">' + bar + sortChips + "</div>" : m ? '<div class="quick msort">' + sortChips + "</div>" : "";
-    if (SHEETS[id] && (bar || m)) sortBar = fsSheet((bar || "") + sortChips, "Show " + plural(rows.length, SHEETS[id], SHEETS[id] + "s"), bar ? "" : "Sort", bar ? "" : "msort");
+    // in the panel the direction is a two-way switch under the sort row, instead of the arrow chip
+    const dirSeg = st ? '<div class="seg fs-dir" role="group" aria-label="Order">' + [[1, "Ascending"], [-1, "Descending"]].map(([v, l]) => '<button type="button" class="' + (st.dir === v ? "on" : "") + '"' + (st.dir === v ? "" : ' data-sortdir="' + id + '"') + ' aria-pressed="' + (st.dir === v) + '">' + l + "</button>").join("") + "</div>" : "";
+    if (SHEETS[id] && (bar || m)) sortBar = fsSheet((bar || "") + sortChips + dirSeg, "Show " + plural(rows.length, SHEETS[id], SHEETS[id] + "s"), bar ? "" : "Sort", bar ? "" : "msort", (bar || "").includes("clear-all") || st ? id : "");
     // a filtered list that ends up empty says so and offers the way back
     if (bar && !rows.length) return sortBar + '<div class="empty empty-filters"><p>Nothing matches these filters.</p><button type="button" class="toggle on" data-clear="' + id + '">Clear filters</button></div>';
     const mlist = m ? '<ul class="mlist">' + shown.map((r) => {
@@ -1073,11 +1085,9 @@
   function overview() {
     const topSong = songs[0];
     const pjSong = songs.find((s) => s.artist === "Pearl Jam");
-    const topDay = byDay[0];
     const topArtist = artists[0];
     const span = topArtist ? artistSpan(topArtist.key) : null;
     const maxYear = Math.max(...byYear.map((y) => y.count));
-    const homeAway = artists.filter((a) => homeAwaySet.has(a.key));
     const onceArtists = artists.filter((a) => a.count === 1).length;
     const daysCovered = new Set(concerts.map((c) => c.date.slice(5))).size;
     // straight-line distance from home (Porto)
@@ -1091,9 +1101,8 @@
       '<section class="grid kpis" aria-label="Summary">' +
         kpi("Concerts", '<span class="accent">' + fmtN(concerts.length) + "</span>", "", tabAttr("concerts")) +
         kpi("Different artists", fmtN(artists.length), "", tabAttr("artists")) +
-        kpi("Songs heard live", fmtN(songsHeard), "", tabAttr("songs")) +
         kpi("Venues", fmtN(venues.length), fmtN(cities.length) + " cities · " + plural(countries.length, "country", "countries"), tabAttr("venues")) +
-        kpi("Festivals", fmtN(festivals.length), fmtN(festivals.reduce((n, f) => n + f.count, 0)) + " editions · " + fmtN(festivals.reduce((n, f) => n + f.concerts, 0)) + " concerts", tabAttr("festivals")) +
+        kpi("Festivals", fmtN(festivals.length), fmtN(festivals.reduce((n, f) => n + f.count, 0)) + " editions", tabAttr("festivals")) +
       "</section>" +
       '<section class="card"><div class="card-head"><h2>Most seen artists</h2><button class="link" data-tab="artists">See all</button></div>' +
         bars(artists.slice(0, 10), (a) => esc(a.key), (a) => aattr(a.key)) + "</section>" +
@@ -1112,14 +1121,12 @@
         (pjSong && pjSong !== topSong ? fun("Top Pearl Jam song live", esc(pjSong.name), pjSong.count + " times", fattr("song", pjSong.artist + "||" + pjSong.name)) : "") +
         (byMonth[0] ? fun("Busiest month", new Date(byMonth[0].key + "-15").toLocaleDateString("en-GB", { month: "long", year: "numeric" }), byMonth[0].count + " concerts", fattr("month", byMonth[0].key)) : "") +
         (best.len > 1 ? fun("Longest streak", best.len + " nights in a row", fmtDate(best.start) + " to " + fmtDate(best.end), fattr("range", best.start + "|" + best.end)) : "") +
-        (topDay ? fun("Most concerts in one day", topDay.count, fmtDate(topDay.key), fattr("day", topDay.key)) : "") +
         (weekdays[0] ? fun("Favourite night out", weekdays[0].key, weekdays[0].count + " concerts", fattr("weekday", weekdays[0].key)) : "") +
         (gap.days ? fun("Longest break", gap.days + " days", fmtDate(gap.from) + " to " + fmtDate(gap.to), fattr("range", gap.from + "|" + gap.to)) : "") +
         (artists.length ? fun("One and done", Math.round(onceArtists / artists.length * 100) + "%", fmtN(onceArtists) + " of " + fmtN(artists.length) + " artists seen only once", tabAttr("artists")) : "") +
         (furthest.c ? fun("Furthest from home", fmtN(Math.round(furthest.k)) + " km", esc(furthest.c.artist) + " · " + esc(furthest.c.city) + ", " + fmtDate(furthest.c.date).slice(-4), openAttr(furthest.c)) : "") +
         fun("Calendar coverage", daysCovered + " of 366", (366 - daysCovered) + " days still without a concert") +
         fun("Cities", fmtN(cities.length), esc(cities[0].key) + " leads with " + fmtN(cities[0].count) + " concerts", tabAttr("map")) +
-        (homeAway.length ? fun("Home and away", plural(homeAway.length, "artist", "artists"), "Seen in Portugal and abroad", ' data-aset="homeAway"') : "") +
         (cityAbroad ? fun("Favourite city abroad", esc(cityAbroad.key), plural(cityAbroad.count, "concert", "concerts") + " · " + fmtN(abroad.length) + " outside Portugal", fattr("city", cityAbroad.key)) : "") +
         (reunion ? fun("Longest wait to return", esc(reunion.artist), Math.floor(reunion.days / 365.25) + " years · " + reunion.from.slice(0, 4) + " to " + reunion.to.slice(0, 4), aattr(reunion.artist)) : "") +
       "</div></section>" +
@@ -1167,7 +1174,7 @@
     return '' +
       '<div class="list-head"><div class="list-title"><h2>' + plural(list.length, "concert", "concerts") + "</h2>" +
       (F ? '<span class="chip"><span class="chip-label">' + F.label + "</span><strong>" + esc(F.show(state.filter.v)) + (state.filter.y ? " · " + esc(state.filter.y) : "") + '</strong><button type="button" id="clearf" aria-label="Clear filter"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button></span>' : "") +
-      "</div>" + searchBox("q", "Search concerts", "Search artist, venue, city", state.q, fsBtn(cChips.length)) + fsChips("concerts", cChips) + "</div>" +
+      "</div>" + searchBox("q", "Search concerts", "Search artist, venue, city", state.q, fsBtn(fsCount("concerts", cChips.length))) + fsChips("concerts", cChips) + "</div>" +
       table("concerts", CONCERT_COLS, concertRows(list), limitOf("concerts", 100), concertM, quick);
   }
 
@@ -1256,7 +1263,7 @@
     const clearA = clearAll(state.shelfOnly || state.artistQ || state.artistSet, "artists");
     const setChip = state.artistSet === "homeAway" ? '<button type="button" class="toggle on" data-aset="" aria-label="Show all artists">Seen in Portugal and abroad ×</button>' : "";
     const aChips = state.shelfOnly ? [["On my shelf", "shelfOnly"]] : [];
-    return '<div class="list-head"><div class="list-title"><h2>' + plural(list.length, "artist", "artists") + "</h2>" + setChip + "</div>" + searchBox("aq", "Search artist", "Search artist", state.artistQ, fsBtn(aChips.length)) + fsChips("artists", aChips) + "</div>" +
+    return '<div class="list-head"><div class="list-title"><h2>' + plural(list.length, "artist", "artists") + "</h2>" + setChip + "</div>" + searchBox("aq", "Search artist", "Search artist", state.artistQ, fsBtn(fsCount("artists", aChips.length))) + fsChips("artists", aChips) + "</div>" +
       table("artists", [{ label: "#", num: true, cls: "num" }, { label: "Artist" }, { label: "Concerts", num: true, cls: "num" }, { label: "First seen", cls: "muted" }, { label: "Last seen", cls: "muted" }], rows, limitOf("artists", 100),
         (r) => ({ rank: r[0].h, title: r[1].h, sub: [r[3].s.slice(0, 4) === r[4].s.slice(0, 4) ? r[3].s.slice(0, 4) : r[3].s.slice(0, 4) + " – " + r[4].s.slice(0, 4)], value: r[2].h, unit: r[2].s === 1 ? "concert" : "concerts" }), toggle + clearA);
   }
@@ -1385,7 +1392,7 @@
     const vCountries = countBy(venues, (v) => v.country);
     const citySel = qpick("vcsel", "Country", [["", "All countries"]].concat(vCountries.map((x) => [x.key, x.key + " (" + x.count + ")"])), state.venueCountry) + qpick("vsel", "City", [["", "All cities"]].concat(vCities.map((x) => [x.key, x.key + " (" + x.count + ")"])), state.venueCity) + clearAll(state.venueCountry || state.venueCity || state.venueQ, "venues");
     const vChips = [state.venueCountry ? [state.venueCountry, "venueCountry"] : null, state.venueCity ? [state.venueCity, "venueCity"] : null].filter(Boolean);
-    return '<div class="list-head"><div class="list-title"><h2>' + plural(list.length, "venue", "venues") + "</h2></div>" + searchBox("vq", "Search venue", "Search venue or city", state.venueQ, fsBtn(vChips.length)) + fsChips("venues", vChips) + "</div>" +
+    return '<div class="list-head"><div class="list-title"><h2>' + plural(list.length, "venue", "venues") + "</h2></div>" + searchBox("vq", "Search venue", "Search venue or city", state.venueQ, fsBtn(fsCount("venues", vChips.length))) + fsChips("venues", vChips) + "</div>" +
       table("venues", [{ label: "#", num: true, cls: "num" }, { label: "Venue" }, { label: "City", cls: "muted" }, { label: "First visit", cls: "muted" }, { label: "Concerts", num: true, cls: "num" }], rows, 0,
         (r) => ({ rank: r[0].h, title: r[1].h, sub: [r[2].h, "since " + r[3].s.slice(0, 4)], value: r[4].h, unit: r[4].s === 1 ? "concert" : "concerts" }), citySel) +
       '<p class="tag list-note">Festival concerts are not counted here.</p>';
@@ -1457,7 +1464,7 @@
     const fChips = state.festCountry ? [[state.festCountry, "festCountry"]] : [];
     const rows = fl.map((f) => [cell(String(f.rank), f.rank), cell('<button class="open"' + fesattr(f.name) + ">" + esc(f.name) + "</button>", f.name), cell(String(f.count), f.count), cell(String(f.concerts), f.concerts), cell(f.years.join(", "), f.years[0])]);
     fl.forEach((f, i) => { rows[i][4].h = festStrip(f); });
-    return '<div class="list-head"><div class="list-title"><h2>' + plural(fl.length, "festival", "festivals") + "</h2></div>" + searchBox("fq", "Search festival", "Search festival", state.festQ, fsBtn(fChips.length)) + fsChips("festivals", fChips) + "</div>" +
+    return '<div class="list-head"><div class="list-title"><h2>' + plural(fl.length, "festival", "festivals") + "</h2></div>" + searchBox("fq", "Search festival", "Search festival", state.festQ, fsBtn(fsCount("festivals", fChips.length))) + fsChips("festivals", fChips) + "</div>" +
       table("festivals", [{ label: "#", num: true, cls: "num" }, { label: "Festival" }, { label: "Editions", num: true, cls: "num" }, { label: "Concerts", num: true, cls: "num" }, { label: "Years", cls: "muted" }], rows, 0,
         (r) => ({ rank: r[0].h, title: r[1].h, sub: [plural(r[2].s, "edition", "editions")], tag: r[4].h, value: r[3].h, unit: r[3].s === 1 ? "concert" : "concerts" }), bar) +
       '<p class="tag list-note">Each strip runs from ' + FS_FROM + " to " + FS_TO + "; bar height is concerts seen at that edition.</p>";
@@ -1563,7 +1570,7 @@
     const rows = list.map((s) => [cell(String(s.rank), s.rank), cell('<button type="button" class="open"' + sattr(s.key) + ">" + esc(s.name) + "</button>", s.name), cell(songArtist(s), seen(s.artist) ? s.artist : [...s.by][0]), cell(String(s.count), s.count)]);
     const coverRows = covers.map((x) => [cell(esc(x.name), x.name), cell(esc(x.original), x.original), cell(artistBtn(x.artist, "open muted-btn"), x.artist), cell(String(x.count), x.count)]);
     const debutRows = debuts.slice().sort((a, b) => b.date.localeCompare(a.date)).map((d) => [cell('<button type="button" class="open muted-btn" data-open="' + esc(d.id) + '">' + fmtDate(d.date) + "</button>", d.date), cell(esc(d.name), d.name), cell(esc(d.artist), d.artist), cell(esc(d.info), d.info)]);
-    return '<div class="list-head"><div class="list-title"><h2>Songs you heard most</h2><span class="muted">' + fmtN(songs.length) + " different songs, " + fmtN(songsHeard) + " in total, " + fmtN(heardOnce) + " heard only once</span>" + "</div>" + searchBox("sq", "Search songs", "Search song or artist", state.songQ, fsBtn(0, "Sort")) + "</div>" +
+    return '<div class="list-head"><div class="list-title"><h2>Songs you heard most</h2><span class="muted">' + fmtN(songs.length) + " different songs, " + fmtN(songsHeard) + " in total, " + fmtN(heardOnce) + " heard only once</span>" + "</div>" + searchBox("sq", "Search songs", "Search song or artist", state.songQ, fsBtn(fsCount("songs", 0), "Sort")) + fsChips("songs", []) + "</div>" +
       (q && !list.length ? '<div class="empty">No songs match.</div>' : "") +
       table("songs", [{ label: "#", num: true, cls: "num" }, { label: "Song" }, { label: "Artist" }, { label: "Times", num: true, cls: "num" }], rows, limitOf("songs", 25),
         (r) => ({ rank: r[0].h, title: r[1].h, sub: [r[2].h], value: r[3].h, unit: r[3].s === 1 ? "time" : "times" })) +
@@ -1840,7 +1847,7 @@
     if (state.mapYears && !mOpts.some((o) => o[0] === state.mapYears)) mOpts.splice(1, 0, [state.mapYears, state.mapYears + " (0)"]);
     const mKind = (k, label) => { const none = k && !withCoords.some((c) => okKind(c, k) && okYears(c));
       return '<button type="button" class="' + (state.mapKind === k ? "on" : "") + '" data-mkind="' + k + '" aria-pressed="' + (state.mapKind === k) + '"' + (none && state.mapKind !== k ? " disabled" : "") + ">" + label + "</button>"; };
-    const sel = fsSheet('<div class="seg" role="group" aria-label="Type">' + mKind("", "All") + mKind("shows", "Shows") + mKind("fest", "Festivals") + "</div>" + qpick("msel", "Year", mOpts, state.mapYears) + clearAll(state.mapKind || state.mapYears, "map"), "Show map");
+    const sel = fsSheet('<div class="seg" role="group" aria-label="Type">' + mKind("", "All") + mKind("shows", "Shows") + mKind("fest", "Festivals") + "</div>" + qpick("msel", "Year", mOpts, state.mapYears) + clearAll(state.mapKind || state.mapYears, "map"), "Show map", "", "", state.mapKind || state.mapYears ? "map" : "");
     const mChips = [state.mapKind ? [state.mapKind === "fest" ? "Festivals" : "Shows", "mapKind"] : null, state.mapYears ? [state.mapYears.endsWith("s") ? "The " + state.mapYears : state.mapYears, "mapYears"] : null].filter(Boolean);
     return '<div class="list-head"><div class="list-title"><h2>Map</h2><span class="muted">' + plural(new Set(list.map((c) => c.city)).size, "city", "cities") + " · " + plural(new Set(list.map((c) => c.country)).size, "country", "countries") + "</span></div>" + fsBtn(mChips.length) + fsChips("map", mChips) + "</div>" + sel + '<div id="map" role="region" aria-label="Map of concert cities"></div>' +
       '<p class="tag" style="margin:0">Circles are cities (setlist.fm gives coordinates per city, not per venue). Bigger means more concerts. Click a circle to see its concerts.</p>';
@@ -2017,6 +2024,7 @@
     if (!t) return;
     const d = t.dataset;
     if (d.fs) { document.body.classList.toggle("fs-open", d.fs === "open"); return; }
+    if (d.unset && d.unset.startsWith("sort:")) { delete state.sorts[d.unset.slice(5)]; render(); return; }
     if (d.unset) { const k = d.unset; state[k] = typeof state[k] === "boolean" ? false : ""; if (k === "venueCountry") state.venueCity = ""; state.limits = {}; render(); return; }
     if (d.tab) {
       // a tab's list keeps its scroll position when you come back to it (only the plain list, not a page opened from it)
