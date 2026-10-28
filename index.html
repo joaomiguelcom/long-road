@@ -214,6 +214,12 @@
   .delta { font: 500 14px/1 Inter, system-ui, sans-serif; margin-left: 8px; vertical-align: middle; color: var(--muted); white-space: nowrap; }
   .delta.up { color: var(--ok); }
   .delta.down { color: var(--bad); }
+  .fstrip { display: grid; grid-template-columns: repeat(var(--n), minmax(3px, 1fr)); gap: 2px; align-items: end; height: 26px; min-width: 170px; max-width: 320px; }
+  .fstrip .fs-y { display: flex; align-items: flex-end; height: 100%; padding: 0; border: 0; background: linear-gradient(var(--line-2), var(--line-2)) bottom / 100% 2px no-repeat; }
+  .fstrip button.fs-y { cursor: pointer; }
+  .fstrip .fs-y span { display: block; width: 100%; background: var(--accent); border-radius: 1px 1px 0 0; }
+  .fstrip button.fs-y:hover span, .fstrip button.fs-y:focus-visible span { background: var(--text); }
+  .m-tag .fstrip { margin-top: 6px; max-width: none; height: 22px; }
   .edition-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; margin-bottom: 12px; }
   .year-link { background: none; border: 0; padding: 0; font: 600 22px/1.1 var(--display); color: var(--text); cursor: pointer; }
   .hist { text-align: left; font: inherit; font-size: 13px; background: var(--line); border: 0; border-radius: 6px; padding: 4px 9px; color: var(--muted); cursor: pointer; }
@@ -1382,10 +1388,27 @@
     const fCountries = countBy(festivals, (f) => f.country);
     const bar = qpick("fcsel", "Country", [["", "All countries"]].concat(fCountries.map((x) => [x.key, x.key + " (" + x.count + ")"])), state.festCountry) + clearAll(state.festCountry, "festivals");
     const rows = fl.map((f) => [cell(String(f.rank), f.rank), cell('<button class="open"' + fesattr(f.name) + ">" + esc(f.name) + "</button>", f.name), cell(String(f.count), f.count), cell(String(f.concerts), f.concerts), cell(f.years.join(", "), f.years[0])]);
-    fl.forEach((f, i) => { rows[i].yrs = f.years.slice().sort().map((y) => "’" + String(y).slice(2)).join(" "); });
+    fl.forEach((f, i) => { rows[i][4].h = festStrip(f); });
     return '<div class="list-head"><div class="list-title"><h2>' + plural(fl.length, "festival", "festivals") + "</h2></div></div>" +
       table("festivals", [{ label: "#", num: true, cls: "num" }, { label: "Festival" }, { label: "Editions", num: true, cls: "num" }, { label: "Concerts", num: true, cls: "num" }, { label: "Years", cls: "muted" }], rows, 0,
-        (r) => ({ rank: r[0].h, title: r[1].h, sub: [plural(r[2].s, "edition", "editions")], tag: '<span class="tag">' + r.yrs + "</span>", value: r[3].h, unit: r[3].s === 1 ? "concert" : "concerts" }), bar);
+        (r) => ({ rank: r[0].h, title: r[1].h, sub: [plural(r[2].s, "edition", "editions")], tag: r[4].h, value: r[3].h, unit: r[3].s === 1 ? "concert" : "concerts" }), bar) +
+      '<p class="tag list-note">Each strip runs from ' + FS_FROM + " to " + FS_TO + "; bar height is concerts seen at that edition.</p>";
+  }
+
+  // one strip per festival, same scale for all: a bar for each edition attended, height = concerts seen there
+  const festYear = countBy(concerts.filter((c) => c.festival), (c) => c.festival + "|" + c.date.slice(0, 4));
+  const festYearN = new Map(festYear.map((x) => [x.key, x.count]));
+  const FS_MAX = Math.max(1, ...festYear.map((x) => x.count));
+  const FS_FROM = Math.min(...festivals.flatMap((f) => f.years.map(Number)));
+  const FS_TO = Math.max(new Date().getFullYear(), ...festivals.flatMap((f) => f.years.map(Number)));
+  function festStrip(f) {
+    let h = "";
+    for (let y = FS_FROM; y <= FS_TO; y++) {
+      const n = festYearN.get(f.name + "|" + y);
+      h += n ? '<button type="button" class="fs-y"' + fattr("festival", f.name, String(y)) + ' title="' + y + " · " + plural(n, "concert", "concerts") + '" aria-label="' + y + ": " + plural(n, "concert", "concerts") + '"><span style="height:' + Math.round(20 + Math.sqrt(n / FS_MAX) * 80) + '%"></span></button>'
+        : '<span class="fs-y" aria-hidden="true"></span>';
+    }
+    return '<div class="fstrip" style="--n:' + (FS_TO - FS_FROM + 1) + '">' + h + "</div>";
   }
 
   const sattr = (key) => ' data-song="' + esc(key) + '"';
