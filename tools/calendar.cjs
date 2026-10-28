@@ -149,7 +149,8 @@ for (const [edition, items] of editions) {
     blocks.push([n.length === 1 ? "Your " + ordinal(n[0]) + " day at " + venue : "Your " + ordinal(n[0]) + (n.length === 2 ? " and " : " to ") + ordinal(n[n.length - 1]) + " days at " + venue]);
   }
   if (allDone) blocks.push([SITE + "#t=festivals&fest=" + encodeURIComponent(edition.replace(/ \d{4}$/, ""))]);
-  const ev = ["BEGIN:VEVENT", "UID:" + slug(edition) + "@longroad.joaomiguel.com", "DTSTAMP:" + stamp, "SUMMARY:" + esc(edition),
+  // iOS keeps an event's old location until its UID changes, so bump the version when the pin data changes
+  const ev = ["BEGIN:VEVENT", "UID:" + slug(edition) + "-v2@longroad.joaomiguel.com", "DTSTAMP:" + stamp, "SUMMARY:" + esc(edition),
     "DTSTART;VALUE=DATE:" + ymd(first.date), "DTEND;VALUE=DATE:" + ymd(nextDay(last.date)), "TRANSP:TRANSPARENT"];
   const name = first.location.split(", ")[0], g = geo[name];
   if (g) ev.push(...placeLines(name, g, 100));
@@ -160,7 +161,7 @@ for (const [edition, items] of editions) {
 
 shows.forEach((s, i) => {
   if (s.date < cutoff || s.location) return;
-  const ev = ["BEGIN:VEVENT", "UID:" + s.date + "-" + slug(s.artist) + "@longroad.joaomiguel.com", "DTSTAMP:" + stamp, "SUMMARY:" + esc(s.artist)];
+  const ev = ["BEGIN:VEVENT", "UID:" + s.date + "-" + slug(s.artist) + "-v2@longroad.joaomiguel.com", "DTSTAMP:" + stamp, "SUMMARY:" + esc(s.artist)];
   if (s.time) {
     const [h, m] = s.time.split(":").map(Number), end = h * 60 + m + 150;
     const endDate = end >= 1440 ? nextDay(s.date) : s.date, e = end % 1440;
