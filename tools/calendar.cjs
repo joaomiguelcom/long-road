@@ -150,7 +150,7 @@ for (const [edition, items] of editions) {
   const ev = ["BEGIN:VEVENT", "UID:" + slug(edition) + "@longroad.joaomiguel.com", "DTSTAMP:" + stamp, "SUMMARY:" + esc(edition),
     "DTSTART;VALUE=DATE:" + ymd(first.date), "DTEND;VALUE=DATE:" + ymd(nextDay(last.date)), "TRANSP:TRANSPARENT"];
   const name = first.location.split(", ")[0], g = geo[name];
-  if (g) ev.push(...placeLines(name, g, 300));
+  if (g) ev.push(...placeLines(name, g, 100));
   else ev.push("LOCATION:" + esc(first.location));
   ev.push("DESCRIPTION:" + esc(blocks.map((b) => b.join("\n")).join("\n\n")), "END:VEVENT");
   lines.push(...ev);
