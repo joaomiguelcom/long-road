@@ -1,7 +1,7 @@
 // Builds concerts.ics from upcoming.js: a calendar João subscribes to once (webcal://), so booked shows
 // show up in his phone's calendar. Shows with a `time` get a start time (Lisbon time, 2h30 long);
 // the others are all-day events. `location` overrides `place` (festivals list the edition as the place);
-// venues in venue-geo.json get a map pin. Past shows stay in upcoming.js so their events keep the time.
+// venues in venue-geo.json get a map pin. Past shows stay in upcoming.js for two years so their events keep the time.
 // Usage: node tools/calendar.cjs <site dir>
 const fs = require("fs");
 const path = require("path");
@@ -43,7 +43,9 @@ const lines = [
   "BEGIN:STANDARD", "TZOFFSETFROM:+0100", "TZOFFSETTO:+0000", "TZNAME:WET", "DTSTART:19701025T020000", "RRULE:FREQ=YEARLY;BYMONTH=10;BYDAY=-1SU", "END:STANDARD",
   "END:VTIMEZONE",
 ];
-for (const s of shows) {
+// shows older than two years leave the calendar even if upcoming.js still has them
+const cutoff = new Date(Date.now() - 2 * 365.25 * 864e5).toISOString().slice(0, 10);
+for (const s of shows.filter((x) => x.date >= cutoff)) {
   const ev = ["BEGIN:VEVENT", "UID:" + s.date + "-" + slug(s.artist) + "@longroad.joaomiguel.com", "DTSTAMP:" + stamp, "SUMMARY:" + esc(s.artist)];
   if (s.time) {
     const [h, m] = s.time.split(":").map(Number), end = h * 60 + m + 150;

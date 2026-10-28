@@ -1,7 +1,7 @@
 // Upcoming shows from the "Upcoming Shows" list of setlist.fm's attendance page.
 // The API does not return them and the page blocks automated downloads, so Claude refreshes this file
 // during each festival review (and whenever João asks).
-// Past shows stay for 12 months (the calendar keeps their time and links them to the app).
+// Past shows stay for 2 years (the calendar keeps their time and links them to the app).
 // Optional: "time" (HH:MM, Lisbon) when the venue or ticket page publishes it, and "location" when the place
 // is not a venue (festivals); both feed the calendar (tools/calendar.cjs).
 window.LONG_ROAD_UPCOMING = {
