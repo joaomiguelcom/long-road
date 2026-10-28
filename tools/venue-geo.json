@@ -1,10 +1,43 @@
 {
   "_about": "Venue coordinates and street addresses for the calendar (tools/calendar.cjs), so the phone shows a map and directions. Key = first part of `location` or `place` in upcoming.js. Confirm coordinates on the venue's own map link before adding one.",
-  "Mouco": { "lat": 41.147663, "lng": -8.589903, "address": "Rua de Frei Heitor Pinto 65, 4300-210 Porto, Portugal" },
-  "Coliseu do Porto": { "lat": 41.146947, "lng": -8.605815, "address": "Rua de Passos Manuel 137, 4000-385 Porto, Portugal" },
-  "Casa da Música": { "lat": 41.158751, "lng": -8.630812, "address": "Avenida da Boavista 604-610, 4149-071 Porto, Portugal" },
-  "Casa da Música (Sala 2)": { "lat": 41.158751, "lng": -8.630812, "address": "Avenida da Boavista 604-610, 4149-071 Porto, Portugal" },
-  "Hard Club": { "lat": 41.141244, "lng": -8.615492, "address": "Mercado Ferreira Borges, Praça do Infante Dom Henrique, 4050-253 Porto, Portugal" },
-  "MEO Arena": { "lat": 38.768476, "lng": -9.093837, "address": "Rossio dos Olivais, 1990-231 Lisboa, Portugal" },
-  "Passeio Marítimo de Algés": { "lat": 38.695930, "lng": -9.236830, "address": "Passeio Marítimo de Algés, 1495-165 Algés, Portugal" }
+  "Mouco": {
+    "lat": 41.147663,
+    "lng": -8.589903,
+    "address": "Rua de Frei Heitor Pinto 65, 4300-210 Porto, Portugal"
+  },
+  "Coliseu do Porto": {
+    "lat": 41.146947,
+    "lng": -8.605815,
+    "address": "Rua de Passos Manuel 137, 4000-385 Porto, Portugal"
+  },
+  "Casa da Música": {
+    "lat": 41.158751,
+    "lng": -8.630812,
+    "address": "Avenida da Boavista 604-610, 4149-071 Porto, Portugal"
+  },
+  "Casa da Música (Sala 2)": {
+    "lat": 41.158751,
+    "lng": -8.630812,
+    "address": "Avenida da Boavista 604-610, 4149-071 Porto, Portugal"
+  },
+  "Hard Club": {
+    "lat": 41.141244,
+    "lng": -8.615492,
+    "address": "Mercado Ferreira Borges, Praça do Infante Dom Henrique, 4050-253 Porto, Portugal"
+  },
+  "MEO Arena": {
+    "lat": 38.768476,
+    "lng": -9.093837,
+    "address": "Rossio dos Olivais, 1990-231 Lisboa, Portugal"
+  },
+  "Passeio Marítimo de Algés": {
+    "lat": 38.69593,
+    "lng": -9.23683,
+    "address": "Passeio Marítimo de Algés, 1495-165 Algés, Portugal"
+  },
+  "Praia Fluvial do Taboão": {
+    "lat": 41.91305,
+    "lng": -8.56146,
+    "address": "Praia Fluvial do Taboão, 4940-299 Paredes de Coura, Portugal"
+  }
 }
