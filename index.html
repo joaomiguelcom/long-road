@@ -53,6 +53,8 @@
   .bottom-nav { display: none; }
   .to-top.show { opacity: 1; transform: none; pointer-events: auto; }
   .head-side { display: flex; align-items: center; gap: 8px; }
+  .head-btns { display: flex; gap: 8px; }
+  .head-btns [hidden] { display: none; }
   .theme-btn { width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--line-2); background: var(--surface); color: var(--muted); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; flex: none; }
   .theme-btn svg { flex: none; }
   * { box-sizing: border-box; }
@@ -383,7 +385,10 @@
       </div>
       <div class="head-side">
         <div class="sync" id="sync"><span class="dot" aria-hidden="true"></span>Updated …</div>
-        <button type="button" class="theme-btn" id="theme" aria-label="Switch theme"></button>
+        <div class="head-btns">
+          <button type="button" class="theme-btn" id="shareLink" aria-label="Share this page" title="Share this page" hidden><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 8l5-5 5 5M5 14v5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5"/></svg></button>
+          <button type="button" class="theme-btn" id="theme" aria-label="Switch theme"></button>
+        </div>
       </div>
     </div>
     <nav aria-label="Sections" id="tabs"><button type="button" data-tab="overview" aria-current="page">Overview</button><button type="button" data-tab="concerts">Concerts</button><button type="button" data-tab="artists">Artists</button><button type="button" data-tab="venues">Venues</button><button type="button" data-tab="festivals">Festivals</button><button type="button" data-tab="songs">Songs</button><button type="button" data-tab="years">Year in review</button><button type="button" data-tab="map">Map</button></nav>
@@ -1868,6 +1873,14 @@
     for (const [k, u] of Object.entries(URL_KEYS)) if (p.has(u)) state[k] = k === "shelfOnly" ? p.get(u) === "1" : p.get(u);
     if (p.has("f") && FILTERS[p.get("f")]) state.filter = { f: p.get("f"), v: p.get("v") || "", y: p.get("fy") || null };
   }
+  // ---------- share link ----------
+  // a home-screen web app has no address bar or share button, so it gets its own: the link carries the current page and filters
+  const standalone = navigator.standalone === true || matchMedia("(display-mode: standalone)").matches;
+  if (standalone && navigator.share) document.getElementById("shareLink").hidden = false;
+  async function shareLink() {
+    syncUrl();
+    try { await navigator.share({ title: document.title, url: location.href }); } catch (e) {}
+  }
   // ---------- theme ----------
   // dark by default; the choice is remembered on this device
   const isLight = () => document.documentElement.dataset.theme === "light";
@@ -1982,6 +1995,7 @@
     else if (t.id === "bMore") { moreOpen = !moreOpen; renderBottomNav(); }
     else if (t.id === "toTop") window.scrollTo({ top: 0, behavior: "smooth" });
     else if (t.id === "theme") setTheme(!isLight());
+    else if (t.id === "shareLink") shareLink();
     else if (t.id === "toAbout") {
       if (state.tab !== "overview" || state.detail || state.artist || state.venue || state.festival || state.song) go(() => { state.tab = "overview"; state.detail = null; state.filter = null; state.artist = null; state.venue = null; state.festival = null; state.song = null; });
       const el = document.getElementById("about"); if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
