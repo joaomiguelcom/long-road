@@ -9,10 +9,67 @@ const out = process.argv[2] || ".";
 const window = {};
 new Function("window", fs.readFileSync(path.join(__dirname, "..", "upcoming.js"), "utf8"))(window);
 const shows = (window.LONG_ROAD_UPCOMING || {}).shows || [];
-// past shows point to their page in the app once the export has them (same date and artist)
+// the archive, as the app sees it: setlist.fm export + extra.js, with renamed venues merged (VENUE_ALIASES in index.html)
 const data = {};
-try { new Function("window", fs.readFileSync(path.join(__dirname, "..", "data", "data.js"), "utf8"))(data); } catch (e) {}
-const seen = new Map(((data.LONG_ROAD || {}).concerts || []).map((c) => [c.date + "|" + c.artist.toLowerCase(), c.id]));
+for (const f of ["data/data.js", "extra.js"]) try { new Function("window", fs.readFileSync(path.join(__dirname, "..", f), "utf8"))(data); } catch (e) {}
+const plain = (t) => String(t || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+let ALIASES = [];
+try { ALIASES = new Function("return " + fs.readFileSync(path.join(__dirname, "..", "index.html"), "utf8").match(/const VENUE_ALIASES = (\[[\s\S]*?\n  \]);/)[1])(); } catch (e) {}
+const venueName = (venue, city) => { const r = ALIASES.find((r) => plain(r.city) === plain(city) && r.aka.some((w) => plain(w) === plain(venue))); return r ? r.name : venue; };
+const archive = ((data.LONG_ROAD || {}).concerts || []).concat((data.LONG_ROAD_EXTRA || {}).concerts || [])
+  .map((c) => ({ ...c, venue: venueName(c.venue, c.city), songs: c.songs || [] }))
+  .sort((a, b) => a.date.localeCompare(b.date) || a.id.localeCompare(b.id));
+const pos = new Map(archive.map((c, i) => [c.id, i + 1]));
+const seen = new Map(archive.map((c) => [c.date + "|" + plain(c.artist), c]));
+const fmtN = (n) => n.toLocaleString("en-GB");
+const ordinal = (n) => n + (["th", "st", "nd", "rd"][(n % 100 - 20) % 10] || ["th", "st", "nd", "rd"][n % 100] || "th");
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const fmtDate = (d) => +d.slice(8) + " " + MONTHS[+d.slice(5, 7) - 1] + " " + d.slice(0, 4);
+const songs = (c) => c.songs.filter((x) => !x.tape && x.name);
+const isMilestone = (n) => n >= 1000 ? n % 250 === 0 : n % 100 === 0;
+
+// the text under the event: what the archive says about this artist and venue before the show,
+// and how the night went once the export has it
+function describe(s, i) {
+  const out = [], done = s.date < today ? seen.get(s.date + "|" + plain(s.artist)) : null;
+  const before = archive.filter((c) => c.date < s.date);
+  const mine = before.filter((c) => plain(c.artist) === plain(s.artist));
+  // setlist.fm writes rooms as "Casa da Música (Sala 2)"; the archive counts the room as the building
+  const where = (s.location || s.place || "").split(", "), room = where[0].replace(/ \(.*\)$/, "");
+  const venue = archive.some((c) => plain(c.venue) === plain(where[0])) ? venueName(where[0], where[1]) : venueName(room, where[1]);
+  if (done) {
+    const n = pos.get(done.id), list = songs(done);
+    const heard = new Set(before.flatMap((c) => songs(c).map((x) => plain(x.name) + "|" + plain(x.cover || c.artist))));
+    const fresh = list.filter((x) => !heard.has(plain(x.name) + "|" + plain(x.cover || done.artist))).length;
+    out.push(["Concert #" + fmtN(n)].concat(list.length ? [list.length + " songs"] : [], fresh ? [fresh + " new for you"] : []).join(" · "));
+    if (list.length > 1) out.push("Opened with " + list[0].name + ", closed with " + list[list.length - 1].name);
+    out.push("Long Road: " + SITE + "#t=concerts&c=" + done.id);
+    return out;
+  }
+  // its number: the archive so far plus the booked shows before it that are not in the archive yet
+  const pending = shows.filter((x, j) => (x.date < s.date || (x.date === s.date && j < i)) && !(x.date < today && seen.has(x.date + "|" + plain(x.artist))));
+  const n = before.length + pending.length + 1;
+  out.push(isMilestone(n) ? "This will be concert #" + fmtN(n) + ". A milestone!" : "This will be concert #" + fmtN(n));
+  if (!mine.length) out.push("First time seeing " + s.artist + " live!");
+  else {
+    out.push(ordinal(mine.length + 1) + " time seeing " + s.artist);
+    const last = mine[mine.length - 1], first = mine[0];
+    out.push("Last time: " + fmtDate(last.date) + ", " + last.venue);
+    if (mine.length > 1) out.push("First time: " + fmtDate(first.date) + ", " + first.venue);
+    const count = new Map();
+    for (const c of mine) for (const x of songs(c)) count.set(x.name, (count.get(x.name) || 0) + 1);
+    const top = [...count].filter((x) => x[1] > 1).sort((a, b) => b[1] - a[1]).slice(0, 3);
+    if (top.length) out.push("Most heard live: " + top.map(([k, v]) => k + " (" + v + ")").join(", "));
+  }
+  if (venue) {
+    const placeOf = (x) => { const w = (x.location || x.place || "").split(", ")[0]; return plain(w.replace(/ \(.*\)$/, "")) === plain(venue) || plain(w) === plain(venue); };
+    const dates = new Set(before.filter((c) => plain(c.venue) === plain(venue)).map((c) => c.date).concat(pending.filter(placeOf).map((x) => x.date)));
+    const nights = dates.size + (dates.has(s.date) ? 0 : 1);
+    out.push(nights === 1 ? "First time at " + venue : "Your " + ordinal(nights) + " " + (s.location ? "day" : "night") + " at " + venue);
+  }
+  if (s.url) out.push("setlist.fm: " + s.url);
+  return out;
+}
 const geo = JSON.parse(fs.readFileSync(path.join(__dirname, "venue-geo.json"), "utf8"));
 const SITE = "https://longroad.joaomiguel.com/";
 const today = new Date().toISOString().slice(0, 10);
@@ -45,7 +102,8 @@ const lines = [
 ];
 // shows older than two years leave the calendar even if upcoming.js still has them
 const cutoff = new Date(Date.now() - 2 * 365.25 * 864e5).toISOString().slice(0, 10);
-for (const s of shows.filter((x) => x.date >= cutoff)) {
+shows.forEach((s, i) => {
+  if (s.date < cutoff) return;
   const ev = ["BEGIN:VEVENT", "UID:" + s.date + "-" + slug(s.artist) + "@longroad.joaomiguel.com", "DTSTAMP:" + stamp, "SUMMARY:" + esc(s.artist)];
   if (s.time) {
     const [h, m] = s.time.split(":").map(Number), end = h * 60 + m + 150;
@@ -61,16 +119,10 @@ for (const s of shows.filter((x) => x.date >= cutoff)) {
     ev.push("LOCATION:" + esc(name + "\n" + g.address));
     ev.push('X-APPLE-STRUCTURED-LOCATION;VALUE=URI;X-ADDRESS="' + g.address.replace(/"/g, "") + '";X-APPLE-RADIUS=100;X-TITLE="' + name.replace(/"/g, "") + '":geo:' + g.lat + "," + g.lng);
   } else ev.push("LOCATION:" + esc(where));
-  // before the show: the setlist.fm page; after it, once the export has it: the concert in the app
-  const id = s.date < today ? seen.get(s.date + "|" + String(s.artist).toLowerCase()) : null;
-  const desc = [];
-  if (s.location && s.place) desc.push(s.place);
-  if (id) desc.push("Long Road: " + SITE + "#t=concerts&c=" + id);
-  else if (s.url) desc.push("setlist.fm: " + s.url);
-  if (desc.length) ev.push("DESCRIPTION:" + esc(desc.join("\n")));
+  ev.push("DESCRIPTION:" + esc((s.location && s.place ? [s.place] : []).concat(describe(s, i)).join("\n")));
   ev.push("END:VEVENT");
   lines.push(...ev);
-}
+});
 lines.push("END:VCALENDAR");
 fs.writeFileSync(path.join(out, "concerts.ics"), lines.map(fold).join("\r\n") + "\r\n");
 console.log("concerts.ics: " + shows.length + " shows");
