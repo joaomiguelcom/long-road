@@ -1,6 +1,8 @@
 // Upcoming shows from the "Upcoming Shows" list of setlist.fm's attendance page.
 // The API does not return them and the page blocks automated downloads, so Claude refreshes this file
 // during each festival review (and whenever João asks).
+// Optional: "time" (HH:MM, Lisbon) when the venue or ticket page publishes it, and "location" when the place
+// is not a venue (festivals); both feed the calendar (tools/calendar.cjs).
 window.LONG_ROAD_UPCOMING = {
   "updatedAt": "2026-10-23",
   "source": "https://www.setlist.fm/attended/ojoaomiguel",
@@ -25,6 +27,7 @@ window.LONG_ROAD_UPCOMING = {
     },
     {
       "date": "2026-11-29",
+      "time": "21:30",
       "artist": "PAUS",
       "place": "Casa da Música (Sala 2), Porto, Portugal",
       "url": "https://www.setlist.fm/show/2026-11-29/casa-da-musica-sala-2-porto-portugal-33b33089.html?setlist=237e64c7"
@@ -63,12 +66,14 @@ window.LONG_ROAD_UPCOMING = {
       "date": "2027-07-09",
       "artist": "Faith No More",
       "place": "NOS Alive 2027",
+      "location": "Passeio Marítimo de Algés, Oeiras, Portugal",
       "url": "https://www.setlist.fm/upcoming/faith-no-more/2027/passeio-maritimo-de-alges-oeiras-portugal-3b7c085c.html"
     },
     {
       "date": "2027-07-10",
       "artist": "Tame Impala",
       "place": "NOS Alive 2027",
+      "location": "Passeio Marítimo de Algés, Oeiras, Portugal",
       "url": "https://www.setlist.fm/upcoming/tame-impala/2027/passeio-maritimo-de-alges-oeiras-portugal-53710bb5.html"
     }
   ]

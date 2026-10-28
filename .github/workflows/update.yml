@@ -65,6 +65,8 @@ jobs:
           mkdir -p _site/data && cp data/data.js _site/data/ && { cp data/discogs.js _site/data/ || true; } && { cp data/popularity.js _site/data/ || true; }
           # the published data.js leaves out empty fields (about half the size); the repo keeps the full export
           node tools/slim-data.cjs _site/data/data.js
+          # calendar of booked shows that João's phone subscribes to
+          node tools/calendar.cjs _site
           if [ -d img ]; then cp -r img _site/; fi
           # Build id: lets the home-screen app notice new deploys and skip stale caches
           BUILD="$(date -u +%Y%m%d%H%M%S)-${GITHUB_SHA::7}"
