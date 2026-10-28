@@ -69,7 +69,6 @@
   header { background: linear-gradient(180deg, rgba(242,165,65,.07), rgba(242,165,65,0) 70%); }
   .head { padding-top: max(24px, env(safe-area-inset-top)); display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 14px 24px; }
   .brand { display: flex; align-items: center; gap: 14px; min-width: 0; }
-  .brand svg { flex: none; width: 52px; height: 52px; }
   h1 { margin: 0; font: 600 40px/1 var(--display); letter-spacing: .01em; }
   .eyebrow { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
   .brand .eyebrow { margin-top: 8px; }
@@ -324,7 +323,6 @@
     .fun-grid .fun .big { font-size: 21px; }
     .fun-grid .fun .small { font-size: 12px; }
     .search { max-width: none; } h1 { font-size: 34px; } .kpi { font-size: 34px; } td, th { padding: 10px 12px; }
-    .brand svg { width: 46px; height: 46px; }
     .brand .eyebrow { font-size: 11px; letter-spacing: .1em; margin-top: 7px; }
     /* update time and theme button sit right of the title, stacked and right-aligned */
     .head { align-items: center; gap: 14px 10px; }
@@ -335,6 +333,8 @@
     nav { margin: 16px -16px 0; padding: 0 16px; }
     /* tabs move to a bar at the bottom, within reach of the thumb */
     #tabs { display: none; }
+    /* no line under the title once the tabs are gone (João, 2026-10-28) */
+    header { border-bottom: 0; }
     .head { padding-bottom: 16px; }
     .bottom-nav { display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 1100; background: var(--surface); border-top: 1px solid var(--line); padding: 4px 4px max(6px, env(safe-area-inset-bottom)); }
     .bottom-nav > button { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; background: none; border: 0; color: var(--muted); font-size: 11px; padding: 6px 0 4px; min-height: 52px; cursor: pointer; }
@@ -383,7 +383,6 @@
   <div class="wrap">
     <div class="head">
       <div class="brand">
-        <svg viewBox="6 8 52 52" aria-hidden="true"><circle cx="32" cy="19" r="9" fill="#F2A541" opacity=".35"/><path fill-rule="evenodd" d="M29.5 19h5L54 58H10zM31.4 23h1.2l.3 5h-1.8zM31 33h2l.5 8h-3zM30.3 46h3.4l.6 12h-4.6z" fill="#F2A541"/></svg>
         <div>
           <h1>Long Road</h1>
           <button type="button" class="eyebrow eyebrow-btn" id="toAbout">João Miguel's concert archive</button>
