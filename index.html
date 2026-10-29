@@ -770,7 +770,7 @@
   function about() {
     const first = chrono[0].date.slice(0, 4);
     return '<section class="card about" id="about" aria-labelledby="h-about">' +
-      '<img src="img/me.jpg?v=__BUILD__" alt="João Miguel" width="96" height="96">' +
+      '<span class="me" role="img" aria-label="João Miguel"></span>' +
       '<div><h2 id="h-about">About me</h2>' +
       "<p>Hi, I'm João Miguel. I've been going to concerts since " + first + ", " + fmtN(chrono.length) + " so far, from tiny clubs to muddy festival fields. " +
       artistBtn("Pearl Jam", "text-link") + " is the reason this archive is called Long Road. When I'm not at a show, I'm probably at home spinning records.</p>" +
