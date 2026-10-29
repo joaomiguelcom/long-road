@@ -75,7 +75,7 @@ function original(releases) {
 // compilations João wants counted as albums too (2026-10-29); the app marks them as "rarities"
 const INCLUDE = {
   "Pearl Jam": ["Lost Dogs"],
-  "Ornatos Violeta": ["Raridades"],
+  "Ornatos Violeta": ["Raridades"],   // "Inéditos/Raridades" (2011); a name matches when it is part of the title
 };
 
 async function albums(mbid, name) {
@@ -87,14 +87,14 @@ async function albums(mbid, name) {
     groups.push(...body["release-groups"]);
     if (offset + 100 >= body["release-group-count"]) break;
   }
-  const studio = groups.filter((g) => g["primary-type"] === "Album" && (!(g["secondary-types"] || []).length || include.includes(plain(g.title))) &&
+  const studio = groups.filter((g) => g["primary-type"] === "Album" && (!(g["secondary-types"] || []).length || include.some((t) => plain(g.title).includes(t))) &&
     g["first-release-date"] && g["first-release-date"] <= today &&
     // only albums credited to this artist alone (no collaborations)
     (g["artist-credit"] || []).length === 1 && g["artist-credit"][0].artist.id === mbid);
   for (const t of INCLUDE[name] || []) {
-    if (studio.some((g) => plain(g.title) === plain(t))) continue;
+    if (studio.some((g) => plain(g.title).includes(plain(t)))) continue;
     const body = await mb("release-group?limit=10&query=" + encodeURIComponent('releasegroup:"' + t + '" AND arid:' + mbid));
-    const g = (body["release-groups"] || []).find((x) => plain(x.title) === plain(t));
+    const g = (body["release-groups"] || []).find((x) => plain(x.title).includes(plain(t)));
     if (g) studio.push({ ...g, "secondary-types": g["secondary-types"] || ["Compilation"] });
     else console.log(`${name}: "${t}" not found on MusicBrainz`);
   }

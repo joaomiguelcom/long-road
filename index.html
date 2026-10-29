@@ -914,7 +914,6 @@
         (r) => ({ rank: r[0].h, title: r[1].h, sub: [r[3].s.slice(0, 4) === r[4].s.slice(0, 4) ? r[3].s.slice(0, 4) : r[3].s.slice(0, 4) + " – " + r[4].s.slice(0, 4)], value: r[2].h, unit: r[2].s === 1 ? "concert" : "concerts" }), toggle + clearA);
   }
 
-  // records by this artist in the Discogs collection
   // "Albums heard live": share of each studio album heard at his concerts (data/albums.js, from MusicBrainz).
   // Only for artists with 4+ concerts and a setlist at 70% of them or more; tools/albums.mjs uses the same rule (João, 2026-10-29).
   const ALBUMS = (window.LONG_ROAD_ALBUMS && window.LONG_ROAD_ALBUMS.artists) || {};
@@ -934,35 +933,47 @@
     James: ["Be Opened by the Wonderful: 40 Years Orchestrated"],
     "Linda Martini": ["M***a e Ouro"],
   };
-  function albumsCard(name, list) {
+  // how much of each album was heard; null when the artist does not qualify (also used by the artist share image)
+  function albumStats(name, list) {
     const split = {}, alias = {};
     for (const [k, v] of Object.entries(TRACK_SPLIT[name] || {})) split[trackKey(k)] = v;
     for (const [k, v] of Object.entries(TRACK_ALIAS[name] || {})) alias[trackKey(k)] = trackKey(v);
     const al = ((ALBUMS[name] || {}).albums || []).filter((a) => !(ALBUM_SKIP[name] || []).includes(a.title)).map((a) => ({ ...a, tracks: (a.tracks || []).flatMap((t) => split[trackKey(t)] || [t]) })).filter((a) => a.tracks.length);
     const sets = list.filter((c) => (c.songs || []).some((s) => !s.tape && s.name)).length;
-    if (list.length < 4 || !al.length || sets < 0.7 * list.length) return "";
+    if (list.length < 4 || !al.length || sets < 0.7 * list.length) return null;
     // concerts where each song was played (a song played twice in one night counts once)
     const heard = new Map();
     for (const c of list) for (const k of new Set((c.songs || []).filter((s) => !s.tape && s.name).map((s) => alias[trackKey(s.name)] || trackKey(s.name)))) heard.set(k, (heard.get(k) || 0) + 1);
     let total = 0, got = 0;
-    const rows = al.map((a) => {
-      const keys = [...new Set(a.tracks.map(trackKey))];
-      const n = keys.filter((k) => heard.has(k)).length;
-      total += keys.length; got += n;
+    const albums = al.map((a) => {
       const seen = new Set();
-      const tracks = a.tracks.filter((t) => !seen.has(trackKey(t)) && seen.add(trackKey(t))).map((t, i) => {
+      const tracks = a.tracks.filter((t) => !seen.has(trackKey(t)) && seen.add(trackKey(t)));
+      const n = tracks.filter((t) => heard.has(trackKey(t))).length;
+      total += tracks.length; got += n;
+      return { ...a, tracks, n };
+    });
+    return { albums, heard, sets, got, total };
+  }
+  function albumsCard(name, list) {
+    const st = albumStats(name, list);
+    if (!st) return "";
+    const { albums, heard, sets, got, total } = st;
+    const rows = albums.map((a) => {
+      const tracks = a.tracks.map((t, i) => {
         const x = heard.get(trackKey(t));
         return '<li class="' + (x ? "on" : "off") + '"><span class="tn">' + (i + 1) + '</span><span class="tt">' + esc(t) + '</span><span class="tc">' + (x ? x + "×" : "—") + "</span></li>";
       }).join("");
       return '<details class="alb"><summary><span class="alb-cover" data-l="' + esc(a.title.replace(/^the /i, "").charAt(0)) + '"><img src="' + esc(a.cover) + '" alt="" loading="lazy" onerror="this.remove()"></span>' +
-        '<span class="alb-meta"><span class="alb-name">' + esc(a.title) + '</span><span class="alb-year">' + a.year + '</span><span class="alb-bar"><span style="width:' + Math.round(n / keys.length * 100) + '%"></span></span></span>' +
-        '<span class="alb-n">' + n + "<small>/" + keys.length + "</small></span></summary><ol>" + tracks + "</ol></details>";
+        '<span class="alb-meta"><span class="alb-name">' + esc(a.title) + '</span><span class="alb-year">' + a.year + '</span><span class="alb-bar"><span style="width:' + Math.round(a.n / a.tracks.length * 100) + '%"></span></span></span>' +
+        '<span class="alb-n">' + a.n + "<small>/" + a.tracks.length + "</small></span></summary><ol>" + tracks + "</ol></details>";
     }).join("");
-    return '<section class="card albums"><div class="card-head"><h2>Albums heard live</h2><span class="muted">studio albums' + al.filter((a) => a.extra).map((a) => " + " + esc(a.title)).join("") + ' · ' + (sets === list.length ? list.length + " concerts, all with setlists" : sets + " of " + list.length + " concerts with setlists") + "</span></div>" +
-      '<div class="alb-big"><b>' + Math.round(got / total * 100) + "%</b><span>" + got + " of " + total + (al.some((a) => a.extra) ? " album songs" : " studio songs") + " heard live · tap an album to see which</span></div>" +
+    return '<section class="card albums"><div class="card-head"><h2>Albums heard live</h2><span class="muted">studio albums' + albums.filter((a) => a.extra).map((a) => " + " + esc(a.title)).join("") + ' · ' + (sets === list.length ? list.length + " concerts, all with setlists" : sets + " of " + list.length + " concerts with setlists") + "</span></div>" +
+      '<div class="alb-big"><b>' + Math.round(got / total * 100) + "%</b><span>" + got + " of " + total + (albums.some((a) => a.extra) ? " album songs" : " studio songs") + " heard live · tap an album to see which</span></div>" +
       '<div class="alb-grid">' + rows + "</div></section>";
   }
 
+
+  // records by this artist in the Discogs collection
   function shelfCard(name) {
     const recs = onShelf(name);
     if (!recs) return "";
@@ -1528,6 +1539,110 @@
     g.fillStyle = MUT; g.font = "400 25px " + MONO; g.textAlign = "right"; g.fillText("longroad.joaomiguel.com", R, 1815); g.textAlign = "left";
     await deliverPng(cv, "long-road-" + c.date + "-" + c.artist.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") + ".png", c.artist + " · " + fmtDate(c.date));
   }
+  // one artist as a story-sized image, in the same style as the year and concert images.
+  // "stats": numbers, years and most heard songs; "albums": how much of each album was heard live (when the artist has it)
+  async function shareArtist(name, variant) {
+    const a = artists.find((x) => x.key === name);
+    if (!a) return;
+    const list = concerts.filter((c) => c.artist === name);
+    const first = list[list.length - 1], last = list[0];
+    const aSongs = songsOnStage.filter((s) => s.artist === name);
+    const heard = aSongs.reduce((n, s) => n + s.count, 0);
+    const top = withRank(aSongs.map((s) => ({ ...s, key: s.name })));
+    const st = albumStats(name, list);
+    if (variant === "albums" && !st) variant = "stats";
+    try { await document.fonts.ready; } catch (e) {}
+    const W = 1080, H = 1920, X = 80, R = W - 80, cv = document.createElement("canvas");
+    cv.width = W; cv.height = H;
+    const g = cv.getContext("2d");
+    const { DISP, BODY, MONO, BG, ACC, ACC2, TXT, INK2, MUT, LINE } = await shareKit();
+    const fit = (t, max) => { if (g.measureText(t).width <= max) return t; while (t.length > 1 && g.measureText(t + "…").width > max) t = t.slice(0, -1); return t + "…"; };
+    const wrap = (t, max) => {
+      const lines = [""];
+      for (const w of t.split(" ")) { const next = (lines[lines.length - 1] + " " + w).trim(); if (g.measureText(next).width <= max || !lines[lines.length - 1]) lines[lines.length - 1] = next; else lines.push(w); }
+      return lines;
+    };
+    const label = (t, yy) => { g.fillStyle = LINE; g.fillRect(X, yy - 52, R - X, 2); g.fillStyle = MUT; g.font = "500 24px " + BODY; g.letterSpacing = "4px"; g.fillText(t, X, yy); g.letterSpacing = "0px"; };
+    shareBackground(g, W, H, BG);
+    shareHeader(g, X, 196, "joão miguel's concert archive", { DISP, BODY, ACC, TXT, INK2 });
+    // rank, name, first and last time
+    g.fillStyle = ACC; g.font = "400 34px " + MONO; g.letterSpacing = "4px";
+    g.fillText(("#" + a.rank + " most seen artist").toUpperCase(), X, 400); g.letterSpacing = "0px";
+    let size = 150; g.font = "380 " + size + "px " + DISP;
+    let lines = wrap(name, R - X);
+    while ((lines.length > 2 || lines.some((l) => g.measureText(l).width > R - X)) && size > 70) { size -= 10; g.font = "380 " + size + "px " + DISP; lines = wrap(name, R - X); }
+    let yy = 400 + size * 1.05;
+    g.fillStyle = TXT;
+    lines.slice(0, 2).forEach((l, i) => { if (i) yy += size * 1.02; g.fillText(fit(l, R - X), X - 4, yy); });
+    yy += 76;
+    g.fillStyle = INK2; g.font = "340 40px " + DISP;
+    g.fillText(list.length > 1 ? "first seen " + first.date.slice(0, 4) + " · last seen " + last.date.slice(0, 4) : "seen once, in " + first.date.slice(0, 4), X, yy);
+    if (variant === "albums") {
+      // the share of album songs heard, then one bar per album
+      yy += 70; g.fillStyle = LINE; g.fillRect(X, yy, R - X, 2); yy += 200;
+      g.fillStyle = ACC; g.font = "340 190px " + DISP; g.letterSpacing = "-6px"; const pct = Math.round(st.got / st.total * 100) + "%"; g.fillText(pct, X - 6, yy); g.letterSpacing = "0px";
+      const pw = g.measureText(pct).width;
+      g.fillStyle = INK2; g.font = "400 34px " + BODY; g.fillText("of the album songs", X + pw + 30, yy - 70); g.fillText("heard live", X + pw + 30, yy - 22);
+      yy += 56; g.fillStyle = MUT; g.font = "400 26px " + MONO;
+      g.fillText(st.got + " of " + st.total + " songs · " + plural(list.length, "concert", "concerts"), X, yy);
+      const rows = st.albums, room = 1780 - (yy + 60), lh = Math.max(34, Math.min(96, Math.floor(room / rows.length)));
+      const shown = rows.slice(0, Math.floor(room / lh));
+      yy += 60;
+      shown.forEach((al, i) => {
+        const ry = yy + i * lh + lh * .5;
+        const fsz = lh >= 80 ? 34 : lh >= 64 ? 30 : lh >= 48 ? 26 : 22;
+        g.fillStyle = TXT; g.font = "500 " + fsz + "px " + BODY; const tt = fit(al.title, R - X - 260); g.fillText(tt, X, ry);
+        const tw = g.measureText(tt).width;
+        g.fillStyle = MUT; g.font = "400 " + (fsz - 8) + "px " + MONO; g.fillText(String(al.year), X + tw + 18, ry);
+        g.textAlign = "right"; g.fillStyle = al.n === al.tracks.length ? ACC : TXT; g.font = "380 " + (fsz + 6) + "px " + DISP; g.fillText(al.n + "/" + al.tracks.length, R, ry); g.textAlign = "left";
+        const by = ry + Math.min(16, lh * .3);
+        g.fillStyle = LINE; g.fillRect(X, by, R - X, 3);
+        g.fillStyle = ACC; g.fillRect(X, by, (R - X) * al.n / al.tracks.length, 3);
+      });
+    } else {
+      // the concert count, three numbers, the years and the songs heard most
+      yy += 70; g.fillStyle = LINE; g.fillRect(X, yy, R - X, 2); yy += 190;
+      g.fillStyle = ACC; g.font = "340 180px " + DISP; g.letterSpacing = "-5px"; g.fillText(fmtN(list.length), X - 6, yy); g.letterSpacing = "0px";
+      const cw0 = g.measureText(fmtN(list.length)).width;
+      g.fillStyle = INK2; g.font = "400 44px " + BODY; g.fillText(list.length === 1 ? "concert" : "concerts", X + cw0 + 22, yy);
+      const nC = new Set(list.map((c) => c.country)).size;
+      const kp = [[heard, "songs heard"], [aSongs.length, "different songs"], st ? [Math.round(st.got / st.total * 100) + "%", "of the albums live"] : [nC, nC === 1 ? "country" : "countries"]];
+      yy += 50;
+      kp.forEach(([v, l], i) => {
+        const cw = (R - X) / 3, x = X + i * cw;
+        g.fillStyle = TXT; g.font = "340 76px " + DISP; g.letterSpacing = "-2px"; g.fillText(typeof v === "number" ? fmtN(v) : v, x - 2, yy + 72); g.letterSpacing = "0px";
+        g.fillStyle = MUT; g.font = "400 25px " + MONO; g.fillText(l, x, yy + 112);
+      });
+      yy += 230;
+      // concerts per year, from the first to the last year
+      const y0 = +first.date.slice(0, 4), y1 = +last.date.slice(0, 4), span = y1 - y0 + 1;
+      if (span > 1 && list.length > 1) {
+        label("YEAR BY YEAR", yy);
+        const per = Array.from({ length: span }, (_, k) => list.filter((c) => +c.date.slice(0, 4) === y0 + k).length);
+        const mx = Math.max(...per), bw = (R - X) / span, base = yy + 150;
+        per.forEach((n, k) => {
+          const h = n ? Math.max(8, 100 * n / mx) : 3, w = Math.min(70, bw - 2 * Math.min(6, bw * .15)), x = X + k * bw + (bw - w) / 2;
+          g.fillStyle = n ? (n === mx ? ACC : ACC2) : LINE; g.fillRect(x, base - h, w, h);
+        });
+        g.fillStyle = MUT; g.font = "400 23px " + MONO; g.fillText(String(y0), X, base + 36);
+        g.textAlign = "right"; g.fillText(String(y1), R, base + 36); g.textAlign = "left";
+        yy = base + 130;
+      }
+      if (top.length) {
+        label("SONGS HEARD MOST", yy);
+        const n = Math.max(1, Math.min(7, Math.floor((1760 - yy - 30) / 58)));
+        top.slice(0, n).forEach((s, i) => {
+          const ry = yy + 66 + i * 58;
+          g.fillStyle = s.rank === 1 ? ACC : MUT; g.font = "380 38px " + DISP; g.textAlign = "center"; g.fillText(String(s.rank), X + 14, ry); g.textAlign = "left";
+          g.fillStyle = TXT; g.font = "500 34px " + BODY; g.fillText(fit(s.name, R - X - 160), X + 60, ry);
+          g.fillStyle = MUT; g.font = "400 28px " + MONO; g.textAlign = "right"; g.fillText(s.count + "×", R, ry); g.textAlign = "left";
+        });
+      }
+    }
+    g.fillStyle = MUT; g.font = "400 25px " + MONO; g.textAlign = "right"; g.fillText("longroad.joaomiguel.com", R, 1815); g.textAlign = "left";
+    await deliverPng(cv, "long-road-" + name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") + ".png", name + " · Long Road");
+  }
+
 
   // ---------- map ----------
   // Drawn by the app itself (no map tiles): assets/map/lrmap.js is a small build of d3-geo, d3-zoom and topojson-client
