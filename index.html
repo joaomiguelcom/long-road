@@ -1495,7 +1495,7 @@
       MAP_VIEWS.map(([k, label]) => '<button type="button" data-mview="' + k + '" class="' + (mapArea === k ? "on" : "") + '" aria-pressed="' + (mapArea === k) + '">' + label + "</button>").join("") +
       '</div><div class="map-zoom"><button type="button" data-mzoom="2" aria-label="Zoom in">+</button><button type="button" data-mzoom="0.5" aria-label="Zoom out">−</button></div></div>' +
       '<div class="map-info" id="map-info"></div>' +
-      '<p class="tag" style="margin:0">Circles are cities (setlist.fm gives coordinates per city, not per venue). Bigger means more concerts. Tap a circle to see its concerts.</p>';
+      '<p class="tag" style="margin:0">Circles are cities. Bigger means more concerts. Tap a circle to see its concerts.</p>';
   }
   const mapWaiting = [];
   function loadMapLibs(cb) {
