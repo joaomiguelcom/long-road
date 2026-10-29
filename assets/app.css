@@ -677,3 +677,5 @@ td .tag { font: 400 13px/1.4 var(--body); color: var(--ink-2); }
 /* city names on the map can be tapped like their circles */
 #map .map-lbl { pointer-events: auto; cursor: pointer; }
 #map .map-lbl:hover { fill: var(--text); }
+/* phones: the image button sits close to the "year" button (João, 2026-10-29) */
+@media (max-width: 600px) { .year-nav { gap: 2px; } .year-nav .icon-btn { margin-right: 2px; } }
