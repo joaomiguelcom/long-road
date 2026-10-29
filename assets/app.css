@@ -664,7 +664,9 @@ td .tag { font: 400 13px/1.4 var(--body); color: var(--ink-2); }
 }
 /* Year in review: the "year in progress" note a size below the other notes (João, 2026-10-29) */
 .year-note { font-size: 10.5px; }
-/* phones: the "+12 vs '25" line always sits under the number, never half beside it and half wrapped (João, 2026-10-29) */
+/* phones: only "+12" beside the number, so it never wraps under it (João, 2026-10-29) */
 @media (max-width: 600px) {
-  .kpi .delta { flex-basis: 100%; margin-left: 0; font-size: 13px; line-height: 1.3; }
+  /* beside the number, as on wide screens; the year it compares with is in the note under the cards */
+  .kpi .delta { margin-left: 0; font-size: 13px; }
+  .kpi .delta .vs { display: none; }
 }

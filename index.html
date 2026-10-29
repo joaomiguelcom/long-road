@@ -1239,7 +1239,7 @@
     const todayIso = new Date().toISOString().slice(0, 10), running = todayIso.startsWith(y), cutoff = py + todayIso.slice(4);
     const pList = concerts.filter((c) => c.date.startsWith(py) && (!running || c.date <= cutoff));
     const toDate = running ? " up to " + fmtDate(cutoff).slice(0, 6).replace(/^0/, "") : "";
-    const delta = (cur, before) => pList.length ? '<span class="delta' + (cur > before ? " up" : cur < before ? " down" : "") + '" title="' + py + toDate + ": " + fmtN(before) + '">' + (cur === before ? "=" : (cur > before ? "+" : "−") + fmtN(Math.abs(cur - before))) + " vs ’" + py.slice(2) + "</span>" : "";
+    const delta = (cur, before) => pList.length ? '<span class="delta' + (cur > before ? " up" : cur < before ? " down" : "") + '" title="' + py + toDate + ": " + fmtN(before) + '">' + (cur === before ? "=" : (cur > before ? "+" : "−") + fmtN(Math.abs(cur - before))) + "<span class=\"vs\"> vs ’" + py.slice(2) + "</span></span>" : "";
     const pArtists = new Set(pList.map((c) => c.artist)).size;
     const pVenues = new Set(pList.filter((c) => !c.festival).map(venueKey)).size;
     const pFest = new Set(pList.filter((c) => c.festival).map((c) => c.festival)).size;
