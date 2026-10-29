@@ -938,8 +938,8 @@
     return '<div class="detail-wide">' +
       '<button class="btn" id="backArtists">← All artists</button>' +
       '<div><div class="eyebrow">#' + a.rank + " most seen artist</div>" +
-      '<h2 style="margin:4px 0 0;font:600 40px/1.1 var(--display)">' + esc(name) + "</h2>" +
-      '<div class="muted">First seen ' + fmtDate(first.date) + " at " + esc(first.festival || first.venue) + (list.length > 1 ? " · Last seen " + fmtDate(last.date) + " at " + esc(last.festival || last.venue) : "") + "</div></div>" +
+      '<h2 class="detail-title">' + esc(name) + "</h2>" +
+      '<div class="muted detail-meta">First seen ' + fmtDate(first.date) + " at " + esc(first.festival || first.venue) + (list.length > 1 ? " · Last seen " + fmtDate(last.date) + " at " + esc(last.festival || last.venue) : "") + "</div></div>" +
       '<section class="grid kpis" aria-label="Artist summary">' +
         kpi("Concerts", '<span class="accent">' + a.count + "</span>", aFest ? aFest + " at festivals" : "", fattr("artist", name)) +
         kpi("Songs heard", fmtN(heard), fmtN(aSongs.length) + " different") +
@@ -981,8 +981,8 @@
     return '<div class="detail-wide">' +
       '<button class="btn" id="backVenues">← All venues</button>' +
       '<div><div class="eyebrow">#' + v.rank + " most visited venue</div>" +
-      '<h2 style="margin:4px 0 0;font:600 40px/1.1 var(--display)">' + esc(v.name) + "</h2>" +
-      '<div class="muted">' + esc([v.city, first.country].filter(Boolean).join(", ")) + " · First concert " + fmtDate(first.date) + " (" + at(first) + ")" +
+      '<h2 class="detail-title">' + esc(v.name) + "</h2>" +
+      '<div class="muted detail-meta">' + esc([v.city, first.country].filter(Boolean).join(", ")) + " · First concert " + fmtDate(first.date) + " (" + at(first) + ")" +
         (list.length > 1 ? " · Last " + fmtDate(last.date) + " (" + at(last) + ")" : "") + "</div></div>" +
       '<section class="grid kpis" aria-label="Venue summary">' +
         kpi("Concerts", '<span class="accent">' + list.length + "</span>", nights.length < list.length ? plural(nights.length, "night", "nights") : "", fattr("venue", key)) +
@@ -1059,8 +1059,8 @@
     return '<div class="detail-wide">' +
       '<button class="btn" id="backFestivals">← All festivals</button>' +
       '<div><div class="eyebrow">#' + f.rank + " festival</div>" +
-      '<h2 style="margin:4px 0 0;font:600 40px/1.1 var(--display)">' + esc(name) + "</h2>" +
-      '<div class="muted">' + esc([first.city, first.country].filter(Boolean).join(", ")) + " · First edition " + first.date.slice(0, 4) + (f.count > 1 ? " · Last " + last.date.slice(0, 4) : "") + "</div></div>" +
+      '<h2 class="detail-title">' + esc(name) + "</h2>" +
+      '<div class="muted detail-meta">' + esc([first.city, first.country].filter(Boolean).join(", ")) + " · First edition " + first.date.slice(0, 4) + (f.count > 1 ? " · Last " + last.date.slice(0, 4) : "") + "</div></div>" +
       '<section class="grid kpis" aria-label="Festival summary">' +
         kpi("Editions", '<span class="accent">' + f.count + "</span>", plural(f.days, "day", "days")) +
         kpi("Concerts", list.length + "", "", fattr("festival", name)) +
@@ -1158,8 +1158,8 @@
     return '<div class="detail-wide">' +
       '<button class="btn" id="backSongs">← All songs</button>' +
       '<div><div class="eyebrow">' + (s.count > 1 ? "#" + s.rank + " most heard song" : "Heard once") + "</div>" +
-      '<h2 style="margin:4px 0 0;font:600 40px/1.1 var(--display)">' + esc(s.name) + "</h2>" +
-      '<div class="muted">' + (seenOwner ? "by " + artistBtn(s.artist, "text-link") : esc(s.artist) + " cover") + "</div></div>" +
+      '<h2 class="detail-title">' + esc(s.name) + "</h2>" +
+      '<div class="muted detail-meta">' + (seenOwner ? "by " + artistBtn(s.artist, "text-link") : esc(s.artist) + " cover") + "</div></div>" +
       '<section class="grid kpis" aria-label="Song summary">' +
         kpi("Times heard", '<span class="accent">' + s.count + "</span>", "", fattr("song", s.artist + "||" + s.name)) +
         kpi("First heard", fmtDate(first.c.date).slice(-4), esc(first.c.artist) + " · " + fmtDate(first.c.date).slice(0, 6), openAttr(first.c)) +
@@ -1227,7 +1227,7 @@
     const pVenues = new Set(pList.filter((c) => !c.festival).map(venueKey)).size;
     const pFest = new Set(pList.filter((c) => c.festival).map((c) => c.festival)).size;
     const pSongs = pList.reduce((n, c) => n + (c.songs || []).filter((s) => !s.tape).length, 0);
-    return '<div class="list-head"><div class="list-title"><h2 style="font-size:40px">' + esc(y) + "</h2>" +
+    return '<div class="list-head"><div class="list-title"><h2>' + esc(y) + "</h2>" +
       '<span class="muted">' + plural(list.length, "concert", "concerts") + "</span></div>" +
       '<div class="year-nav">' + (prev ? '<button class="btn" data-year="' + prev.key + '">← ' + prev.key + "</button>" : "") +
       '<label for="ysel" class="sr-only">Year</label><select id="ysel">' + byYear.slice().reverse().map((x) => '<option value="' + x.key + '"' + (x.key === y ? " selected" : "") + ">" + x.key + "</option>").join("") + "</select>" +
