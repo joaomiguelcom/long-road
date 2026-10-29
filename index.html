@@ -871,10 +871,12 @@
     });
     const shown = limit ? rows.slice(0, limit) : rows;
     SORT_LABELS[id] = cols.map((c) => c.label);
-    const sortChips = m ? '<span class="mchip">' + qpick("ms-" + id, "Sort", [["", "Default"]].concat(cols.map((c, i) => c.label === "#" ? null : [String(i), c.label, ' data-num="' + (c.num ? 1 : 0) + '"']).filter(Boolean)),
+    // lists inside an artist, venue or song page keep their order: no sort chip on phones (João, 2026-10-29)
+    const fixed = ["artist-concerts", "venue-concerts", "song-plays"].includes(id);
+    const sortChips = m && !fixed ? '<span class="mchip">' + qpick("ms-" + id, "Sort", [["", "Default"]].concat(cols.map((c, i) => c.label === "#" ? null : [String(i), c.label, ' data-num="' + (c.num ? 1 : 0) + '"']).filter(Boolean)),
       st ? String(st.col) : "", "", ' data-sortsel="' + id + '"') +
       (st ? '<button type="button" class="toggle on icon-chip" data-sortdir="' + id + '" aria-label="' + (st.dir > 0 ? "Ascending, switch to descending" : "Descending, switch to ascending") + '">' + (st.dir > 0 ? "↑" : "↓") + "</button>" : "") + "</span>" : "";
-    let sortBar = bar ? '<div class="quick">' + bar + sortChips + "</div>" : m ? '<div class="quick msort">' + sortChips + "</div>" : "";
+    let sortBar = bar ? '<div class="quick">' + bar + sortChips + "</div>" : sortChips ? '<div class="quick msort">' + sortChips + "</div>" : "";
     // in the panel the direction is a two-way switch under the sort row, instead of the arrow chip
     const dirSeg = st ? '<div class="seg fs-dir" role="group" aria-label="Order">' + [[1, "Ascending"], [-1, "Descending"]].map(([v, l]) => '<button type="button" class="' + (st.dir === v ? "on" : "") + '"' + (st.dir === v ? "" : ' data-sortdir="' + id + '"') + ' aria-pressed="' + (st.dir === v) + '">' + l + "</button>").join("") + "</div>" : "";
     if (SHEETS[id] && (bar || m)) sortBar = fsSheet((bar || "") + sortChips + dirSeg, "Show " + plural(rows.length, SHEETS[id], SHEETS[id] + "s"), bar ? "" : "Sort", bar ? "" : "msort", (bar || "").includes("clear-all") || st ? id : "", SUB_SHEETS.includes(id) ? id : "main");
@@ -891,8 +893,8 @@
     return sortBar + mlist + '<div class="table-box' + (m ? " has-mlist" : "") + '"><table><thead><tr>' + cols.map((c, i) => {
       const on = st && st.col === i;
       return '<th scope="col"' + (c.num ? ' class="num"' : "") + (on ? ' aria-sort="' + (st.dir > 0 ? "ascending" : "descending") + '"' : "") +
-        '><button type="button" class="th-btn" data-sort="' + id + "|" + i + "|" + (c.num ? 1 : 0) + '">' + c.label +
-        '<span class="arrow" aria-hidden="true">' + (on ? (st.dir > 0 ? "↑" : "↓") : "↕") + "</span></button></th>";
+        ">" + (fixed ? c.label : '<button type="button" class="th-btn" data-sort="' + id + "|" + i + "|" + (c.num ? 1 : 0) + '">' + c.label +
+        '<span class="arrow" aria-hidden="true">' + (on ? (st.dir > 0 ? "↑" : "↓") : "↕") + "</span></button>") + "</th>";
     }).join("") + "</tr></thead><tbody>" +
       shown.map((r) => "<tr>" + r.map((c, i) => "<td" + (cols[i].cls ? ' class="' + cols[i].cls + '"' : "") + ">" + c.h + "</td>").join("") + "</tr>").join("") +
       "</tbody></table></div>" +
@@ -910,6 +912,10 @@
   const concertM = (r) => ({ title: r[1].h, sub: [r[0].h, r[2].h, r[3].h], tag: r[4].h, value: r[5].h, unit: r[5].s === 1 ? "song" : "songs" });
   // on an artist page the artist is the page: the venue leads each row
   const artistConcertM = (r) => ({ title: '<button type="button" class="open" data-open="' + esc(r.id) + '">' + r[2].h + "</button>", sub: [r[0].h, r[3].h], tag: r[4].h, value: r[5].h, unit: r[5].s === 1 ? "song" : "songs" });
+  // on a venue page the venue and city are the page: rows keep date, artist, notes and songs
+  const VENUE_COLS = [0, 1, 4, 5];
+  const venueRows = (rows) => rows.map((r) => Object.assign(VENUE_COLS.map((i) => r[i]), { id: r.id }));
+  const venueConcertM = (r) => ({ title: r[1].h, sub: [r[0].h], tag: r[2].h, value: r[3].h, unit: r[3].s === 1 ? "song" : "songs" });
   const CONCERT_COLS = [{ label: "Date", cls: "muted" }, { label: "Artist" }, { label: "Venue" }, { label: "City", cls: "muted" }, { label: "Notes" }, { label: "Songs", num: true, cls: "num" }];
 
   const FILTERS = {
@@ -1381,7 +1387,7 @@
       (vYears.length > 1 ? '<section class="card"><h2>By year</h2><div class="history-list">' + vYears.map((y) => '<button type="button" class="hist"' + fattr("venue", key, y.key) + ">" + y.key + (y.count > 1 ? " ×" + y.count : "") + "</button>").join("") + "</div></section>" : "") +
       (facts.length ? '<section class="card"><h2>Venue facts</h2><ul class="facts-list">' + facts.map((f) => "<li>" + f + "</li>").join("") + "</ul></section>" : "") +
       '<section class="card"><div class="card-head"><h2>Concerts</h2><button class="link"' + fattr("venue", key) + ">Open in concert list</button></div>" +
-        table("venue-concerts", CONCERT_COLS, concertRows(list, new Set(firsts)), 0, concertM) + "</section>" +
+        table("venue-concerts", VENUE_COLS.map((i) => CONCERT_COLS[i]), venueRows(concertRows(list, new Set(firsts))), 0, venueConcertM) + "</section>" +
       "</div>";
   }
 
