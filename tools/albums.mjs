@@ -57,14 +57,19 @@ async function artistId(name) {
 }
 
 const VIDEO = /dvd|blu-ray|vhs|video/i;
-// earliest official release; same day → the shorter one (the deluxe edition often comes out the same day),
-// then CD or digital
+// the original edition: among the official releases of the first 90 days, the shortest one (deluxe editions with
+// bonus discs often come out on the same day or a few days apart), then CD or digital
 function original(releases) {
   const fmt = (r) => ((r.media || []).some((m) => /^(CD|Digital Media)$/.test(m.format || "")) ? 0 : 1);
   const len = (r) => (r.media || []).filter((m) => !VIDEO.test(m.format || "")).reduce((n, m) => n + (m.tracks || []).length, 0);
-  const day = (r) => r.date.slice(0, 10).padEnd(10, "~");
   const ok = releases.filter((r) => r.date && len(r));
-  return ok.sort((a, b) => day(a).localeCompare(day(b)) || len(a) - len(b) || fmt(a) - fmt(b))[0];
+  if (!ok.length) return null;
+  // releases dated only by year or month count as the first day of it, and stay in when that day is in the window
+  const when = (r) => Date.parse(r.date.slice(0, 10).padEnd(10, "-01"));
+  const full = ok.filter((r) => r.date.length >= 10);
+  const first = Math.min(...(full.length ? full : ok).map(when));
+  const early = ok.filter((r) => when(r) - first <= 90 * 864e5);
+  return early.sort((a, b) => len(a) - len(b) || fmt(a) - fmt(b))[0];
 }
 
 // compilations João wants counted as albums too (2026-10-29); the app marks them as "rarities"
@@ -86,6 +91,13 @@ async function albums(mbid, name) {
     g["first-release-date"] && g["first-release-date"] <= today &&
     // only albums credited to this artist alone (no collaborations)
     (g["artist-credit"] || []).length === 1 && g["artist-credit"][0].artist.id === mbid);
+  for (const t of INCLUDE[name] || []) {
+    if (studio.some((g) => plain(g.title) === plain(t))) continue;
+    const body = await mb("release-group?limit=10&query=" + encodeURIComponent('releasegroup:"' + t + '" AND arid:' + mbid));
+    const g = (body["release-groups"] || []).find((x) => plain(x.title) === plain(t));
+    if (g) studio.push({ ...g, "secondary-types": g["secondary-types"] || ["Compilation"] });
+    else console.log(`${name}: "${t}" not found on MusicBrainz`);
+  }
   const out = [];
   for (const g of studio) {
     const body = await mb("release?release-group=" + g.id + "&status=official&inc=recordings+media&limit=100");
