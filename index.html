@@ -523,7 +523,7 @@
   const VENUE_COLS = [0, 1, 4, 5];
   const venueRows = (rows) => rows.map((r) => Object.assign(VENUE_COLS.map((i) => r[i]), { id: r.id }));
   const venueConcertM = (r) => ({ title: r[1].h, sub: [r[0].h], tag: r[2].h, value: r[3].h, unit: r[3].s === 1 ? "song" : "songs" });
-  const CONCERT_COLS = [{ label: "Date", cls: "muted" }, { label: "Artist" }, { label: "Venue" }, { label: "City", cls: "muted" }, { label: "Notes" }, { label: "Songs", num: true, cls: "num" }];
+  const CONCERT_COLS = [{ label: "Date", cls: "muted date" }, { label: "Artist" }, { label: "Venue" }, { label: "City", cls: "muted" }, { label: "Notes" }, { label: "Songs", num: true, cls: "num" }];
 
   const FILTERS = {
     artist: { label: "Artist", test: (c, v) => c.artist === v, show: (v) => v },
@@ -882,7 +882,7 @@
     const setChip = state.artistSet === "homeAway" ? '<button type="button" class="toggle on" data-aset="" aria-label="Show all artists">Seen in Portugal and abroad ×</button>' : "";
     const aChips = state.shelfOnly ? [["On my shelf", "shelfOnly"]] : [];
     return '<div class="list-head"><div class="list-title"><h2>' + plural(list.length, "artist", "artists") + "</h2>" + setChip + "</div>" + searchBox("aq", "Search artist", "Search artist", state.artistQ, fsBtn(fsCount("artists", aChips.length))) + fsChips("artists", aChips) + "</div>" +
-      table("artists", [{ label: "#", num: true, cls: "num" }, { label: "Artist" }, { label: "Concerts", num: true, cls: "num" }, { label: "First seen", cls: "muted" }, { label: "Last seen", cls: "muted" }], rows, limitOf("artists", 100),
+      table("artists", [{ label: "#", num: true, cls: "num" }, { label: "Artist" }, { label: "Concerts", num: true, cls: "num" }, { label: "First seen", cls: "muted date" }, { label: "Last seen", cls: "muted date" }], rows, limitOf("artists", 100),
         (r) => ({ rank: r[0].h, title: r[1].h, sub: [r[3].s.slice(0, 4) === r[4].s.slice(0, 4) ? r[3].s.slice(0, 4) : r[3].s.slice(0, 4) + " – " + r[4].s.slice(0, 4)], value: r[2].h, unit: r[2].s === 1 ? "concert" : "concerts" }), toggle + clearA);
   }
 
@@ -1011,7 +1011,7 @@
     const citySel = qpick("vcsel", "Country", [["", "All countries"]].concat(vCountries.map((x) => [x.key, x.key + " (" + x.count + ")"])), state.venueCountry) + qpick("vsel", "City", [["", "All cities"]].concat(vCities.map((x) => [x.key, x.key + " (" + x.count + ")"])), state.venueCity) + clearAll(state.venueCountry || state.venueCity || state.venueQ, "venues");
     const vChips = [state.venueCountry ? [state.venueCountry, "venueCountry"] : null, state.venueCity ? [state.venueCity, "venueCity"] : null].filter(Boolean);
     return '<div class="list-head"><div class="list-title"><h2>' + plural(list.length, "venue", "venues") + "</h2></div>" + searchBox("vq", "Search venue", "Search venue or city", state.venueQ, fsBtn(fsCount("venues", vChips.length))) + fsChips("venues", vChips) + "</div>" +
-      table("venues", [{ label: "#", num: true, cls: "num" }, { label: "Venue" }, { label: "City", cls: "muted" }, { label: "First visit", cls: "muted" }, { label: "Concerts", num: true, cls: "num" }], rows, 0,
+      table("venues", [{ label: "#", num: true, cls: "num" }, { label: "Venue" }, { label: "City", cls: "muted" }, { label: "First visit", cls: "muted date" }, { label: "Concerts", num: true, cls: "num" }], rows, 0,
         (r) => ({ rank: r[0].h, title: r[1].h, sub: [r[2].h, "since " + r[3].s.slice(0, 4)], value: r[4].h, unit: r[4].s === 1 ? "concert" : "concerts" }), citySel) +
       '<p class="tag list-note">Festival concerts are not counted here.</p>';
   }
@@ -1169,7 +1169,7 @@
       setStrip(plays) +
       (facts.length ? '<section class="card"><h2>Song facts</h2><ul class="facts-list">' + facts.map((f) => "<li>" + f + "</li>").join("") + "</ul></section>" : "") +
       '<section class="card"><div class="card-head"><h2>Every time you heard it</h2><button class="link"' + fattr("song", s.artist + "||" + s.name) + ">Open in concert list</button></div>" +
-        table("song-plays", [{ label: "Date", cls: "muted" }, { label: "Artist" }, { label: "Where", cls: "muted" }, { label: "In the setlist" }], rows, 0,
+        table("song-plays", [{ label: "Date", cls: "muted date" }, { label: "Artist" }, { label: "Where", cls: "muted" }, { label: "In the setlist" }], rows, 0,
           (r) => ({ title: r[1].h, sub: [r[0].h, r[2].h], tag: r[3].h })) + "</section>" +
       "</div>";
   }
@@ -1196,7 +1196,7 @@
         (r) => ({ rank: r[0].h, title: r[1].h, sub: [r[2].h], value: r[3].h, unit: r[3].s === 1 ? "time" : "times" })) +
       '<div class="list-head"><div class="list-title"><h2>Covers heard live</h2></div>' + (covers.length ? searchBox("cvq", "Search covers", "Search song or artist", state.coverQ, fsBtn(fsCount("covers", 0), "Sort", "covers")) + fsChips("covers", []) : "") + "</div>" + (cq && !coverRows.length ? '<div class="empty">No covers match.</div>' : coverRows.length ? table("covers", [{ label: "Song" }, { label: "Original by", cls: "muted" }, { label: "Played by" }, { label: "Times", num: true, cls: "num" }], coverRows, limitOf("covers", 10),
         (r) => ({ title: r[0].h, sub: [r[1].h + " → " + r[2].h], value: r[3].h, unit: r[3].s === 1 ? "time" : "times" })) : '<p class="muted" style="margin:0">None found yet.</p>') +
-      '<div class="list-head"><div class="list-title"><h2>Live debuts you saw</h2></div>' + (debuts.length ? searchBox("dbq", "Search live debuts", "Search song or artist", state.debutQ, fsBtn(fsCount("debuts", 0), "Sort", "debuts")) + fsChips("debuts", []) : "") + "</div>" + (dq && !debutRows.length ? '<div class="empty">No debuts match.</div>' : debutRows.length ? table("debuts", [{ label: "Date", cls: "muted" }, { label: "Song" }, { label: "Artist" }, { label: "Note", cls: "muted" }], debutRows, limitOf("debuts", 10),
+      '<div class="list-head"><div class="list-title"><h2>Live debuts you saw</h2></div>' + (debuts.length ? searchBox("dbq", "Search live debuts", "Search song or artist", state.debutQ, fsBtn(fsCount("debuts", 0), "Sort", "debuts")) + fsChips("debuts", []) : "") + "</div>" + (dq && !debutRows.length ? '<div class="empty">No debuts match.</div>' : debutRows.length ? table("debuts", [{ label: "Date", cls: "muted date" }, { label: "Song" }, { label: "Artist" }, { label: "Note", cls: "muted" }], debutRows, limitOf("debuts", 10),
         (r) => ({ title: r[1].h, sub: [r[0].h, esc(r[2].s), r[3].h] })) : '<p class="muted" style="margin:0">No songs marked as a live debut on setlist.fm yet.</p>');
   }
 
