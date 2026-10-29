@@ -1258,7 +1258,7 @@
         kpi("Festivals", yFest.length + delta(yFest.length, pFest), list.filter((c) => c.festival).length + " festival concerts", fattr("festivals", y)) +
         (ySongs ? kpi("Songs heard", fmtN(ySongs) + delta(ySongs, pSongs), "", fattr("year", y)) : "") +
       "</section>" +
-      (running && pList.length ? '<p class="tag list-note">The year is not over: changes compare with ' + py + " up to " + fmtDate(cutoff).slice(0, 6).replace(/^0/, "") + ".</p>" : "") +
+      (running && pList.length ? '<p class="tag list-note year-note">Year in progress · vs ' + py + " up to " + fmtDate(cutoff).slice(0, 6).replace(/^0/, "") + "</p>" : "") +
       '<div class="grid fun-grid" style="--min:240px">' +
         fun("First concert", esc(first.artist), fmtDate(first.date) + " · " + esc(first.festival || first.venue), openAttr(first)) +
         fun("Last concert", esc(last.artist), fmtDate(last.date) + " · " + esc(last.festival || last.venue), openAttr(last)) +

@@ -662,3 +662,5 @@ td .tag { font: 400 13px/1.4 var(--body); color: var(--ink-2); }
   .fs-panel > .chip strong { font-weight: 400; }
   .fs-panel > .chip button { width: 20px; height: 20px; margin-left: 2px; }
 }
+/* Year in review: the "year in progress" note a size below the other notes (João, 2026-10-29) */
+.year-note { font-size: 10.5px; }
