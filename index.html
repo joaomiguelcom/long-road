@@ -528,7 +528,8 @@
         ">" + (fixed ? c.label : '<button type="button" class="th-btn" data-sort="' + id + "|" + i + "|" + (c.num ? 1 : 0) + '">' + c.label +
         '<span class="arrow" aria-hidden="true">' + (on ? (st.dir > 0 ? "↑" : "↓") : "↕") + "</span></button>") + "</th>";
     }).join("") + "</tr></thead><tbody>" +
-      shown.map((r) => "<tr>" + r.map((c, i) => "<td" + (cols[i].cls ? ' class="' + cols[i].cls + '"' : "") + ">" + c.h + "</td>").join("") + "</tr>").join("") +
+      // concert rows open the concert from anywhere in the row (João, 2026-10-29)
+      shown.map((r) => "<tr" + (r.id ? ' data-row="' + esc(r.id) + '"' : "") + ">" + r.map((c, i) => "<td" + (cols[i].cls ? ' class="' + cols[i].cls + '"' : "") + ">" + c.h + "</td>").join("") + "</tr>").join("") +
       "</tbody></table></div>" +
       (limit && rows.length > limit ? '<div class="more"><button class="btn" data-more="' + id + '" data-shown="' + limit + '">Show more</button></div>' : "");
   }
@@ -954,7 +955,7 @@
         return '<li class="' + (x ? "on" : "off") + '"><span class="tn">' + (i + 1) + '</span><span class="tt">' + esc(t) + '</span><span class="tc">' + (x ? x + "×" : "—") + "</span></li>";
       }).join("");
       return '<details class="alb"><summary><span class="alb-cover" data-l="' + esc(a.title.replace(/^the /i, "").charAt(0)) + '"><img src="' + esc(a.cover) + '" alt="" loading="lazy" onerror="this.remove()"></span>' +
-        '<span class="alb-meta"><span class="alb-name">' + esc(a.title) + '</span><span class="alb-year">' + a.year + (a.extra ? " · rarities" : "") + '</span><span class="alb-bar"><span style="width:' + Math.round(n / keys.length * 100) + '%"></span></span></span>' +
+        '<span class="alb-meta"><span class="alb-name">' + esc(a.title) + '</span><span class="alb-year">' + a.year + '</span><span class="alb-bar"><span style="width:' + Math.round(n / keys.length * 100) + '%"></span></span></span>' +
         '<span class="alb-n">' + n + "<small>/" + keys.length + "</small></span></summary><ol>" + tracks + "</ol></details>";
     }).join("");
     return '<section class="card albums"><div class="card-head"><h2>Albums heard live</h2><span class="muted">studio albums' + al.filter((a) => a.extra).map((a) => " + " + esc(a.title)).join("") + ' · ' + (sets === list.length ? list.length + " concerts, all with setlists" : sets + " of " + list.length + " concerts with setlists") + "</span></div>" +
@@ -1787,7 +1788,12 @@
     // a tap anywhere else closes the "More" menu of the bottom bar
     if (moreOpen && !e.target.closest("#bMore")) { moreOpen = false; renderBottomNav(); }
     const t = e.target.closest('button, [role="button"]');
-    if (!t) return;
+    if (!t) {
+      // a click on a concert row outside its links opens the concert (not when selecting text)
+      const row = e.target.closest("tr[data-row]");
+      if (row && !e.target.closest("a") && !String(getSelection())) go(() => { state.tab = "concerts"; state.detail = row.dataset.row; });
+      return;
+    }
     const d = t.dataset;
     if (d.fs) {
       fsOpen = d.fs === "close" ? null : d.fs;

@@ -709,3 +709,7 @@ td .tag { font: 400 13px/1.4 var(--body); color: var(--ink-2); }
 .alb li.on .tc { color: var(--accent); }
 .alb li.off .tt { color: var(--muted); }
 @media (max-width: 600px) { .alb-big b { font-size: 52px; } .alb ol { padding-left: 0; } }
+
+/* concert rows open from anywhere in the row (2026-10-29) */
+tr[data-row] { cursor: pointer; }
+@media (hover: hover) { tr[data-row]:hover td { background: rgba(var(--acc-rgb), .05); } tr[data-row]:hover td .open { color: var(--accent); } }
