@@ -920,12 +920,23 @@
   // "Alive (2004 Remaster)", "Once [Live]" and "Once" are the same song; "Release / Master/Slave" (a hidden track
   // after the song) counts as "Release"; NFKD turns "½ Full" into "1/2 Full"
   const trackKey = (s) => shelfKey(String(s || "").normalize("NFKD").split(" / ")[0].replace(/\s*[([][^)\]]*[)\]]/g, ""));
+  // MusicBrainz joins some tracks that the streaming edition and setlist.fm split (João, 2026-10-29)
+  const TRACK_SPLIT = {
+    "Arcade Fire": { "End of the Empire I-IV": ["End of the Empire I-III", "End of the Empire IV (Sagittarius A*)"], "The Lightning I, II": ["The Lightning I", "The Lightning II"] },
+  };
+  // setlist.fm spellings that are the same album track (João, 2026-10-29)
+  const TRACK_ALIAS = {
+    "Ornatos Violeta": { "Homem de princípios": "Homens de Princípios" },
+  };
   function albumsCard(name, list) {
-    const al = ((ALBUMS[name] || {}).albums || []).filter((a) => a.tracks && a.tracks.length);
+    const split = {}, alias = {};
+    for (const [k, v] of Object.entries(TRACK_SPLIT[name] || {})) split[trackKey(k)] = v;
+    for (const [k, v] of Object.entries(TRACK_ALIAS[name] || {})) alias[trackKey(k)] = trackKey(v);
+    const al = ((ALBUMS[name] || {}).albums || []).map((a) => ({ ...a, tracks: (a.tracks || []).flatMap((t) => split[trackKey(t)] || [t]) })).filter((a) => a.tracks.length);
     if (list.length < 5 || !al.length || !list.every((c) => (c.songs || []).some((s) => !s.tape && s.name))) return "";
     // concerts where each song was played (a song played twice in one night counts once)
     const heard = new Map();
-    for (const c of list) for (const k of new Set(c.songs.filter((s) => !s.tape && s.name).map((s) => trackKey(s.name)))) heard.set(k, (heard.get(k) || 0) + 1);
+    for (const c of list) for (const k of new Set(c.songs.filter((s) => !s.tape && s.name).map((s) => alias[trackKey(s.name)] || trackKey(s.name)))) heard.set(k, (heard.get(k) || 0) + 1);
     let total = 0, got = 0;
     const rows = al.map((a) => {
       const keys = [...new Set(a.tracks.map(trackKey))];
