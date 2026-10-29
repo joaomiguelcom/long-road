@@ -648,3 +648,10 @@ td .tag { font: 400 13px/1.4 var(--body); color: var(--ink-2); }
   .sbar .search input[type=search] { padding-right: 76px; }
   input[type=search]::placeholder { font-size: 14px; }
 }
+/* the list's own filter pill lives in the filter row on wide screens and among the chips on phones (one copy each) */
+.quick > .chip { margin-right: 6px; }
+.quick > .chip button { width: 28px; height: 28px; }
+@media (max-width: 600px) {
+  .quick > .chip { display: none; }
+  .fchips > .chip { padding: 1px 2px 1px 12px; }
+}

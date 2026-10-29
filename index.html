@@ -459,6 +459,8 @@
   // chips: [label, state key]; × clears that one filter
   const SORT_LABELS = {};
   const sortChip = (scope) => { const st = state.sorts[scope]; return st ? [[(SORT_LABELS[scope] || [])[st.col] || "Sorted", st.dir > 0 ? " ↑" : " ↓"].join(""), "sort:" + scope] : null; };
+  // puts an extra chip (built elsewhere) at the start of the phone's chips row, creating the row when it is empty
+  const withChip = (row, chip) => !chip ? row : row ? row.replace('<div class="fchips">', '<div class="fchips">' + chip) : '<div class="fchips">' + chip + "</div>";
   const fsChips = (scope, chips) => (chips = sortChip(scope) ? chips.concat([sortChip(scope)]) : chips) && chips.length ? '<div class="fchips">' + chips.map(([label, key]) => '<button type="button" class="fchip" data-unset="' + key + '" aria-label="Remove ' + esc(label) + '">' + esc(label) +
     '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>').join("") +
     (chips.length > 1 ? '<button type="button" class="link" data-clear="' + scope + '">Clear all</button>' : "") + "</div>" : "";
@@ -768,7 +770,7 @@
   function about() {
     const first = chrono[0].date.slice(0, 4);
     return '<section class="card about" id="about" aria-labelledby="h-about">' +
-      '<img src="img/me.jpg" alt="João Miguel" width="96" height="96">' +
+      '<img src="img/me.jpg?v=__BUILD__" alt="João Miguel" width="96" height="96">' +
       '<div><h2 id="h-about">About me</h2>' +
       "<p>Hi, I'm João Miguel. I've been going to concerts since " + first + ", " + fmtN(chrono.length) + " so far, from tiny clubs to muddy festival fields. " +
       artistBtn("Pearl Jam", "text-link") + " is the reason this archive is called Long Road. When I'm not at a show, I'm probably at home spinning records.</p>" +
@@ -798,15 +800,16 @@
     const forKind = base.filter((c) => okCountry(c) && okYear(c));
     const kindBtn = (k, label) => { const none = k && !forKind.some((c) => okKind(c, k));
       return '<button type="button" class="' + (state.kind === k ? "on" : "") + '" data-kind="' + k + '" aria-pressed="' + (state.kind === k) + '"' + (none && state.kind !== k ? " disabled" : "") + ">" + label + "</button>"; };
-    const quick = '<div class="seg" role="group" aria-label="Type">' + kindBtn("", "All") + kindBtn("shows", "Shows") + kindBtn("fest", "Festivals") + "</div>" +
+    // the list's own filter (an artist, a venue…) sits with the other filters: first in the row on wide screens, first chip on phones
+    const fChip = F ? '<span class="chip"><span class="chip-label">' + F.label + "</span><strong>" + esc(F.show(state.filter.v)) + (state.filter.y ? " · " + esc(state.filter.y) : "") + '</strong><button type="button" data-clearf="1" aria-label="Clear filter"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button></span>' : "";
+    const quick = fChip + '<div class="seg" role="group" aria-label="Type">' + kindBtn("", "All") + kindBtn("shows", "Shows") + kindBtn("fest", "Festivals") + "</div>" +
       qpick("csel", "Country", facet(base.filter((c) => okKind(c, state.kind) && okYear(c)), (c) => c.country, state.country, "All countries"), state.country) +
       qpick("cysel", "Year", facet(base.filter((c) => okKind(c, state.kind) && okCountry(c)), (c) => c.date.slice(0, 4), state.cYear, "All years", true), state.cYear) +
       clearAll(state.kind || state.country || state.cYear || state.q || state.filter, "concerts");
     const cChips = [state.kind ? [state.kind === "fest" ? "Festivals" : "Shows", "kind"] : null, state.country ? [state.country, "country"] : null, state.cYear ? [state.cYear, "cYear"] : null].filter(Boolean);
     return '' +
       '<div class="list-head"><div class="list-title"><h2>' + plural(list.length, "concert", "concerts") + "</h2>" +
-      (F ? '<span class="chip"><span class="chip-label">' + F.label + "</span><strong>" + esc(F.show(state.filter.v)) + (state.filter.y ? " · " + esc(state.filter.y) : "") + '</strong><button type="button" id="clearf" aria-label="Clear filter"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button></span>' : "") +
-      "</div>" + searchBox("q", "Search concerts", "Search artist, venue, city", state.q, fsBtn(fsCount("concerts", cChips.length))) + fsChips("concerts", cChips) + "</div>" +
+      "</div>" + searchBox("q", "Search concerts", "Search artist, venue, city", state.q, fsBtn(fsCount("concerts", cChips.length))) + withChip(fsChips("concerts", cChips), fChip) + "</div>" +
       table("concerts", CONCERT_COLS, concertRows(list), limitOf("concerts", 100), concertM, quick);
   }
 
@@ -1774,7 +1777,7 @@
     else if (d.sortdir) { const st = state.sorts[d.sortdir]; if (st) { st.dir = -st.dir; render(); } }
     else if (d.more) { const n = +d.shown; state.limits[d.more] = n < 100 ? n * 3 : n + 200; render(); }
     else if (t.id === "nextAll") { state.nextAll = !state.nextAll; render(); }
-    else if (t.id === "clearf") { state.filter = null; state.limits.concerts = 0; render(); }
+    else if (d.clearf) { state.filter = null; state.limits.concerts = 0; render(); }
     else if (t.id === "back") { if (depth() > 0) goBack(); else go(() => { state.detail = null; }); }
     else if (t.id === "bMore") { moreOpen = !moreOpen; renderBottomNav(); }
     else if (t.id === "toTop") window.scrollTo({ top: 0, behavior: "smooth" });
