@@ -606,3 +606,5 @@ th, th.num { font: 500 11.5px/1.2 var(--body); letter-spacing: .12em; text-trans
 .th-btn .arrow { letter-spacing: 0; }
 td.date { font: 400 13px/1.4 var(--mono); font-variant-numeric: tabular-nums; }
 td .tag { font: 400 13px/1.4 var(--body); color: var(--ink-2); }
+/* the site name and its subtitle in lower case, as sismos.pt (João, 2026-10-29) */
+.brand h1, .brand .eyebrow { text-transform: lowercase; }
