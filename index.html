@@ -84,6 +84,7 @@
 <script src="extra.js?v=__BUILD__"></script>
 <script src="data/discogs.js?v=__BUILD__"></script>
 <script src="data/popularity.js?v=__BUILD__"></script>
+<script src="data/albums.js?v=__BUILD__"></script>
 <script>
 (function () {
   "use strict";
@@ -913,6 +914,36 @@
   }
 
   // records by this artist in the Discogs collection
+  // "Albums heard live": share of each studio album heard at his concerts (data/albums.js, from MusicBrainz).
+  // Only for artists with 5+ concerts and a setlist at every one; tools/albums.mjs uses the same rule.
+  const ALBUMS = (window.LONG_ROAD_ALBUMS && window.LONG_ROAD_ALBUMS.artists) || {};
+  // "Alive (2004 Remaster)", "Once [Live]" and "Once" are the same song
+  const trackKey = (s) => shelfKey(String(s || "").replace(/\s*[([][^)\]]*[)\]]/g, ""));
+  function albumsCard(name, list) {
+    const al = ((ALBUMS[name] || {}).albums || []).filter((a) => a.tracks && a.tracks.length);
+    if (list.length < 5 || !al.length || !list.every((c) => (c.songs || []).some((s) => !s.tape && s.name))) return "";
+    // concerts where each song was played (a song played twice in one night counts once)
+    const heard = new Map();
+    for (const c of list) for (const k of new Set(c.songs.filter((s) => !s.tape && s.name).map((s) => trackKey(s.name)))) heard.set(k, (heard.get(k) || 0) + 1);
+    let total = 0, got = 0;
+    const rows = al.map((a) => {
+      const keys = [...new Set(a.tracks.map(trackKey))];
+      const n = keys.filter((k) => heard.has(k)).length;
+      total += keys.length; got += n;
+      const seen = new Set();
+      const tracks = a.tracks.filter((t) => !seen.has(trackKey(t)) && seen.add(trackKey(t))).map((t, i) => {
+        const x = heard.get(trackKey(t));
+        return '<li class="' + (x ? "on" : "off") + '"><span class="tn">' + (i + 1) + '</span><span class="tt">' + esc(t) + '</span><span class="tc">' + (x ? x + "×" : "—") + "</span></li>";
+      }).join("");
+      return '<details class="alb"><summary><span class="alb-cover" data-l="' + esc(a.title.replace(/^the /i, "").charAt(0)) + '"><img src="' + esc(a.cover) + '" alt="" loading="lazy" onerror="this.remove()"></span>' +
+        '<span class="alb-meta"><span class="alb-name">' + esc(a.title) + '</span><span class="alb-year">' + a.year + '</span><span class="alb-bar"><span style="width:' + Math.round(n / keys.length * 100) + '%"></span></span></span>' +
+        '<span class="alb-n">' + n + "<small>/" + keys.length + "</small></span></summary><ol>" + tracks + "</ol></details>";
+    }).join("");
+    return '<section class="card albums"><div class="card-head"><h2>Albums heard live</h2><span class="muted">studio albums · ' + list.length + " concerts, all with setlists</span></div>" +
+      '<div class="alb-big"><b>' + Math.round(got / total * 100) + "%</b><span>" + got + " of " + total + " studio songs heard live · tap an album to see which</span></div>" +
+      '<div class="alb-grid">' + rows + "</div></section>";
+  }
+
   function shelfCard(name) {
     const recs = onShelf(name);
     if (!recs) return "";
@@ -971,7 +1002,7 @@
         kpi("Songs heard", fmtN(heard), fmtN(aSongs.length) + " different") +
         kpi("Years", (+last.date.slice(0, 4) - +first.date.slice(0, 4) + 1) + "", first.date.slice(0, 4) + "–" + last.date.slice(0, 4)) +
         kpi("Countries", aCountries + "") +
-      "</section>" +
+      "</section>" + albumsCard(name, list) +
       (top.length ? '<section class="card"><h2>Songs you heard most</h2>' + bars(top.slice(0, isOpen("songs-" + name) ? top.length : 10), (s) => esc(s.name), (s) => sattr(s.key)) + moreBtn("songs-" + name, top.length, 10) + "</section>" : "") +
       (related.length ? '<section class="card"><h2>Also seen</h2><div class="history-list">' + related.map((x) => '<button type="button" class="hist"' + aattr(x.key) + ">" + esc(x.key) + " · " + plural(x.count, "concert", "concerts") + "</button>").join("") + "</div></section>" : "") +
       timeline + songStats +

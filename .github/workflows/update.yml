@@ -44,6 +44,11 @@ jobs:
         continue-on-error: true   # only used to break ties in the Year in review
         run: node tools/popularity.mjs
 
+      - name: Export studio albums
+        if: github.event_name != 'push'
+        continue-on-error: true   # only feeds "Albums heard live"; the previous file stays if MusicBrainz fails
+        run: node tools/albums.mjs
+
       - name: Commit backup
         if: github.event_name != 'push'
         run: |
@@ -62,7 +67,7 @@ jobs:
           mkdir -p _site
           cp index.html upcoming.js extra.js widget.js manifest.webmanifest sw.js _site/ && cp -r assets _site/
           # the app only reads these three; the raw exports stay in the repo
-          mkdir -p _site/data && cp data/data.js _site/data/ && { cp data/discogs.js _site/data/ || true; } && { cp data/popularity.js _site/data/ || true; }
+          mkdir -p _site/data && cp data/data.js _site/data/ && { cp data/discogs.js _site/data/ || true; } && { cp data/popularity.js _site/data/ || true; } && { cp data/albums.js _site/data/ || true; }
           # the published data.js leaves out empty fields (about half the size); the repo keeps the full export
           node tools/slim-data.cjs _site/data/data.js
           # calendar of booked shows that João's phone subscribes to

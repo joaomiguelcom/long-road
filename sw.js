@@ -3,7 +3,7 @@
 const CACHE = "long-road";
 
 // the first visit loads the page before this worker runs, so fetch the app's files once here
-const FILES = ["./", "assets/app.css", "data/data.js", "upcoming.js", "extra.js", "data/discogs.js", "data/popularity.js"];
+const FILES = ["./", "assets/app.css", "data/data.js", "upcoming.js", "extra.js", "data/discogs.js", "data/popularity.js", "data/albums.js"];
 self.addEventListener("install", (e) => {
   self.skipWaiting();
   e.waitUntil(caches.open(CACHE).then((c) => Promise.all(FILES.map((f) =>

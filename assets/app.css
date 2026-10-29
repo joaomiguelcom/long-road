@@ -684,3 +684,28 @@ td .tag { font: 400 13px/1.4 var(--body); color: var(--ink-2); }
 .setlist-src .tag, .text-btn { color: var(--ink-2); text-decoration: underline; text-decoration-color: var(--line-2); text-underline-offset: .25em; text-transform: lowercase; }
 .text-btn { background: none; border: 0; padding: 0; cursor: pointer; }
 .setlist-src .tag:hover, .text-btn:hover { color: var(--accent); text-decoration-color: var(--accent); }
+
+/* Albums heard live, artist page (2026-10-29) */
+.alb-big { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; margin-bottom: 22px; }
+.alb-big b { font: 380 64px/1 var(--display); color: var(--accent); letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
+.alb-big span { color: var(--ink-2); font-size: 15px; }
+.alb-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 0 32px; align-items: start; }
+.alb { border-top: 1px solid var(--line); }
+.alb summary { list-style: none; display: grid; grid-template-columns: 48px 1fr auto; gap: 14px; align-items: center; padding: 14px 0; cursor: pointer; }
+.alb summary::-webkit-details-marker { display: none; }
+.alb-cover { position: relative; width: 48px; height: 48px; display: grid; place-items: center; background: var(--surface); border: 1px solid var(--line); font: 400 22px var(--display); color: var(--muted); overflow: hidden; }
+.alb-cover::before { content: attr(data-l); }
+.alb-cover img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.alb-meta { display: grid; gap: 4px; min-width: 0; }
+.alb-name { font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.alb-year { font: 400 12.5px var(--mono); color: var(--muted); }
+.alb-bar { height: 2px; background: var(--line); display: block; }
+.alb-bar span { display: block; height: 2px; background: var(--accent); }
+.alb-n { font: 380 28px/1 var(--display); letter-spacing: -.01em; font-variant-numeric: tabular-nums; }
+.alb-n small { font: 400 12px var(--mono); color: var(--muted); margin-left: 2px; }
+.alb ol { list-style: none; margin: 0 0 16px; padding: 0 0 0 62px; }
+.alb li { display: grid; grid-template-columns: 22px 1fr auto; gap: 8px; padding: 3px 0; font-size: 14.5px; }
+.alb .tn, .alb .tc { font: 400 12.5px/1.9 var(--mono); color: var(--muted); }
+.alb li.on .tc { color: var(--accent); }
+.alb li.off .tt { color: var(--muted); }
+@media (max-width: 600px) { .alb-big b { font-size: 52px; } .alb ol { padding-left: 0; } }
