@@ -1,6 +1,6 @@
 // Exports the studio albums and their tracklists to data/albums.js (run by the GitHub Action after the exports).
 // The artist page uses it for "Albums heard live": how much of each studio album João heard at his concerts.
-// Only artists with 5+ concerts and a setlist at every one of them (the app checks the same rule).
+// Only artists with 4+ concerts and a setlist at 70% of them or more (the app checks the same rule; João, 2026-10-29).
 // Source: MusicBrainz (no key; 1 request per second and a User-Agent are required), covers from the Cover Art Archive.
 // Studio album = release group of type Album with no secondary type (no live, compilation, soundtrack, remix…).
 // Tracklist = the earliest official release of each album (the original edition, not the deluxe reissues).
@@ -8,7 +8,8 @@
 // Usage: node tools/albums.mjs
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 
-const MIN_CONCERTS = 5;
+const MIN_CONCERTS = 4;
+const MIN_WITH_SETLIST = 0.7;
 const UA = "LongRoad/1.0 ( https://longroad.joaomiguel.com )";
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const plain = (s) => String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/^the /, "").replace(/&/g, "and").replace(/[^a-z0-9]/g, "");
@@ -32,7 +33,7 @@ for (const s of JSON.parse(readFileSync("data/raw-attended.json", "utf8"))) if (
 const byArtist = {};
 for (const c of all) (byArtist[c.artist] = byArtist[c.artist] || []).push(c);
 const hasSet = (c) => (c.songs || []).some((s) => !s.tape && s.name);
-const eligible = Object.keys(byArtist).filter((a) => byArtist[a].length >= MIN_CONCERTS && byArtist[a].every(hasSet)).sort();
+const eligible = Object.keys(byArtist).filter((a) => byArtist[a].length >= MIN_CONCERTS && byArtist[a].filter(hasSet).length >= MIN_WITH_SETLIST * byArtist[a].length).sort();
 
 let last = 0;
 async function mb(path) {
