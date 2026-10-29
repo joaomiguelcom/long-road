@@ -638,3 +638,13 @@ td .tag { font: 400 13px/1.4 var(--body); color: var(--ink-2); }
 /* the round "back to top" button sits at the bottom right: keep the footer clear of it */
 @media (min-width: 601px) { footer .wrap { padding-right: 56px; } }
 @media (max-width: 600px) { footer .wrap { padding-bottom: 64px; } }
+/* the active filter (artist, venue…) as an outlined pill like the festival line-ups, not a coral bubble */
+.chip { background: none; border-color: var(--line-2); gap: 10px; padding-left: 14px; }
+.chip-label { font: 500 11px/1 var(--body); letter-spacing: .14em; color: var(--muted); }
+.chip strong { font-weight: 500; color: var(--text); }
+.chip button:hover { background: none; color: var(--accent); }
+@media (max-width: 600px) {
+  /* the field stays at 16px (no zoom on iPhone); only the hint is smaller, so "city" fits next to the filters button */
+  .sbar .search input[type=search] { padding-right: 76px; }
+  input[type=search]::placeholder { font-size: 14px; }
+}
