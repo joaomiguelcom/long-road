@@ -67,7 +67,14 @@ function original(releases) {
   return ok.sort((a, b) => day(a).localeCompare(day(b)) || len(a) - len(b) || fmt(a) - fmt(b))[0];
 }
 
-async function albums(mbid) {
+// compilations João wants counted as albums too (2026-10-29); the app marks them as "rarities"
+const INCLUDE = {
+  "Pearl Jam": ["Lost Dogs"],
+  "Ornatos Violeta": ["Raridades"],
+};
+
+async function albums(mbid, name) {
+  const include = (INCLUDE[name] || []).map(plain);
   const today = new Date().toISOString().slice(0, 10);
   const groups = [];
   for (let offset = 0; ; offset += 100) {
@@ -75,7 +82,7 @@ async function albums(mbid) {
     groups.push(...body["release-groups"]);
     if (offset + 100 >= body["release-group-count"]) break;
   }
-  const studio = groups.filter((g) => g["primary-type"] === "Album" && !(g["secondary-types"] || []).length &&
+  const studio = groups.filter((g) => g["primary-type"] === "Album" && (!(g["secondary-types"] || []).length || include.includes(plain(g.title))) &&
     g["first-release-date"] && g["first-release-date"] <= today &&
     // only albums credited to this artist alone (no collaborations)
     (g["artist-credit"] || []).length === 1 && g["artist-credit"][0].artist.id === mbid);
@@ -86,7 +93,7 @@ async function albums(mbid) {
     if (!r) continue;
     const tracks = [];
     for (const m of r.media || []) if (!VIDEO.test(m.format || "")) for (const t of m.tracks || []) if (!tracks.includes(t.title)) tracks.push(t.title);
-    if (tracks.length) out.push({ title: g.title, year: +g["first-release-date"].slice(0, 4), date: g["first-release-date"], cover: "https://coverartarchive.org/release-group/" + g.id + "/front-250", tracks });
+    if (tracks.length) out.push({ title: g.title, year: +g["first-release-date"].slice(0, 4), date: g["first-release-date"], cover: "https://coverartarchive.org/release-group/" + g.id + "/front-250", tracks, ...((g["secondary-types"] || []).length ? { extra: true } : {}) });
   }
   return out.sort((a, b) => a.date.localeCompare(b.date)).map(({ date, ...a }) => a);
 }
@@ -97,7 +104,7 @@ for (const name of eligible) {
   try {
     const id = await artistId(name);
     if (!id) throw new Error("not found on MusicBrainz");
-    artists[name] = { mbid: id, albums: await albums(id) };
+    artists[name] = { mbid: id, albums: await albums(id, name) };
     console.log(`${name}: ${artists[name].albums.length} studio albums`);
   } catch (e) {
     failed++;

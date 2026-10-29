@@ -954,11 +954,11 @@
         return '<li class="' + (x ? "on" : "off") + '"><span class="tn">' + (i + 1) + '</span><span class="tt">' + esc(t) + '</span><span class="tc">' + (x ? x + "×" : "—") + "</span></li>";
       }).join("");
       return '<details class="alb"><summary><span class="alb-cover" data-l="' + esc(a.title.replace(/^the /i, "").charAt(0)) + '"><img src="' + esc(a.cover) + '" alt="" loading="lazy" onerror="this.remove()"></span>' +
-        '<span class="alb-meta"><span class="alb-name">' + esc(a.title) + '</span><span class="alb-year">' + a.year + '</span><span class="alb-bar"><span style="width:' + Math.round(n / keys.length * 100) + '%"></span></span></span>' +
+        '<span class="alb-meta"><span class="alb-name">' + esc(a.title) + '</span><span class="alb-year">' + a.year + (a.extra ? " · rarities" : "") + '</span><span class="alb-bar"><span style="width:' + Math.round(n / keys.length * 100) + '%"></span></span></span>' +
         '<span class="alb-n">' + n + "<small>/" + keys.length + "</small></span></summary><ol>" + tracks + "</ol></details>";
     }).join("");
-    return '<section class="card albums"><div class="card-head"><h2>Albums heard live</h2><span class="muted">studio albums · ' + (sets === list.length ? list.length + " concerts, all with setlists" : sets + " of " + list.length + " concerts with setlists") + "</span></div>" +
-      '<div class="alb-big"><b>' + Math.round(got / total * 100) + "%</b><span>" + got + " of " + total + " studio songs heard live · tap an album to see which</span></div>" +
+    return '<section class="card albums"><div class="card-head"><h2>Albums heard live</h2><span class="muted">studio albums' + al.filter((a) => a.extra).map((a) => " + " + esc(a.title)).join("") + ' · ' + (sets === list.length ? list.length + " concerts, all with setlists" : sets + " of " + list.length + " concerts with setlists") + "</span></div>" +
+      '<div class="alb-big"><b>' + Math.round(got / total * 100) + "%</b><span>" + got + " of " + total + (al.some((a) => a.extra) ? " album songs" : " studio songs") + " heard live · tap an album to see which</span></div>" +
       '<div class="alb-grid">' + rows + "</div></section>";
   }
 
