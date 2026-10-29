@@ -57,16 +57,14 @@ async function artistId(name) {
 }
 
 const VIDEO = /dvd|blu-ray|vhs|video/i;
-// earliest official release; same day → the track count most editions share (the deluxe and vinyl splits are
-// the odd ones out), then CD or digital, then the shorter one (no bonus tracks)
+// earliest official release; same day → the shorter one (the deluxe edition often comes out the same day),
+// then CD or digital
 function original(releases) {
   const fmt = (r) => ((r.media || []).some((m) => /^(CD|Digital Media)$/.test(m.format || "")) ? 0 : 1);
   const len = (r) => (r.media || []).filter((m) => !VIDEO.test(m.format || "")).reduce((n, m) => n + (m.tracks || []).length, 0);
   const day = (r) => r.date.slice(0, 10).padEnd(10, "~");
   const ok = releases.filter((r) => r.date && len(r));
-  const common = {};
-  for (const r of ok) common[len(r)] = (common[len(r)] || 0) + 1;
-  return ok.sort((a, b) => day(a).localeCompare(day(b)) || common[len(b)] - common[len(a)] || fmt(a) - fmt(b) || len(a) - len(b))[0];
+  return ok.sort((a, b) => day(a).localeCompare(day(b)) || len(a) - len(b) || fmt(a) - fmt(b))[0];
 }
 
 async function albums(mbid) {

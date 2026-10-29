@@ -915,7 +915,7 @@
 
   // records by this artist in the Discogs collection
   // "Albums heard live": share of each studio album heard at his concerts (data/albums.js, from MusicBrainz).
-  // Only for artists with 5+ concerts and a setlist at every one; tools/albums.mjs uses the same rule.
+  // Only for artists with 4+ concerts and a setlist at 70% of them or more; tools/albums.mjs uses the same rule (João, 2026-10-29).
   const ALBUMS = (window.LONG_ROAD_ALBUMS && window.LONG_ROAD_ALBUMS.artists) || {};
   // "Alive (2004 Remaster)", "Once [Live]" and "Once" are the same song; "Release / Master/Slave" (a hidden track
   // after the song) counts as "Release"; NFKD turns "½ Full" into "1/2 Full"
@@ -928,15 +928,20 @@
   const TRACK_ALIAS = {
     "Ornatos Violeta": { "Homem de princípios": "Homens de Princípios" },
   };
+  // studio albums that are re-recordings of old songs, left out (2026-10-29)
+  const ALBUM_SKIP = {
+    James: ["Be Opened by the Wonderful: 40 Years Orchestrated"],
+  };
   function albumsCard(name, list) {
     const split = {}, alias = {};
     for (const [k, v] of Object.entries(TRACK_SPLIT[name] || {})) split[trackKey(k)] = v;
     for (const [k, v] of Object.entries(TRACK_ALIAS[name] || {})) alias[trackKey(k)] = trackKey(v);
-    const al = ((ALBUMS[name] || {}).albums || []).map((a) => ({ ...a, tracks: (a.tracks || []).flatMap((t) => split[trackKey(t)] || [t]) })).filter((a) => a.tracks.length);
-    if (list.length < 5 || !al.length || !list.every((c) => (c.songs || []).some((s) => !s.tape && s.name))) return "";
+    const al = ((ALBUMS[name] || {}).albums || []).filter((a) => !(ALBUM_SKIP[name] || []).includes(a.title)).map((a) => ({ ...a, tracks: (a.tracks || []).flatMap((t) => split[trackKey(t)] || [t]) })).filter((a) => a.tracks.length);
+    const sets = list.filter((c) => (c.songs || []).some((s) => !s.tape && s.name)).length;
+    if (list.length < 4 || !al.length || sets < 0.7 * list.length) return "";
     // concerts where each song was played (a song played twice in one night counts once)
     const heard = new Map();
-    for (const c of list) for (const k of new Set(c.songs.filter((s) => !s.tape && s.name).map((s) => alias[trackKey(s.name)] || trackKey(s.name)))) heard.set(k, (heard.get(k) || 0) + 1);
+    for (const c of list) for (const k of new Set((c.songs || []).filter((s) => !s.tape && s.name).map((s) => alias[trackKey(s.name)] || trackKey(s.name)))) heard.set(k, (heard.get(k) || 0) + 1);
     let total = 0, got = 0;
     const rows = al.map((a) => {
       const keys = [...new Set(a.tracks.map(trackKey))];
@@ -951,7 +956,7 @@
         '<span class="alb-meta"><span class="alb-name">' + esc(a.title) + '</span><span class="alb-year">' + a.year + '</span><span class="alb-bar"><span style="width:' + Math.round(n / keys.length * 100) + '%"></span></span></span>' +
         '<span class="alb-n">' + n + "<small>/" + keys.length + "</small></span></summary><ol>" + tracks + "</ol></details>";
     }).join("");
-    return '<section class="card albums"><div class="card-head"><h2>Albums heard live</h2><span class="muted">studio albums · ' + list.length + " concerts, all with setlists</span></div>" +
+    return '<section class="card albums"><div class="card-head"><h2>Albums heard live</h2><span class="muted">studio albums · ' + (sets === list.length ? list.length + " concerts, all with setlists" : sets + " of " + list.length + " concerts with setlists") + "</span></div>" +
       '<div class="alb-big"><b>' + Math.round(got / total * 100) + "%</b><span>" + got + " of " + total + " studio songs heard live · tap an album to see which</span></div>" +
       '<div class="alb-grid">' + rows + "</div></section>";
   }
