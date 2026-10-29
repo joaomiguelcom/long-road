@@ -649,9 +649,16 @@ td .tag { font: 400 13px/1.4 var(--body); color: var(--ink-2); }
   input[type=search]::placeholder { font-size: 14px; }
 }
 /* the list's own filter pill lives in the filter row on wide screens and among the chips on phones (one copy each) */
-.quick > .chip { margin-right: 6px; }
-.quick > .chip button { width: 28px; height: 28px; }
+.fs-panel > .chip { margin-right: 6px; }
+.fs-panel > .chip button { width: 28px; height: 28px; }
 @media (max-width: 600px) {
-  .quick > .chip { display: none; }
+  .fs-panel > .chip { display: none; }
   .fchips > .chip { padding: 1px 2px 1px 12px; }
+}
+/* wide screens: the pill reads like the other filters in the row, a chosen word underlined, same size and weight */
+@media (min-width: 601px) {
+  .fs-panel > .chip { border: 0; border-bottom: 1px solid var(--text); border-radius: 0; padding: 4px 0; gap: 6px; font-size: 14.5px; line-height: 1.4; margin-right: 8px; }
+  .fs-panel > .chip .chip-label { font: 400 14.5px/1.4 var(--body); letter-spacing: 0; text-transform: lowercase; color: var(--muted); }
+  .fs-panel > .chip strong { font-weight: 400; }
+  .fs-panel > .chip button { width: 20px; height: 20px; margin-left: 2px; }
 }
