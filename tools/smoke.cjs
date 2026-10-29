@@ -28,7 +28,7 @@ const chrome = process.env.CHROME_PATH; // the GitHub runner has Chrome installe
       await page.evaluate((t) => document.querySelector('#tabs [data-tab="' + t + '"]').click(), tab);
       await page.waitForTimeout(300);
       await check(page, name + " " + tab);
-      // the map is drawn from vendor/ files: make sure they load and draw
+      // the map is drawn from assets/map files: make sure they load and draw
       if (tab === "map" && !(await page.locator("#map svg .map-city").first().waitFor({ timeout: 5000 }).then(() => true, () => false))) errors.push(name + " map: no cities drawn");
     }
     const open = async (attr, value, what) => {
