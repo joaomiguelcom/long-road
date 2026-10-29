@@ -917,8 +917,9 @@
   // "Albums heard live": share of each studio album heard at his concerts (data/albums.js, from MusicBrainz).
   // Only for artists with 5+ concerts and a setlist at every one; tools/albums.mjs uses the same rule.
   const ALBUMS = (window.LONG_ROAD_ALBUMS && window.LONG_ROAD_ALBUMS.artists) || {};
-  // "Alive (2004 Remaster)", "Once [Live]" and "Once" are the same song
-  const trackKey = (s) => shelfKey(String(s || "").replace(/\s*[([][^)\]]*[)\]]/g, ""));
+  // "Alive (2004 Remaster)", "Once [Live]" and "Once" are the same song; "Release / Master/Slave" (a hidden track
+  // after the song) counts as "Release"; NFKD turns "½ Full" into "1/2 Full"
+  const trackKey = (s) => shelfKey(String(s || "").normalize("NFKD").split(" / ")[0].replace(/\s*[([][^)\]]*[)\]]/g, ""));
   function albumsCard(name, list) {
     const al = ((ALBUMS[name] || {}).albums || []).filter((a) => a.tracks && a.tracks.length);
     if (list.length < 5 || !al.length || !list.every((c) => (c.songs || []).some((s) => !s.tape && s.name))) return "";
