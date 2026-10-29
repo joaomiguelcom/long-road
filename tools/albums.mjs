@@ -91,6 +91,11 @@ async function albums(mbid, name) {
     g["first-release-date"] && g["first-release-date"] <= today &&
     // only albums credited to this artist alone (no collaborations)
     (g["artist-credit"] || []).length === 1 && g["artist-credit"][0].artist.id === mbid);
+  // one compilation per name: the shortest title ("Inéditos/Raridades", not the box set that contains it)
+  for (const t of include) {
+    const hits = studio.filter((g) => (g["secondary-types"] || []).length && plain(g.title).includes(t)).sort((a, b) => a.title.length - b.title.length);
+    for (const g of hits.slice(1)) studio.splice(studio.indexOf(g), 1);
+  }
   for (const t of INCLUDE[name] || []) {
     if (studio.some((g) => plain(g.title).includes(plain(t)))) continue;
     const body = await mb("release-group?limit=10&query=" + encodeURIComponent('releasegroup:"' + t + '" AND arid:' + mbid));
