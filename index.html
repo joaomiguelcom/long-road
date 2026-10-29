@@ -274,6 +274,13 @@
     { name: "Serralves", city: "Porto", aka: ["Museu de Arte Contemporânea de Serralves"] },
     { name: "Super Bock Arena", city: "Porto", aka: ["Super Bock Arena – Pavilhão Rosa Mota", "Super Bock Arena - Pavilhão Rosa Mota", "Pavilhão Rosa Mota"], hideAka: true }
   ];
+  // setlist.fm puts a few towns in the wrong place (Vila do Conde near Chaves, Matosinhos south of the Douro…): fix them here (João, 2026-10-29)
+  const CITY_COORDS = {
+    "Matosinhos|Portugal": [41.1844, -8.6963],
+    "Vila do Conde|Portugal": [41.3536, -8.7457],
+    "Vila Nova de Gaia|Portugal": [41.1239, -8.6118]
+  };
+  for (const c of concerts) { const fix = CITY_COORDS[c.city + "|" + c.country]; if (fix) [c.lat, c.lng] = fix; }
   for (const c of concerts) {
     const r = VENUE_ALIASES.find((r) => plain(r.city) === plain(c.city) && r.aka.some((w) => plain(w) === plain(c.venue)));
     if (r) { if (!r.hideAka) c.venueThen = c.venue; c.venue = r.name; }
@@ -1593,6 +1600,8 @@
       svg.call(zoom.transform, tf(mapArea));
       const pick = (t) => { const g = t.closest(".map-city"); if (!g) return; const e = M.select(g).datum(); mapSel = mapSel === e.key ? null : e.key; mapInfo(cities); draw(); };
       marks.on("click", (ev) => pick(ev.target));
+      // a city's name opens it too
+      labels.on("click", (ev) => { const o = M.select(ev.target).datum(); if (!o) return; mapSel = mapSel === o.e.key ? null : o.e.key; mapInfo(cities); draw(); });
       marks.on("keydown", (ev) => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); pick(ev.target); } });
       map = {
         area(k) { mapArea = k; el.querySelectorAll("[data-mview]").forEach((b) => { b.classList.toggle("on", b.dataset.mview === k); b.setAttribute("aria-pressed", b.dataset.mview === k); }); svg.transition().duration(700).call(zoom.transform, tf(k)); },

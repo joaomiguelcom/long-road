@@ -674,3 +674,6 @@ td .tag { font: 400 13px/1.4 var(--body); color: var(--ink-2); }
 /* milestones: marks right-aligned in their column, so 1st…10000th all end the same distance from the name (João, 2026-10-29) */
 .ms-item { grid-template-columns: 5.6em minmax(0, 1fr); gap: 0 18px; }
 .ms-n { text-align: right; font-variant-numeric: lining-nums tabular-nums; white-space: nowrap; }
+/* city names on the map can be tapped like their circles */
+#map .map-lbl { pointer-events: auto; cursor: pointer; }
+#map .map-lbl:hover { fill: var(--text); }
