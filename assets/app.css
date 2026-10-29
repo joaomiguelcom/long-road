@@ -632,3 +632,16 @@ td .tag { font: 400 13px/1.4 var(--body); color: var(--ink-2); }
   .fs-head { text-transform: lowercase; }
   .fs-done { background: none; border: 1px solid var(--text); border-radius: 999px; color: var(--text); font: 500 15px/1 var(--body); }
 }
+/* the footer's status line is longer than the header's: let it wrap instead of widening the page */
+.foot-sync { white-space: normal; align-items: baseline; gap: 8px; line-height: 1.5; }
+.foot-sync .dot { flex: none; transform: translateY(-1px); }
+/* wide screens: one line, clear of the round "back to top" button; phones: two centred lines with room under them for that button */
+.foot-sync .fs-sep { white-space: pre; }
+@media (min-width: 601px) { footer .wrap { padding-right: 56px; } .foot-sync { gap: 0; } .foot-sync .dot { margin-right: 8px; } }
+@media (max-width: 600px) {
+  footer .wrap { padding-bottom: 64px; }
+  .foot-sync { display: grid; grid-template-columns: auto auto; justify-content: center; gap: 2px 8px; text-align: left; }
+  .foot-sync .fs-sep { display: none; }
+  .foot-sync > span:last-child { grid-column: 2; }
+  .foot-sync .dot { align-self: center; }
+}
