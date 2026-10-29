@@ -18,8 +18,8 @@ const chrome = process.env.CHROME_PATH; // the GitHub runner has Chrome installe
   for (const [name, opts] of [["desktop", { viewport: { width: 1280, height: 900 } }], ["phone", { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true }]]) {
     const page = await browser.newPage(opts);
     page.on("pageerror", (e) => errors.push(name + ": " + e.message));
-    // the map tiles and web fonts are not needed to test the app
-    await page.route(/arcgis|fonts\.g|cloudflareinsights/, (r) => r.abort());
+    // web fonts and analytics are not needed to test the app
+    await page.route(/fonts\.g|cloudflareinsights/, (r) => r.abort());
     await page.goto("file://" + site + "/index.html");
     await page.waitForTimeout(800);
     await check(page, name + " overview");
@@ -28,6 +28,8 @@ const chrome = process.env.CHROME_PATH; // the GitHub runner has Chrome installe
       await page.evaluate((t) => document.querySelector('#tabs [data-tab="' + t + '"]').click(), tab);
       await page.waitForTimeout(300);
       await check(page, name + " " + tab);
+      // the map is drawn from vendor/ files: make sure they load and draw
+      if (tab === "map" && !(await page.locator("#map svg .map-city").first().waitFor({ timeout: 5000 }).then(() => true, () => false))) errors.push(name + " map: no cities drawn");
     }
     const open = async (attr, value, what) => {
       await page.evaluate(([a, v]) => { const b = document.createElement("button"); b.dataset[a] = v; document.body.appendChild(b); b.click(); b.remove(); }, [attr, value]);

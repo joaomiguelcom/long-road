@@ -32,13 +32,13 @@
     --bg: #0F1115; --surface: #181B21; --line: #262A31; --line-2: #3A3F48;
     --text: #ECEDEE; --muted: #9AA0A6; --accent: #F2A541; --accent-2: #FFC876; --ok: #7BC67E; --bad: #F2726B;
     --display: Oswald, "Arial Narrow", sans-serif;
-    --map-bg: #1b1d22; --on-accent: #0F1115;
+    --map-sea: #12151A; --map-land: #1C2027; --map-grat: rgba(255,255,255,.04); --on-accent: #0F1115;
   }
   /* light theme: same layout, paper colours; the amber is darker so text in it stays readable on white */
   :root[data-theme="light"] {
     --bg: #F6F4EF; --surface: #FFFFFF; --line: #E5E1D8; --line-2: #CFCAC0;
     --text: #1A1C20; --muted: #5E646C; --accent: #9A5A08; --accent-2: #8F5308; --ok: #2E8540; --bad: #C9372C;
-    --map-bg: #E9E6DF; --on-accent: #FFFFFF;
+    --map-sea: #F9F8F4; --map-land: #ECE8DF; --map-grat: rgba(0,0,0,.04); --on-accent: #FFFFFF;
   }
   :root[data-theme="light"] header { background: linear-gradient(180deg, rgba(176,104,12,.08), rgba(176,104,12,0) 70%); }
   /* the new tab slides in from the side it was swiped from */
@@ -80,7 +80,7 @@
   nav::-webkit-scrollbar { display: none; }
   nav button { background: none; border: 0; border-bottom: 3px solid transparent; color: var(--muted); padding: 12px 14px; min-height: 44px; cursor: pointer; white-space: nowrap; font-weight: 500; }
   nav button[aria-current="page"] { color: var(--text); border-bottom-color: var(--accent); font-weight: 600; }
-  main.wrap { padding-top: 18px; padding-bottom: 48px; display: flex; flex-direction: column; gap: 24px; }
+  main.wrap { padding-top: 18px; padding-bottom: 24px; display: flex; flex-direction: column; gap: 24px; }
   .grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--min, 220px)), 1fr)); }
   /* ten fun facts: two rows of five on wide screens (João, 2026-10-28) */
   @media (min-width: 1100px) { .fun-card .fun-grid { grid-template-columns: repeat(5, 1fr); } }
@@ -303,10 +303,21 @@
   .year-nav { display: flex; gap: 8px; align-items: center; }
   .year-nav .btn { align-self: auto; }
   select { -webkit-appearance: none; appearance: none; background: var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23F2A541' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 14px center; color: var(--text); border: 1px solid var(--line-2); border-radius: 8px; padding: 10px 42px 10px 16px; min-height: 44px; font: inherit; font-size: 16px; cursor: pointer; }
-  #map { height: min(70vh, 640px); border-radius: 12px; border: 1px solid var(--line); background: var(--map-bg); }
-  .leaflet-popup-content-wrapper, .leaflet-popup-tip { background: var(--surface); color: var(--text); }
-  .leaflet-popup-content { font: 14px/1.45 Inter, system-ui, sans-serif; }
-  .pop ul { margin: 6px 0; padding-left: 18px; }
+  #map { position: relative; height: min(70vh, 640px); border-radius: 12px; border: 1px solid var(--line); background: var(--map-sea); overflow: hidden; }
+  #map svg { display: block; touch-action: none; cursor: grab; -webkit-user-select: none; user-select: none; }
+  #map svg:active { cursor: grabbing; }
+  .map-ns { vector-effect: non-scaling-stroke; }
+  .map-city { cursor: pointer; outline: none; }
+  .map-city:focus-visible .ring { stroke-width: 3px; }
+  .map-lbl { font: 600 10px Inter, system-ui, sans-serif; letter-spacing: .14em; text-transform: uppercase; fill: var(--muted); pointer-events: none; }
+  .map-lbl.big { fill: var(--text); font-size: 11px; }
+  .map-views { position: absolute; left: 10px; top: 10px; }
+  .map-views button { background: var(--surface); }
+  .map-views button.on { background: color-mix(in srgb, var(--accent) 14%, var(--surface)); }
+  .map-zoom { position: absolute; right: 10px; top: 10px; display: flex; flex-direction: column; gap: 6px; }
+  .map-zoom button { width: 36px; height: 36px; border-radius: 10px; border: 1px solid var(--line-2); background: var(--surface); color: var(--text); font: 600 18px/1 Inter, system-ui, sans-serif; cursor: pointer; }
+  .map-info { display: flex; justify-content: space-between; align-items: center; gap: 12px; min-height: 58px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px; font-size: 14px; }
+  .map-info strong { font: 500 18px/1.2 var(--display); }
   .barbtn.static { cursor: default; }
   .ms-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr)); gap: 2px 16px; }
   .ms-item { width: 100%; display: flex; gap: 14px; align-items: center; background: none; border: 0; border-radius: 8px; padding: 8px; margin: 0 -8px; color: inherit; text-align: left; cursor: pointer; font: inherit; }
@@ -314,7 +325,7 @@
   .ms-main { display: flex; flex-direction: column; min-width: 0; }
   .ms-next { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--line); font-size: 14px; }
   .ms-next .row { display: flex; justify-content: space-between; gap: 8px; }
-  footer { border-top: 1px solid var(--line); padding: 14px 0 max(24px, env(safe-area-inset-bottom)); font-size: 13px; color: var(--muted); text-align: center; }
+  footer { padding: 0 0 max(24px, env(safe-area-inset-bottom)); font-size: 13px; color: var(--muted); text-align: center; }
   footer a { color: inherit; }
   .empty { padding: 48px 0; color: var(--muted); }
   @media (max-width: 600px) {
@@ -981,7 +992,7 @@
     let sw = null;
     const scrollsX = (el) => {
       for (; el && el !== document.body; el = el.parentElement) {
-        if (el.id === "map" || el.matches("input, select, textarea, .leaflet-container")) return true;
+        if (el.id === "map" || el.matches("input, select, textarea")) return true;
         const ox = getComputedStyle(el).overflowX;
         if ((ox === "auto" || ox === "scroll") && el.scrollWidth > el.clientWidth + 2) return true;
       }
@@ -1845,7 +1856,12 @@
   }
 
   // ---------- map ----------
-  let map = null;
+  // Drawn by the app itself (no map tiles): vendor/lrmap.js is a small build of d3-geo, d3-zoom and topojson-client
+  // (esbuild of their geoMercator, geoPath, geoGraticule, zoom, zoomIdentity, select, d3-transition, feature, merge, mesh),
+  // vendor/world.js holds the Natural Earth countries at 1:50m from world-atlas 2.0.2.
+  // Both load only when the Map tab opens and are kept by the service worker for offline use.
+  const MAP_VIEWS = [["pt", "Portugal", [[-10, 36.9], [-6.1, 42.2]]], ["eu", "Europe", [[-10.5, 36], [24, 55]]], ["all", "All", null]];
+  let map = null, mapArea = "all", mapSel = null;
   function mapView() {
     const withCoords = concerts.filter((c) => c.lat != null && c.lng != null);
     if (!withCoords.length) return '<div class="empty">The map needs coordinates. Run <code>export.ps1</code> again (the new version saves them) and reload this page.</div>';
@@ -1862,58 +1878,120 @@
       return '<button type="button" class="' + (state.mapKind === k ? "on" : "") + '" data-mkind="' + k + '" aria-pressed="' + (state.mapKind === k) + '"' + (none && state.mapKind !== k ? " disabled" : "") + ">" + label + "</button>"; };
     const sel = fsSheet('<div class="seg" role="group" aria-label="Type">' + mKind("", "All") + mKind("shows", "Shows") + mKind("fest", "Festivals") + "</div>" + qpick("msel", "Year", mOpts, state.mapYears) + clearAll(state.mapKind || state.mapYears, "map"), "Show map", "", "", state.mapKind || state.mapYears ? "map" : "");
     const mChips = [state.mapKind ? [state.mapKind === "fest" ? "Festivals" : "Shows", "mapKind"] : null, state.mapYears ? [state.mapYears.endsWith("s") ? "The " + state.mapYears : state.mapYears, "mapYears"] : null].filter(Boolean);
-    return '<div class="list-head"><div class="list-title"><h2>Map</h2><span class="muted">' + plural(new Set(list.map((c) => c.city)).size, "city", "cities") + " · " + plural(new Set(list.map((c) => c.country)).size, "country", "countries") + "</span></div>" + fsBtn(mChips.length) + fsChips("map", mChips) + "</div>" + sel + '<div id="map" role="region" aria-label="Map of concert cities"></div>' +
-      '<p class="tag" style="margin:0">Circles are cities (setlist.fm gives coordinates per city, not per venue). Bigger means more concerts. Click a circle to see its concerts.</p>';
+    return '<div class="list-head"><div class="list-title"><h2>Map</h2><span class="muted">' + plural(new Set(list.map((c) => c.city)).size, "city", "cities") + " · " + plural(new Set(list.map((c) => c.country)).size, "country", "countries") + "</span></div>" + fsBtn(mChips.length) + fsChips("map", mChips) + "</div>" + sel + '<div id="map" role="region" aria-label="Map of concert cities"><div class="seg map-views" role="group" aria-label="Area">' +
+      MAP_VIEWS.map(([k, label]) => '<button type="button" data-mview="' + k + '" class="' + (mapArea === k ? "on" : "") + '" aria-pressed="' + (mapArea === k) + '">' + label + "</button>").join("") +
+      '</div><div class="map-zoom"><button type="button" data-mzoom="2" aria-label="Zoom in">+</button><button type="button" data-mzoom="0.5" aria-label="Zoom out">−</button></div></div>' +
+      '<div class="map-info" id="map-info"></div>' +
+      '<p class="tag" style="margin:0">Circles are cities (setlist.fm gives coordinates per city, not per venue). Bigger means more concerts. Tap a circle to see its concerts.</p>';
   }
-  function loadLeaflet(cb) {
-    if (window.L) return cb();
-    const css = document.createElement("link");
-    css.rel = "stylesheet"; css.href = "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css";
-    document.head.appendChild(css);
-    const js = document.createElement("script");
-    js.src = "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js";
-    js.onload = cb;
-    js.onerror = () => { const el = document.getElementById("map"); if (el) el.innerHTML = '<div class="empty" style="padding:24px">Could not load the map library. Check your internet connection.</div>'; };
-    document.head.appendChild(js);
+  const mapWaiting = [];
+  function loadMapLibs(cb) {
+    if (window.LRMap && window.LR_WORLD) return cb();
+    mapWaiting.push(cb);
+    if (mapWaiting.length > 1) return;
+    for (const f of ["vendor/lrmap.js", "vendor/world.js"]) {
+      const js = document.createElement("script");
+      js.src = f + "?v=__BUILD__";
+      js.onload = () => { if (window.LRMap && window.LR_WORLD) mapWaiting.splice(0).forEach((fn) => fn()); };
+      js.onerror = () => { mapWaiting.length = 0; js.remove(); const el = document.getElementById("map"); if (el) el.innerHTML = '<div class="empty" style="padding:24px">Could not load the map. Check your internet connection.</div>'; };
+      document.head.appendChild(js);
+    }
   }
   // concerts shown on the Map tab: all, one decade ("2010s") or one year
   const mapList = () => concerts.filter((c) => c.lat != null && c.lng != null && (!state.mapKind || (state.mapKind === "fest") === !!c.festival) && (!state.mapYears ||
     (state.mapYears.endsWith("s") ? c.date.slice(0, 3) === state.mapYears.slice(0, 3) : c.date.startsWith(state.mapYears))));
+  function mapInfo(cities) {
+    const el = document.getElementById("map-info"), e = cities.find((x) => x.key === mapSel);
+    if (!el) return;
+    if (!e) { el.innerHTML = '<span class="muted">Tap a city</span>'; return; }
+    const span = e.first === e.last ? e.first : e.first + "–" + e.last;
+    el.innerHTML = '<div><strong>' + esc(e.city) + '</strong> <span class="muted">· ' + esc(e.country) + "</span><br>" + plural(e.count, "concert", "concerts") + ' <span class="muted">· ' + span + "</span></div>" +
+      '<button type="button" class="link"' + fattr("city", e.city) + ">See concerts</button>";
+  }
   function initMap(list) {
     const el = document.getElementById("map");
     if (!el) return;
-    loadLeaflet(() => {
-      if (!document.getElementById("map")) return;
-      const byCity = new Map();
+    loadMapLibs(() => {
+      if (document.getElementById("map") !== el) return;
+      const M = window.LRMap, W0 = window.LR_WORLD, byCity = new Map();
       for (const c of list) {
-        if (c.lat == null || c.lng == null) continue;
-        const k = c.city + "||" + c.country;
-        const e = byCity.get(k) || { city: c.city, country: c.country, lat: +c.lat, lng: +c.lng, count: 0, venues: new Map() };
-        e.count++; const vn = c.festival || c.venue; e.venues.set(vn, (e.venues.get(vn) || 0) + 1); byCity.set(k, e);
+        const key = c.city + "||" + c.country;
+        const e = byCity.get(key) || { key, city: c.city, country: c.country, lat: +c.lat, lng: +c.lng, count: 0, first: c.date.slice(0, 4), last: c.date.slice(0, 4) };
+        e.count++; const y = c.date.slice(0, 4); if (y < e.first) e.first = y; if (y > e.last) e.last = y; byCity.set(key, e);
       }
-      map = L.map("map", { scrollWheelZoom: false, worldCopyJump: true });
-      // Esri tiles need no API key and work when the page is opened from a file (no Referer)
-      const esri = "https://server.arcgisonline.com/ArcGIS/rest/services/";
-      const dark = L.layerGroup([
-        L.tileLayer(esri + "Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}", { maxZoom: 16, attribution: "Tiles &copy; Esri" }),
-        L.tileLayer(esri + "Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}", { maxZoom: 16 })
-      ]);
-      const street = L.tileLayer(esri + "World_Street_Map/MapServer/tile/{z}/{y}/{x}", { maxZoom: 18, attribution: "Tiles &copy; Esri" });
-      (isLight() ? street : dark).addTo(map);
-      L.control.layers({ Dark: dark, Streets: street }, null, { position: "topright" }).addTo(map);
-      const pts = [];
-      for (const e of byCity.values()) {
-        pts.push([e.lat, e.lng]);
-        const top = [...e.venues.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5);
-        L.circleMarker([e.lat, e.lng], { radius: 5 + Math.sqrt(e.count) * 2, color: "#F2A541", weight: 1.5, fillColor: "#F2A541", fillOpacity: 0.45 })
-          .bindPopup('<div class="pop"><strong>' + esc(e.city) + '</strong> <span class="muted">' + esc(e.country) + "</span><br>" + plural(e.count, "concert", "concerts") +
-            "<ul>" + top.map(([n, k]) => "<li>" + esc(n) + " · " + k + "</li>").join("") + "</ul>" +
-            '<button type="button" class="link"' + fattr("city", e.city) + ">See concerts</button></div>")
-          .addTo(map);
+      const cities = [...byCity.values()].sort((a, b) => b.count - a.count);
+      if (mapSel && !byCity.has(mapSel)) mapSel = null;
+      mapInfo(cities);
+      const W = el.clientWidth, H = el.clientHeight;
+      const world = M.feature(W0, W0.objects.countries), land = M.merge(W0, W0.objects.countries.geometries), borders = M.mesh(W0, W0.objects.countries, (a, b) => a !== b);
+      // one fixed projection; the areas are zoom levels on it, so pinch and the buttons share one scale
+      const proj = M.geoMercator().fitExtent([[20, 20], [W - 20, H - 20]], { type: "MultiPoint", coordinates: [[-90, 33], [25, 56]] });
+      const path = M.geoPath(proj);
+      const max = cities.length ? cities[0].count : 1, rr = (n) => 3 + 17 * Math.sqrt((n - 1) / Math.max(1, max - 1));
+      for (const e of cities) e.xy = proj([e.lng, e.lat]);
+      const svg = M.select(el).insert("svg", ":first-child").attr("viewBox", "0 0 " + W + " " + H).attr("width", W).attr("height", H);
+      const geo = svg.append("g");
+      geo.append("rect").attr("x", -W * 50).attr("y", -H * 50).attr("width", W * 101).attr("height", H * 101).attr("fill", "var(--map-sea)");
+      geo.append("path").attr("class", "map-ns").attr("d", path(M.geoGraticule().step([5, 5])())).attr("fill", "none").attr("stroke", "var(--map-grat)");
+      geo.append("path").attr("class", "map-ns").attr("d", path(land)).attr("fill", "var(--map-land)").attr("stroke", "var(--line-2)").attr("stroke-width", .8);
+      geo.append("path").attr("class", "map-ns").attr("d", path(borders)).attr("fill", "none").attr("stroke", "var(--line-2)").attr("stroke-dasharray", "2 3").attr("stroke-width", .7);
+      const marks = svg.append("g"), labels = svg.append("g");
+      const boxOf = (k) => {
+        const v = MAP_VIEWS.find((m) => m[0] === k), pts = v[2] || (cities.length ? cities.map((e) => [e.lng, e.lat]) : [[-10, 36.9], [-6.1, 42.2]]);
+        const xs = pts.map((p) => proj(p));
+        return [[Math.min(...xs.map((p) => p[0])), Math.min(...xs.map((p) => p[1]))], [Math.max(...xs.map((p) => p[0])), Math.max(...xs.map((p) => p[1]))]];
+      };
+      const kPT = (() => { const [[a, b], [c, d]] = boxOf("pt"); return Math.min((W - 60) / (c - a), (H - 60) / (d - b)); })();
+      const tf = (k) => { const [[a, b], [c, d]] = boxOf(k), s = Math.min(kPT * 1.4, (W - 60) / Math.max(c - a, 1), (H - 60) / Math.max(d - b, 1));
+        return M.zoomIdentity.translate(W / 2, H / 2).scale(s).translate(-(a + c) / 2, -(b + d) / 2); };
+      let T = M.zoomIdentity;
+      const inView = ([x, y]) => x >= 0 && x <= W && y >= 0 && y <= H;
+      function draw() {
+        geo.attr("transform", T);
+        // circles keep their size when zooming in, and shrink when zooming out past Portugal so the cities there stay apart
+        const f = Math.max(.4, Math.min(1, Math.sqrt(T.k / kPT)));
+        marks.selectAll("g").data(cities.slice().reverse(), (e) => e.key).join((en) => {
+          const g = en.append("g").attr("class", "map-city").attr("tabindex", 0).attr("role", "button").attr("aria-label", (e) => e.city + ", " + plural(e.count, "concert", "concerts"));
+          g.append("circle").attr("class", "ring"); g.append("circle").attr("r", 1.6).attr("fill", "var(--accent)"); g.append("circle").attr("class", "hit").attr("fill", "transparent");
+          return g;
+        }).attr("transform", (e) => "translate(" + T.apply(e.xy) + ")").each(function (e) {
+          const R = rr(e.count) * f, on = mapSel === e.key, g = M.select(this);
+          g.select(".ring").attr("r", R).attr("fill", "var(--accent)").attr("fill-opacity", on ? .45 : .14).attr("stroke", "var(--accent)").attr("stroke-width", on ? 2 : 1.2);
+          g.select(".hit").attr("r", Math.max(R, 11));
+        });
+        // names only where they fit: biggest cities first, never over another name or circle
+        const rings = cities.map((e) => { const [x, y] = T.apply(e.xy), R = rr(e.count) * f; return [x - R, y - R, x + R, y + R, e.key]; });
+        const placed = [], out = [];
+        const clash = (b) => placed.some((p) => !(b[2] < p[0] || b[0] > p[2] || b[3] < p[1] || b[1] > p[3])) || rings.some((p) => p[4] !== b[4] && !(b[2] < p[0] || b[0] > p[2] || b[3] < p[1] || b[1] > p[3]));
+        for (const e of cities) {
+          const [x, y] = T.apply(e.xy), R = rr(e.count) * f, w = e.city.length * 7.4 + 6;
+          if (!inView([x, y])) continue;
+          for (const side of [1, -1]) {
+            const b = side > 0 ? [x + R + 4, y - 7, x + R + 4 + w, y + 7, e.key] : [x - R - 4 - w, y - 7, x - R - 4, y + 7, e.key];
+            if (b[0] < 4 || b[2] > W - 4) continue;
+            if (mapSel === e.key || !clash(b)) { placed.push(b); out.push({ e, x: side > 0 ? b[0] : b[2], y: y + 3.5, a: side > 0 ? "start" : "end" }); break; }
+          }
+        }
+        labels.selectAll("text").data(out, (o) => o.e.key).join("text").attr("class", (o) => "map-lbl" + (o.e.count >= max / 4 ? " big" : "")).attr("x", (o) => o.x).attr("y", (o) => o.y).attr("text-anchor", (o) => o.a).text((o) => o.e.city);
       }
-      if (pts.length) map.fitBounds(pts, { padding: [30, 30], maxZoom: 7 });
+      // the mouse wheel keeps scrolling the page; zoom with ctrl/cmd + wheel, trackpad pinch, touch pinch or the buttons
+      const zoom = M.zoom().filter((ev) => (ev.type === "wheel" ? ev.ctrlKey || ev.metaKey : !ev.ctrlKey) && !ev.button).scaleExtent([.6, 400]).translateExtent([[-W, -H], [2 * W, 2 * H]]).on("zoom", (ev) => { T = ev.transform; draw(); });
+      svg.call(zoom).on("dblclick.zoom", null);
+      svg.call(zoom.transform, tf(mapArea));
+      const pick = (t) => { const g = t.closest(".map-city"); if (!g) return; const e = M.select(g).datum(); mapSel = mapSel === e.key ? null : e.key; mapInfo(cities); draw(); };
+      marks.on("click", (ev) => pick(ev.target));
+      marks.on("keydown", (ev) => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); pick(ev.target); } });
+      map = {
+        area(k) { mapArea = k; el.querySelectorAll("[data-mview]").forEach((b) => { b.classList.toggle("on", b.dataset.mview === k); b.setAttribute("aria-pressed", b.dataset.mview === k); }); svg.transition().duration(700).call(zoom.transform, tf(k)); },
+        zoomBy(f) { svg.transition().duration(300).call(zoom.scaleBy, f); },
+        width: W,
+        remove() { svg.interrupt(); svg.remove(); },
+      };
     });
   }
+  // the map is drawn for the box it sits in: redraw when the width changes (rotation, window resize)
+  let mapResize;
+  addEventListener("resize", () => { clearTimeout(mapResize); mapResize = setTimeout(() => { const el = document.getElementById("map"); if (state.tab === "map" && map && el && el.clientWidth !== map.width) render(); }, 250); });
 
   const viewHtml = () => ({ overview, concerts: concertList, artists: artistList, venues: venueList, festivals: festivalList, songs: songList, years: yearReview, map: mapView })[state.tab]();
   // re-render around a focused control without touching it: replacing a search box resets the iPhone keyboard to letters,
@@ -2062,6 +2140,8 @@
     else if (d.aset !== undefined) go(() => { state.tab = "artists"; state.artist = null; state.detail = null; state.artistSet = d.aset || null; state.shelfOnly = false; state.artistQ = ""; state.limits.artists = 0; });
     else if (d.kind !== undefined) { state.kind = d.kind; state.limits.concerts = 0; render(); }
     else if (d.mkind !== undefined) { state.mapKind = d.mkind; render(); }
+    else if (d.mview) { if (map) map.area(d.mview); else mapArea = d.mview; }
+    else if (d.mzoom) { if (map) map.zoomBy(+d.mzoom); }
     else if (d.expand) { opened.has(d.expand) ? opened.delete(d.expand) : opened.add(d.expand); render(); }
     else if (d.clear) {
       if (d.clear === "concerts") Object.assign(state, { kind: "", country: "", cYear: "", q: "", filter: null });
