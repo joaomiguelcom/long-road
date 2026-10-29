@@ -498,3 +498,55 @@ body::before { content: ""; pointer-events: none; position: fixed; inset: 0; z-i
   .head-side { flex-direction: row; align-items: center; gap: 10px; }
   .sync .dot { box-shadow: none; }
 }
+
+/* ---------- web fixes after the switch (João, 2026-10-29) ---------- */
+main.wrap { gap: 24px; }
+.card { padding: 28px 0 8px; }
+.list-head + .quick { margin-top: 0; }
+/* the year grid is the phone's Year sheet: never part of the desktop row */
+.quick.phone-only { display: none; }
+/* a row of sections shares one rule on top instead of one broken line per column */
+.grid { border-top: 1px solid var(--line); column-gap: 32px; --min: 200px; }
+.grid > .card { border-top: 0; padding-top: 24px; }
+/* links read like sismos.pt's "ver ficha": quiet, no underline, coral on hover */
+.link { font: 400 13px/1.4 var(--mono); color: var(--ink-2); text-decoration: none; }
+.link:hover { color: var(--accent); }
+/* milestones: the mark sits in a fixed column so names line up */
+.ms-item { display: grid; grid-template-columns: 5.4em minmax(0, 1fr); align-items: baseline; gap: 0 12px; }
+.ms-n { min-width: 0; }
+/* buttons (back, Show more, year arrows) become plain text like the links */
+.btn { background: none; border: 0; border-radius: 0; padding: 6px 0; min-height: 0; color: var(--ink-2); font: 400 14.5px/1.4 var(--body); }
+.btn:hover { color: var(--text); }
+.more .btn { font: 400 13px/1.4 var(--mono); text-decoration: underline; text-decoration-color: var(--line-2); text-underline-offset: .25em; }
+.more .btn:hover { color: var(--accent); text-decoration-color: var(--accent); }
+.year-nav { gap: 18px; }
+.year-nav select, #ysel { background-color: transparent; border: 0; border-bottom: 1px solid var(--line); border-radius: 0; min-height: 0; padding: 4px 26px 4px 0; background-position: right 2px center; }
+.about .btn { font-size: 14.5px; }
+.vinyl { color: var(--muted); }
+/* artist names in "New for you": text, not grey boxes */
+.history-list { gap: 4px 18px; }
+.hist { background: none; padding: 2px 0; font-size: 14.5px; color: var(--ink-2); border-radius: 0; }
+.hist:hover { color: var(--accent); }
+.hist.cur { background: none; color: var(--accent); }
+/* the "updated" line lives in the footer on wide screens */
+footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px 24px; text-align: left; padding-top: 28px; border-top: 1px solid var(--line); }
+.foot-sync { min-width: 0; }
+@media (min-width: 601px) {
+  .head-side .sync { display: none; }
+  /* filters: plain words underlined when chosen, as sismos.pt's switches */
+  .quick { gap: 6px 22px; }
+  .seg { gap: 18px; }
+  .seg button { border: 0; border-bottom: 1px solid transparent; border-radius: 0; padding: 4px 0; background: none; font-size: 14.5px; color: var(--muted); }
+  .seg button.on { border-bottom-color: var(--text); color: var(--text); background: none; }
+  .toggle { border: 0; border-bottom: 1px solid transparent; border-radius: 0; padding: 4px 0; background: none; font-size: 14.5px; color: var(--muted); }
+  .toggle:hover, .seg button:hover:not(:disabled) { color: var(--text); }
+  .toggle.on { border-bottom-color: var(--text); color: var(--text); }
+  /* search: a single line to write on */
+  input[type=search] { background: none; border: 0; border-bottom: 1px solid var(--line-2); border-radius: 0; padding: 8px 0 8px 28px; min-height: 0; font-size: 15px; }
+  input[type=search]:focus { outline: none; border-bottom-color: var(--text); }
+  .search svg { left: 2px; }
+}
+@media (max-width: 600px) {
+  .foot-sync { display: none; }
+  footer .wrap { justify-content: center; text-align: center; }
+}

@@ -51,7 +51,7 @@
 <main class="wrap" id="app"></main>
 <button type="button" class="to-top" id="toTop" aria-label="Back to top" title="Back to top" tabindex="-1"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
 <div class="bottom-nav" id="bnav" role="navigation" aria-label="Sections"></div>
-<footer><div class="wrap">Long Road, like the Pearl Jam song. Data from <a href="https://www.setlist.fm/concerts/ojoaomiguel" target="_blank" rel="noopener">setlist.fm</a>.</div></footer>
+<footer><div class="wrap"><span>Long Road, like the Pearl Jam song. Data from <a href="https://www.setlist.fm/concerts/ojoaomiguel" target="_blank" rel="noopener">setlist.fm</a>.</span><span class="sync foot-sync" id="syncFoot"></span></div></footer>
 
 <script>
 // The iPhone home-screen app resumes from cache, so check for a newer deploy on open and when it comes back to the foreground
@@ -111,7 +111,7 @@
   // artists Discogs spells differently from setlist.fm (setlist.fm name -> Discogs name)
   const SHELF_ALIASES = { "Moullinex": "Moulinex" };
   const onShelf = (artist) => shelf.get(shelfKey(SHELF_ALIASES[artist] || artist)) || null;
-  const VINYL = (size) => '<svg class="vinyl" width="' + size + '" height="' + size + '" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10.8" fill="#050608" stroke="#8A9099" stroke-width="1"/><circle cx="12" cy="12" r="8.4" fill="none" stroke="#5A606A" stroke-width=".7"/><circle cx="12" cy="12" r="6.4" fill="none" stroke="#5A606A" stroke-width=".7"/><circle cx="12" cy="12" r="3.4" fill="#F2A541"/><circle cx="12" cy="12" r=".9" fill="#0F1115"/></svg>';
+  const VINYL = (size) => '<svg class="vinyl" width="' + size + '" height="' + size + '" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10.8" fill="none" stroke="currentColor" stroke-width="1.2"/><circle cx="12" cy="12" r="7.6" fill="none" stroke="currentColor" stroke-width=".7" opacity=".5"/><circle cx="12" cy="12" r="3.4" fill="var(--accent)"/><circle cx="12" cy="12" r=".9" fill="var(--bg)"/></svg>';
 
   // ---------- festivals ----------
   // The API has no festival field. Each festival edition is listed here with its venue and dates
@@ -269,10 +269,11 @@
     const r = VENUE_ALIASES.find((r) => plain(r.city) === plain(c.city) && r.aka.some((w) => plain(w) === plain(c.venue)));
     if (r) { if (!r.hideAka) c.venueThen = c.venue; c.venue = r.name; }
   }
-  document.getElementById("sync").innerHTML =
-    '<span class="dot" aria-hidden="true"></span>' +
+  // the header shows it on phones, the footer on wider screens
+  const syncHtml = '<span class="dot" aria-hidden="true"></span>' +
     // phones drop "Updated" and the year so it fits next to the title
     (() => { const d = new Date(DATA.generatedAt); return '<span><span class="sync-long">Updated </span>' + d.getDate() + " " + mon(d) + '<span class="sync-long"> ' + d.getFullYear() + "</span>, " + d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }) + "</span>"; })();
+  document.getElementById("sync").innerHTML = document.getElementById("syncFoot").innerHTML = syncHtml;
 
   // ---------- aggregations ----------
   // concerts are newest first, so every Map below is filled in order of last seen; the sorts are stable and keep that order on ties
