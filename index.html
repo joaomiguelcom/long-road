@@ -1316,11 +1316,11 @@
     const W = 1080, H = 1920, X = 80, R = W - 80, cv = document.createElement("canvas");
     cv.width = W; cv.height = H;
     const g = cv.getContext("2d");
-    const { DISP, BODY, MONO, ACC, TXT, INK2, MUT, LINE } = await shareKit();
+    const { DISP, BODY, MONO, BG, ACC, ACC2, TXT, INK2, MUT, LINE } = await shareKit();
     const fit = (t, max) => { if (g.measureText(t).width <= max) return t; while (t.length > 1 && g.measureText(t + "…").width > max) t = t.slice(0, -1); return t + "…"; };
     // section labels as on the site: small spaced capitals under a thin rule
     const label = (t, yy) => { g.fillStyle = LINE; g.fillRect(X, yy - 52, R - X, 2); g.fillStyle = MUT; g.font = "500 24px " + BODY; g.letterSpacing = "4px"; g.fillText(t, X, yy); g.letterSpacing = "0px"; };
-    shareBackground(g, W, H);
+    shareBackground(g, W, H, BG);
     // everything but the link sits 40px higher (João, 2026-10-25)
     g.save(); g.translate(0, -40);
     shareHeader(g, X, 236, "joão miguel's year in concerts", { DISP, BODY, ACC, TXT, INK2 });
@@ -1343,7 +1343,7 @@
     const mMax = Math.max(1, ...months), bw = (R - X) / 12, base = 1390;
     months.forEach((n, m) => {
       const h = n ? Math.max(6, 150 * n / mMax) : 3, x = X + m * bw + 6;
-      g.fillStyle = n === mMax ? ACC : n ? "rgba(255,107,66,.45)" : LINE; g.fillRect(x, base - h, bw - 12, h);
+      g.fillStyle = n === mMax ? ACC : n ? ACC2 : LINE; g.fillRect(x, base - h, bw - 12, h);
       g.fillStyle = MUT; g.font = "400 23px " + MONO; g.textAlign = "center";
       g.fillText("JFMAMJJASOND"[m], x + (bw - 12) / 2, base + 36);
       if (n) { g.fillStyle = n === mMax ? TXT : MUT; g.fillText(String(n), x + (bw - 12) / 2, base - h - 10); }
@@ -1362,15 +1362,17 @@
     await deliverPng(cv, "long-road-" + y + ".png", "Long Road " + y);
   }
 
-  // the share images follow the site's dark theme (sismos.pt look, 2026-10-29): canvas cannot read CSS variables, so the colours are spelled out
+  // the share images follow the theme on screen, dark or light (João, 2026-10-29): canvas cannot read CSS variables, so the colours are spelled out
   async function shareKit() {
     try { await Promise.all(['340 100px "Fraunces Variable"', '400 20px "Hanken Grotesk"', '500 20px "Hanken Grotesk"', '400 20px "Geist Mono"'].map((f) => document.fonts.load(f))); } catch (e) {}
     return { DISP: '"Fraunces Variable", Georgia, serif', BODY: '"Hanken Grotesk", Arial, sans-serif', MONO: '"Geist Mono", Menlo, monospace',
-      ACC: "#ff6b42", TXT: "#ece8df", INK2: "#b9b3a7", MUT: "#857f74", LINE: "#2e2c28" };
+      ...(isLight()
+        ? { BG: "#ecefec", ACC: "#c2381b", ACC2: "rgba(194,56,27,.4)", TXT: "#18201e", INK2: "#4c5753", MUT: "#7c8783", LINE: "#cdd4d0" }
+        : { BG: "#151412", ACC: "#ff6b42", ACC2: "rgba(255,107,66,.45)", TXT: "#ece8df", INK2: "#b9b3a7", MUT: "#857f74", LINE: "#2e2c28" }) };
   }
-  // dark paper with a light grain, as the site
-  function shareBackground(g, W, H) {
-    g.fillStyle = "#151412"; g.fillRect(0, 0, W, H);
+  // paper with a light grain, as the site
+  function shareBackground(g, W, H, bg) {
+    g.fillStyle = bg; g.fillRect(0, 0, W, H);
     const img = g.getImageData(0, 0, W, H), px = img.data;
     for (let i = 0; i < px.length; i += 4) { const n = (Math.random() - .5) * 14; px[i] += n; px[i + 1] += n; px[i + 2] += n; }
     g.putImageData(img, 0, 0);
@@ -1409,7 +1411,7 @@
     const W = 1080, H = 1920, X = 80, R = W - 80, cv = document.createElement("canvas");
     cv.width = W; cv.height = H;
     const g = cv.getContext("2d");
-    const { DISP, BODY, MONO, ACC, TXT, INK2, MUT, LINE } = await shareKit();
+    const { DISP, BODY, MONO, BG, ACC, ACC2, TXT, INK2, MUT, LINE } = await shareKit();
     const fit = (t, max) => { if (g.measureText(t).width <= max) return t; while (t.length > 1 && g.measureText(t + "…").width > max) t = t.slice(0, -1); return t + "…"; };
     // long names break over two lines, then shrink until they fit
     const wrap = (t, max) => {
@@ -1417,7 +1419,7 @@
       for (const w of t.split(" ")) { const next = (lines[lines.length - 1] + " " + w).trim(); if (g.measureText(next).width <= max || !lines[lines.length - 1]) lines[lines.length - 1] = next; else lines.push(w); }
       return lines;
     };
-    shareBackground(g, W, H);
+    shareBackground(g, W, H, BG);
     shareHeader(g, X, 196, "joão miguel's concert archive", { DISP, BODY, ACC, TXT, INK2 });
     // date, artist, where
     const d = new Date(c.date + "T12:00:00");
