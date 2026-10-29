@@ -41,7 +41,6 @@
     --map-bg: #E9E6DF; --on-accent: #FFFFFF;
   }
   :root[data-theme="light"] header { background: linear-gradient(180deg, rgba(176,104,12,.08), rgba(176,104,12,0) 70%); }
-  :root[data-theme="light"] .seg button.on { box-shadow: 0 1px 3px rgba(0,0,0,.12); }
   /* the new tab slides in from the side it was swiped from */
   @keyframes slideL { from { opacity: .3; transform: translateX(28px); } to { opacity: 1; transform: none; } }
   @keyframes slideR { from { opacity: .3; transform: translateX(-28px); } to { opacity: 1; transform: none; } }
@@ -287,10 +286,11 @@
   .toggle { font: inherit; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; background: var(--line); border: 1px solid transparent; border-radius: 999px; padding: 4px 11px; color: var(--muted); cursor: pointer; }
   .toggle.on { border-color: var(--accent); color: var(--text); }
   /* segmented control (iOS style): one pill, the chosen part lifted */
-  .seg { display: inline-flex; background: var(--line); border-radius: 999px; padding: 3px; gap: 2px; }
-  .seg button { font: inherit; font-size: 13px; background: none; border: 0; border-radius: 999px; padding: 3px 14px; color: var(--muted); cursor: pointer; }
+  /* button groups: separate outlined pills, the chosen one in the soft amber of the chips (João, 2026-10-29) */
+  .seg { display: inline-flex; gap: 6px; }
+  .seg button { font: inherit; font-size: 13px; background: none; border: 1px solid var(--line-2); border-radius: 999px; padding: 3px 14px; color: var(--muted); cursor: pointer; }
   .seg button:disabled { opacity: .35; cursor: default; }
-  .seg button.on { background: var(--line-2); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,.35); }
+  .seg button.on { background: rgba(242,165,65,.12); border-color: rgba(242,165,65,.4); color: var(--text); font-weight: 600; }
   .records { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 8px; }
   .records a { display: flex; gap: 10px; align-items: center; padding: 8px 10px; border-radius: 8px; background: var(--line); color: inherit; text-decoration: none; }
   .records a > span { display: flex; flex-direction: column; min-width: 0; }
@@ -383,7 +383,8 @@
     .fs-done { margin-top: 10px; display: block; background: rgba(242,165,65,.12); color: var(--accent); border: 1px solid rgba(242,165,65,.35); border-radius: 10px; padding: 11px; font: inherit; font-size: 15px; font-weight: 600; cursor: pointer; }
     .fs-panel .icon-chip { display: none; }
     .fs-panel .fs-dir { margin-top: -4px; } .fs-panel .fs-dir button { padding: 6px 0; font-size: 13px; }
-    .fs-panel .seg { display: flex; } .fs-panel .seg button { flex: 1; padding: 8px 0; font-size: 14px; }
+    .fs-done { margin-inline: 10px; }
+    .fs-panel .seg { display: flex; gap: 8px; } .fs-panel .seg button { flex: 1; padding: 7px 0; font-size: 14px; }
     .fs-panel .mchip { display: flex; align-items: center; gap: 10px; }
     .fs-panel .qpick, .fs-panel .qpick.on { flex: 1; display: flex; justify-content: flex-end; width: 100%; background: none; border: 0; border-top: 1px solid var(--line); border-radius: 0; padding: 12px 0 0; min-height: 44px; font-size: 15px; color: var(--muted); }
     .fs-panel .qpick::before { content: attr(data-label); color: var(--text); margin-right: auto; }
@@ -928,7 +929,7 @@
     festivals: { label: "Festival concerts", test: (c, v) => !!c.festival && c.date.startsWith(v), show: (v) => v }
   };
 
-  const state = { tab: "overview", q: "", detail: null, limits: {}, artistQ: "", venueQ: "", songQ: "", filter: null, artist: null, venue: null, festival: null, song: null, kind: "", country: "", cYear: "", venueCountry: "", festCountry: "", festQ: "", mapKind: "", venueCity: "", mapYears: "", year: byYear.length ? byYear[byYear.length - 1].key : null, sorts: {} };
+  const state = { tab: "overview", q: "", detail: null, limits: {}, artistQ: "", venueQ: "", songQ: "", coverQ: "", debutQ: "", filter: null, artist: null, venue: null, festival: null, song: null, kind: "", country: "", cYear: "", venueCountry: "", festCountry: "", festQ: "", mapKind: "", venueCity: "", mapYears: "", year: byYear.length ? byYear[byYear.length - 1].key : null, sorts: {} };
   const limitOf = (id, def) => state.limits[id] || def;
   const TABS = [["overview", "Overview"], ["concerts", "Concerts"], ["artists", "Artists"], ["venues", "Venues"], ["festivals", "Festivals"], ["songs", "Songs"], ["years", "Year in review"], ["map", "Map"]];
 
@@ -1572,15 +1573,17 @@
       ? artistBtn(s.artist, "open muted-btn") + (s.by.size ? ' <span class="tag">· also by ' + [...s.by].map(esc).join(", ") + "</span>" : "")
       : [...s.by].map((a) => artistBtn(a, "open muted-btn")).join(", ") + ' <span class="tag">· ' + esc(s.artist) + " cover</span>";
     const rows = list.map((s) => [cell(String(s.rank), s.rank), cell('<button type="button" class="open"' + sattr(s.key) + ">" + esc(s.name) + "</button>", s.name), cell(songArtist(s), seen(s.artist) ? s.artist : [...s.by][0]), cell(String(s.count), s.count)]);
-    const coverRows = covers.map((x) => [cell(esc(x.name), x.name), cell(esc(x.original), x.original), cell(artistBtn(x.artist, "open muted-btn"), x.artist), cell(String(x.count), x.count)]);
-    const debutRows = debuts.slice().sort((a, b) => b.date.localeCompare(a.date)).map((d) => [cell('<button type="button" class="open muted-btn" data-open="' + esc(d.id) + '">' + fmtDate(d.date) + "</button>", d.date), cell(esc(d.name), d.name), cell(esc(d.artist), d.artist), cell(esc(d.info), d.info)]);
+    // the two lists below have their own search (João, 2026-10-29)
+    const cq = plain(state.coverQ.trim()), dq = plain(state.debutQ.trim());
+    const coverRows = covers.filter((x) => !cq || [x.name, x.original, x.artist].some((v) => plain(v).includes(cq))).map((x) => [cell(esc(x.name), x.name), cell(esc(x.original), x.original), cell(artistBtn(x.artist, "open muted-btn"), x.artist), cell(String(x.count), x.count)]);
+    const debutRows = debuts.filter((d) => !dq || [d.name, d.artist].some((v) => plain(v).includes(dq))).slice().sort((a, b) => b.date.localeCompare(a.date)).map((d) => [cell('<button type="button" class="open muted-btn" data-open="' + esc(d.id) + '">' + fmtDate(d.date) + "</button>", d.date), cell(esc(d.name), d.name), cell(esc(d.artist), d.artist), cell(esc(d.info), d.info)]);
     return '<div class="list-head"><div class="list-title"><h2>Songs you heard most</h2><span class="muted">' + fmtN(songs.length) + " different songs, " + fmtN(songsHeard) + " in total, " + fmtN(heardOnce) + " heard only once</span>" + "</div>" + searchBox("sq", "Search songs", "Search song or artist", state.songQ, fsBtn(fsCount("songs", 0), "Sort")) + fsChips("songs", []) + "</div>" +
       (q && !list.length ? '<div class="empty">No songs match.</div>' : "") +
       table("songs", [{ label: "#", num: true, cls: "num" }, { label: "Song" }, { label: "Artist" }, { label: "Times", num: true, cls: "num" }], rows, limitOf("songs", 25),
         (r) => ({ rank: r[0].h, title: r[1].h, sub: [r[2].h], value: r[3].h, unit: r[3].s === 1 ? "time" : "times" })) +
-      '<div class="list-head"><div class="list-title"><h2>Covers heard live</h2></div>' + (coverRows.length ? fsBtn(fsCount("covers", 0), "Sort", "covers") + fsChips("covers", []) : "") + "</div>" + (coverRows.length ? table("covers", [{ label: "Song" }, { label: "Original by", cls: "muted" }, { label: "Played by" }, { label: "Times", num: true, cls: "num" }], coverRows, limitOf("covers", 10),
+      '<div class="list-head"><div class="list-title"><h2>Covers heard live</h2></div>' + (covers.length ? searchBox("cvq", "Search covers", "Search song or artist", state.coverQ, fsBtn(fsCount("covers", 0), "Sort", "covers")) + fsChips("covers", []) : "") + "</div>" + (cq && !coverRows.length ? '<div class="empty">No covers match.</div>' : coverRows.length ? table("covers", [{ label: "Song" }, { label: "Original by", cls: "muted" }, { label: "Played by" }, { label: "Times", num: true, cls: "num" }], coverRows, limitOf("covers", 10),
         (r) => ({ title: r[0].h, sub: [r[1].h + " → " + r[2].h], value: r[3].h, unit: r[3].s === 1 ? "time" : "times" })) : '<p class="muted" style="margin:0">None found yet.</p>') +
-      '<div class="list-head"><div class="list-title"><h2>Live debuts you saw</h2></div>' + (debutRows.length ? fsBtn(fsCount("debuts", 0), "Sort", "debuts") + fsChips("debuts", []) : "") + "</div>" + (debutRows.length ? table("debuts", [{ label: "Date", cls: "muted" }, { label: "Song" }, { label: "Artist" }, { label: "Note", cls: "muted" }], debutRows, limitOf("debuts", 10),
+      '<div class="list-head"><div class="list-title"><h2>Live debuts you saw</h2></div>' + (debuts.length ? searchBox("dbq", "Search live debuts", "Search song or artist", state.debutQ, fsBtn(fsCount("debuts", 0), "Sort", "debuts")) + fsChips("debuts", []) : "") + "</div>" + (dq && !debutRows.length ? '<div class="empty">No debuts match.</div>' : debutRows.length ? table("debuts", [{ label: "Date", cls: "muted" }, { label: "Song" }, { label: "Artist" }, { label: "Note", cls: "muted" }], debutRows, limitOf("debuts", 10),
         (r) => ({ title: r[1].h, sub: [r[0].h, esc(r[2].s), r[3].h] })) : '<p class="muted" style="margin:0">No songs marked as a live debut on setlist.fm yet.</p>');
   }
 
@@ -2112,12 +2115,14 @@
     }
   });
   document.addEventListener("input", (e) => {
-    if (!["q", "aq", "vq", "sq", "fq"].includes(e.target.id)) return;
+    if (!["q", "aq", "vq", "sq", "fq", "cvq", "dbq"].includes(e.target.id)) return;
     const id = e.target.id;
     if (id === "q") { state.q = e.target.value; state.limits.concerts = 0; }
     else if (id === "aq") { state.artistQ = e.target.value; state.limits.artists = 0; }
     else if (id === "vq") { state.venueQ = e.target.value; state.limits.venues = 0; }
     else if (id === "fq") state.festQ = e.target.value;
+    else if (id === "cvq") { state.coverQ = e.target.value; state.limits.covers = 0; }
+    else if (id === "dbq") { state.debutQ = e.target.value; state.limits.debuts = 0; }
     else { state.songQ = e.target.value; state.limits.songs = 0; }
     renderKeeping(id, ".search");
   });
