@@ -831,6 +831,8 @@
       g.songs.push(s);
     }
     const idx = chronoIdx.get(c.id), prev = chrono[idx - 1], next = chrono[idx + 1];
+    // the share-as-image action sits as text next to "Open on setlist.fm" (João, 2026-10-29)
+    const shareText = '<button type="button" class="tag text-btn" data-share-concert="' + esc(c.id) + '">Share as image</button>';
     const d = new Date(c.date + "T12:00:00");
     // a span, not a button: Safari keeps buttons as one block, so a long festival name broke the line apart
     const link = (label, attr) => '<span role="button" tabindex="0" class="inline-link"' + attr + ">" + label + "</span>";
@@ -871,10 +873,10 @@
           (x.with ? ' <span class="tag">· with ' + esc(x.with) + "</span>" : "") +
           (x.tape ? ' <span class="sr-only">(tape)</span>' : "") + (x.info ? ' <span class="tag">· ' + esc(x.info) + "</span>" : "") + "</span></li>").join("") + "</ol></div>").join("") +
       (c.info ? '<p class="muted" style="margin:14px 0 0">' + esc(c.info) + "</p>" : "") +
-      '<a class="tag setlist-src" href="' + esc(c.url) + '" target="_blank" rel="noopener">Open on setlist.fm</a>' +
+      '<div class="setlist-src"><a class="tag" href="' + esc(c.url) + '" target="_blank" rel="noopener">Open on setlist.fm</a>' + shareText + "</div>" +
       "</section>"
-      : c.extra ? '<p class="tag" style="margin:0">Not on setlist.fm: ' + esc(c.reason || "the artist is not in its database.") + (c.note ? " " + esc(c.note) : "") + (c.source ? ' <a href="' + esc(c.source) + '" target="_blank" rel="noopener">Source</a>' : "") + "</p>"
-      : '<p class="tag" style="margin:0">No setlist yet. <a href="' + esc(c.url) + '" target="_blank" rel="noopener">Add it on setlist.fm</a></p>';
+      : c.extra ? '<p class="tag" style="margin:0">Not on setlist.fm: ' + esc(c.reason || "the artist is not in its database.") + (c.note ? " " + esc(c.note) : "") + (c.source ? ' <a href="' + esc(c.source) + '" target="_blank" rel="noopener">Source</a>' : "") + "</p>" + '<div class="setlist-src">' + shareText + "</div>"
+      : '<p class="tag" style="margin:0">No setlist yet. <a href="' + esc(c.url) + '" target="_blank" rel="noopener">Add it on setlist.fm</a></p>' + '<div class="setlist-src">' + shareText + "</div>";
     // same night
     const sameNight = chrono.filter((x) => x.date === c.date && x.id !== c.id);
     const night = sameNight.length ? '<section class="card"><h2>Also that night</h2><div class="history-list">' + sameNight.map((x) =>
@@ -882,8 +884,7 @@
     const navBtn = (x, dir) => x ? '<button type="button" class="icon-btn" data-swap="' + esc(x.id) + '" aria-label="' + (dir < 0 ? "Previous" : "Next") + " concert: " + esc(x.artist) + '" title="' + esc(x.artist + " · " + fmtDate(x.date)) + '">' + (dir < 0 ? "‹" : "›") + "</button>" : '<span class="icon-btn off" aria-hidden="true">' + (dir < 0 ? "‹" : "›") + "</span>";
     // same skeleton as the other detail pages: back button, big title, then cards
     return '<article class="detail-wide detail">' +
-      '<div class="detail-top"><button class="btn" id="back">← Back</button><div class="detail-nav"><button type="button" class="icon-btn" data-share-concert="' + esc(c.id) + '" aria-label="Share this concert as an image" title="Share as image">' +
-        SHARE_ICON + '</button>' + navBtn(prev, -1) + navBtn(next, 1) + "</div></div>" +
+      '<div class="detail-top"><button class="btn" id="back">← Back</button><div class="detail-nav">' + navBtn(prev, -1) + navBtn(next, 1) + "</div></div>" +
       '<div class="detail-head"><span class="next-date big"><span class="m">' + mon(d) + '</span><span class="d">' + d.getDate() + '</span><span class="y">' + d.getFullYear() + "</span></span>" +
         '<div style="min-width:0"><h2 class="detail-title">' + artistBtn(c.artist, "title-link") + '</h2><div class="muted detail-meta">' + meta + "</div></div></div>" +
       '<div class="facts">' + facts.join("") + "</div>" +
