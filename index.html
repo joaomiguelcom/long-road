@@ -61,9 +61,18 @@
   function check() {
     fetch("version.txt?t=" + Date.now(), { cache: "no-store" })
       .then((r) => (r.ok ? r.text() : ""))
-      .then((v) => { v = v.trim(); if (v && v !== BUILD && location.search !== "?v=" + v) location.replace(location.pathname + "?v=" + v + location.hash); })
+      .then((v) => {
+        v = v.trim();
+        if (!v || v === BUILD) return;
+        // a newer deploy: refresh the browser's copy of the page, then reload it at its own address (no "?v=" in the URL);
+        // one try per build, so a stale cache can never cause a reload loop
+        try { if (sessionStorage.getItem("lr-reload") === v) return; sessionStorage.setItem("lr-reload", v); } catch (e) {}
+        fetch(location.pathname, { cache: "reload" }).finally(() => location.reload());
+      })
       .catch(() => {});
   }
+  // older builds reloaded to "?v=<build>": tidy such an address back to the plain one
+  if (/^\?v=/.test(location.search)) history.replaceState(null, "", location.pathname + location.hash);
   check();
   if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
   document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") check(); });
@@ -274,15 +283,10 @@
     // phones drop "Updated" and the year so it fits next to the title
     (() => { const d = new Date(DATA.generatedAt); return '<span><span class="sync-long">Updated </span>' + d.getDate() + " " + mon(d) + '<span class="sync-long"> ' + d.getFullYear() + "</span>, " + d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }) + "</span>"; })();
   document.getElementById("sync").innerHTML = syncHtml;
-  // the footer has room for the whole line: date, time and when the next export runs (06:00 UTC on the 1st and 15th, see update.yml)
+  // the footer has room for the whole date and time
   document.getElementById("syncFoot").innerHTML = (() => {
-    const d = new Date(DATA.generatedAt), now = new Date();
-    const Y = now.getUTCFullYear(), M = now.getUTCMonth();
-    const n = [[M, 1], [M, 15], [M + 1, 1]].map(([m, day]) => new Date(Date.UTC(Y, m, day, 6))).find((t) => t > now);
-    const days = Math.ceil((n - now) / 864e5);
-    return '<span class="dot" aria-hidden="true"></span><span>updated ' + d.getDate() + " " + mon(d) + " " + d.getFullYear() + " at " +
-      d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }) + '</span><span class="fs-sep"> · </span><span>' + fmtN(concerts.length) + " concerts · next update " +
-      n.getDate() + " " + mon(n) + (days > 1 ? " (in " + days + " days)" : days === 1 ? " (tomorrow)" : "") + "</span>";
+    const d = new Date(DATA.generatedAt);
+    return '<span class="dot" aria-hidden="true"></span><span>updated ' + d.getDate() + " " + mon(d) + " " + d.getFullYear() + " at " + d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }) + "</span>";
   })();
 
   // ---------- aggregations ----------

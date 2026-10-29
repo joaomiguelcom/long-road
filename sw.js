@@ -17,7 +17,9 @@ self.addEventListener("fetch", (e) => {
   // files carry ?v=<build>; keep one copy per file, whatever the build
   const key = url.origin + url.pathname;
   e.respondWith(
-    fetch(e.request).then((res) => {
+    // pages are checked with the server every time (a quick "not modified" when nothing changed), so a new deploy shows up on reload
+    // (a navigation request cannot be re-sent with options, so it goes by URL)
+    (e.request.mode === "navigate" ? fetch(e.request.url, { cache: "no-cache" }) : fetch(e.request)).then((res) => {
       if (res.ok) { const copy = res.clone(); caches.open(CACHE).then((c) => c.put(key, copy)); }
       return res;
     }).catch(() => caches.match(key).then((hit) => hit || Promise.reject(new Error("offline"))))
