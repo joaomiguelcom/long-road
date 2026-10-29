@@ -608,3 +608,27 @@ td.date { font: 400 13px/1.4 var(--mono); font-variant-numeric: tabular-nums; }
 td .tag { font: 400 13px/1.4 var(--body); color: var(--ink-2); }
 /* the site name and its subtitle in lower case, as sismos.pt (João, 2026-10-29) */
 .brand h1, .brand .eyebrow { text-transform: lowercase; }
+
+/* ---------- phone fixes (João, 2026-10-29) ---------- */
+@media (max-width: 600px) {
+  /* iOS zooms into any field under 16px when it gets focus: keep fields at 16px on phones */
+  input, select, textarea, input[type=search] { font-size: 16px; }
+  /* "updated" moves to the footer on phones too */
+  .head-side .sync { display: none; }
+  .foot-sync { display: inline-flex; }
+  footer .wrap { flex-direction: column; gap: 8px; }
+  /* a shorter map, so the chosen city's line fits on screen under it */
+  #map { height: min(48vh, 420px); }
+  /* filters: a quiet text button with the icon, as the other controls; the count stays a coral dot with the number */
+  .fbtn { background: none; color: var(--ink-2); border-radius: 0; padding: 6px 4px; font: 400 14.5px/1 var(--body); text-transform: lowercase; }
+  .fbtn:hover, .fbtn:active { color: var(--text); }
+  .list-head > .fbtn, .year-nav .fbtn { min-height: 36px; padding: 6px 0; }
+  .fbtn .badge { font: 500 11px/1 var(--mono); }
+  /* active filter chips: outlined like the festival line-ups */
+  .fchip { background: none; border-color: var(--line-2); font-size: 14px; }
+  .fchip:hover { border-color: var(--text); }
+  /* the panel sits on the page colour with a hairline, not a lighter grey sheet */
+  .fs-panel { background: var(--bg); border-top-color: var(--line); }
+  .fs-head { text-transform: lowercase; }
+  .fs-done { background: none; border: 1px solid var(--text); border-radius: 999px; color: var(--text); font: 500 15px/1 var(--body); }
+}

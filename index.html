@@ -1290,45 +1290,35 @@
     const W = 1080, H = 1920, X = 80, R = W - 80, cv = document.createElement("canvas");
     cv.width = W; cv.height = H;
     const g = cv.getContext("2d");
-    const DISP = '"Fraunces Variable", Georgia, serif', BODY = '"Hanken Grotesk", Arial, sans-serif';
-    const ACC = "#ff6b42", TXT = "#ece8df", MUT = "#857f74", LINE = "#2e2c28";
+    const { DISP, BODY, MONO, ACC, TXT, INK2, MUT, LINE } = await shareKit();
     const fit = (t, max) => { if (g.measureText(t).width <= max) return t; while (t.length > 1 && g.measureText(t + "…").width > max) t = t.slice(0, -1); return t + "…"; };
-    const label = (t, yy) => { g.fillStyle = ACC; g.font = "600 25px " + BODY; g.letterSpacing = "4px"; g.fillText(t, X, yy); g.letterSpacing = "0px"; };
-    g.fillStyle = "#151412"; g.fillRect(0, 0, W, H);
-    const glow = g.createRadialGradient(W - 60, 420, 0, W - 60, 420, 1000);
-    glow.addColorStop(0, "rgba(var(--acc-rgb),.20)"); glow.addColorStop(1, "rgba(var(--acc-rgb),0)");
-    g.fillStyle = glow; g.fillRect(0, 0, W, H);
+    // section labels as on the site: small spaced capitals under a thin rule
+    const label = (t, yy) => { g.fillStyle = LINE; g.fillRect(X, yy - 52, R - X, 2); g.fillStyle = MUT; g.font = "500 24px " + BODY; g.letterSpacing = "4px"; g.fillText(t, X, yy); g.letterSpacing = "0px"; };
+    shareBackground(g, W, H);
     // everything but the link sits 40px higher (João, 2026-10-25)
     g.save(); g.translate(0, -40);
-    // header: road logo and title
-    g.save(); g.translate(X, 202); g.scale(1.5, 1.5); g.translate(-6, -8);
-    g.fillStyle = "rgba(var(--acc-rgb),.35)"; g.beginPath(); g.arc(32, 19, 9, 0, Math.PI * 2); g.fill();
-    g.fillStyle = ACC; g.fill(new Path2D("M29.5 19h5L54 58H10zM31.4 23h1.2l.3 5h-1.8zM31 33h2l.5 8h-3zM30.3 46h3.4l.6 12h-4.6z"), "evenodd");
-    g.restore();
-    g.textBaseline = "alphabetic";
-    g.fillStyle = TXT; g.font = "600 46px " + DISP; g.fillText("LONG ROAD", X + 104, 236);
-    g.fillStyle = MUT; g.font = "400 27px " + BODY; g.fillText("João Miguel's year in concerts", X + 104, 276);
+    shareHeader(g, X, 236, "joão miguel's year in concerts", { DISP, BODY, ACC, TXT, INK2 });
     // the year, then the concert count
-    g.fillStyle = ACC; g.font = "600 230px " + DISP; g.fillText(y, X - 4, 540);
-    g.fillStyle = TXT; g.font = "600 160px " + DISP; g.fillText(fmtN(list.length), X - 4, 730);
+    g.fillStyle = ACC; g.font = "340 250px " + DISP; g.letterSpacing = "-7px"; g.fillText(y, X - 8, 540);
+    g.fillStyle = TXT; g.font = "340 170px " + DISP; g.letterSpacing = "-5px"; g.fillText(fmtN(list.length), X - 6, 730); g.letterSpacing = "0px";
     const cw0 = g.measureText(fmtN(list.length)).width;
-    g.fillStyle = MUT; g.font = "400 46px " + BODY; g.fillText(list.length === 1 ? "concert" : "concerts", X + cw0 + 22, 730);
+    g.fillStyle = INK2; g.font = "400 44px " + BODY; g.fillText(list.length === 1 ? "concert" : "concerts", X + cw0 + 18, 730);
     // numbers: two rows of three
     const kp = [[yArtists.length, "artists"], [nNew, "new artists"], [nVenues, nVenues === 1 ? "venue" : "venues"],
       [nFest, nFest === 1 ? "festival" : "festivals"], [nCities, nCities === 1 ? "city" : "cities"], [nCountries, nCountries === 1 ? "country" : "countries"]];
     g.fillStyle = LINE; g.fillRect(X, 790, R - X, 2);
     kp.forEach(([v, l], i) => {
       const cw = (R - X) / 3, x = X + (i % 3) * cw, top = 830 + Math.floor(i / 3) * 150;
-      g.fillStyle = TXT; g.font = "600 76px " + DISP; g.fillText(fmtN(v), x, top + 70);
-      g.fillStyle = MUT; g.font = "400 27px " + BODY; g.fillText(l, x, top + 110);
+      g.fillStyle = TXT; g.font = "340 84px " + DISP; g.letterSpacing = "-2px"; g.fillText(fmtN(v), x - 2, top + 72); g.letterSpacing = "0px";
+      g.fillStyle = MUT; g.font = "400 26px " + MONO; g.fillText(l, x, top + 112);
     });
     // concerts per month
     label("MONTH BY MONTH", 1170);
     const mMax = Math.max(1, ...months), bw = (R - X) / 12, base = 1390;
     months.forEach((n, m) => {
       const h = n ? Math.max(6, 150 * n / mMax) : 3, x = X + m * bw + 6;
-      g.fillStyle = n === mMax ? ACC : n ? "rgba(var(--acc-rgb),.45)" : LINE; g.fillRect(x, base - h, bw - 12, h);
-      g.fillStyle = MUT; g.font = "500 23px " + BODY; g.textAlign = "center";
+      g.fillStyle = n === mMax ? ACC : n ? "rgba(255,107,66,.45)" : LINE; g.fillRect(x, base - h, bw - 12, h);
+      g.fillStyle = MUT; g.font = "400 23px " + MONO; g.textAlign = "center";
       g.fillText("JFMAMJJASOND"[m], x + (bw - 12) / 2, base + 36);
       if (n) { g.fillStyle = n === mMax ? TXT : MUT; g.fillText(String(n), x + (bw - 12) / 2, base - h - 10); }
       g.textAlign = "left";
@@ -1337,13 +1327,34 @@
     label("MOST SEEN", 1490);
     yArtists.slice(0, 5).forEach((a, i) => {
       const yy = 1552 + i * 56;
-      g.fillStyle = a.rank === 1 ? ACC : MUT; g.font = "600 36px " + DISP; g.textAlign = "center"; g.fillText(String(a.rank), X + 14, yy); g.textAlign = "left";
+      g.fillStyle = a.rank === 1 ? ACC : MUT; g.font = "380 40px " + DISP; g.textAlign = "center"; g.fillText(String(a.rank), X + 14, yy); g.textAlign = "left";
       g.fillStyle = TXT; g.font = "500 36px " + BODY; g.fillText(fit(a.key, R - X - 160), X + 60, yy);
-      g.fillStyle = MUT; g.font = "400 30px " + BODY; g.textAlign = "right"; g.fillText(a.count + "×", R, yy); g.textAlign = "left";
+      g.fillStyle = MUT; g.font = "400 28px " + MONO; g.textAlign = "right"; g.fillText(a.count + "×", R, yy); g.textAlign = "left";
     });
     g.restore();
-    g.fillStyle = MUT; g.font = "400 26px " + BODY; g.textAlign = "right"; g.fillText("longroad.joaomiguel.com", R, 1815); g.textAlign = "left";
+    g.fillStyle = MUT; g.font = "400 25px " + MONO; g.textAlign = "right"; g.fillText("longroad.joaomiguel.com", R, 1815); g.textAlign = "left";
     await deliverPng(cv, "long-road-" + y + ".png", "Long Road " + y);
+  }
+
+  // the share images follow the site's dark theme (sismos.pt look, 2026-10-29): canvas cannot read CSS variables, so the colours are spelled out
+  async function shareKit() {
+    try { await Promise.all(['340 100px "Fraunces Variable"', '400 20px "Hanken Grotesk"', '500 20px "Hanken Grotesk"', '400 20px "Geist Mono"'].map((f) => document.fonts.load(f))); } catch (e) {}
+    return { DISP: '"Fraunces Variable", Georgia, serif', BODY: '"Hanken Grotesk", Arial, sans-serif', MONO: '"Geist Mono", Menlo, monospace',
+      ACC: "#ff6b42", TXT: "#ece8df", INK2: "#b9b3a7", MUT: "#857f74", LINE: "#2e2c28" };
+  }
+  // dark paper with a light grain, as the site
+  function shareBackground(g, W, H) {
+    g.fillStyle = "#151412"; g.fillRect(0, 0, W, H);
+    const img = g.getImageData(0, 0, W, H), px = img.data;
+    for (let i = 0; i < px.length; i += 4) { const n = (Math.random() - .5) * 14; px[i] += n; px[i + 1] += n; px[i + 2] += n; }
+    g.putImageData(img, 0, 0);
+  }
+  // "long road." with the coral dot, and a line under it, like the site header
+  function shareHeader(g, X, y, sub, k) {
+    g.textBaseline = "alphabetic";
+    g.fillStyle = k.TXT; g.font = "420 54px " + k.DISP; g.letterSpacing = "-1px"; g.fillText("long road", X, y);
+    const w = g.measureText("long road").width; g.fillStyle = k.ACC; g.fillText(".", X + w, y); g.letterSpacing = "0px";
+    g.fillStyle = k.INK2; g.font = "400 28px " + k.BODY; g.fillText(sub, X, y + 46);
   }
 
   // phones get the share sheet (Instagram, WhatsApp…); computers download the PNG
@@ -1372,8 +1383,7 @@
     const W = 1080, H = 1920, X = 80, R = W - 80, cv = document.createElement("canvas");
     cv.width = W; cv.height = H;
     const g = cv.getContext("2d");
-    const DISP = '"Fraunces Variable", Georgia, serif', BODY = '"Hanken Grotesk", Arial, sans-serif';
-    const ACC = "#ff6b42", TXT = "#ece8df", MUT = "#857f74", LINE = "#2e2c28";
+    const { DISP, BODY, MONO, ACC, TXT, INK2, MUT, LINE } = await shareKit();
     const fit = (t, max) => { if (g.measureText(t).width <= max) return t; while (t.length > 1 && g.measureText(t + "…").width > max) t = t.slice(0, -1); return t + "…"; };
     // long names break over two lines, then shrink until they fit
     const wrap = (t, max) => {
@@ -1381,38 +1391,28 @@
       for (const w of t.split(" ")) { const next = (lines[lines.length - 1] + " " + w).trim(); if (g.measureText(next).width <= max || !lines[lines.length - 1]) lines[lines.length - 1] = next; else lines.push(w); }
       return lines;
     };
-    g.fillStyle = "#151412"; g.fillRect(0, 0, W, H);
-    const glow = g.createRadialGradient(W - 60, 380, 0, W - 60, 380, 1000);
-    glow.addColorStop(0, "rgba(var(--acc-rgb),.20)"); glow.addColorStop(1, "rgba(var(--acc-rgb),0)");
-    g.fillStyle = glow; g.fillRect(0, 0, W, H);
-    // header: road logo and title, as on the year image
-    g.save(); g.translate(X, 162); g.scale(1.5, 1.5); g.translate(-6, -8);
-    g.fillStyle = "rgba(var(--acc-rgb),.35)"; g.beginPath(); g.arc(32, 19, 9, 0, Math.PI * 2); g.fill();
-    g.fillStyle = ACC; g.fill(new Path2D("M29.5 19h5L54 58H10zM31.4 23h1.2l.3 5h-1.8zM31 33h2l.5 8h-3zM30.3 46h3.4l.6 12h-4.6z"), "evenodd");
-    g.restore();
-    g.textBaseline = "alphabetic";
-    g.fillStyle = TXT; g.font = "600 46px " + DISP; g.fillText("LONG ROAD", X + 104, 196);
-    g.fillStyle = MUT; g.font = "400 27px " + BODY; g.fillText("João Miguel's concert archive", X + 104, 236);
+    shareBackground(g, W, H);
+    shareHeader(g, X, 196, "joão miguel's concert archive", { DISP, BODY, ACC, TXT, INK2 });
     // date, artist, where
     const d = new Date(c.date + "T12:00:00");
-    g.fillStyle = ACC; g.font = "600 64px " + DISP; g.letterSpacing = "2px";
-    g.fillText((d.getDate() + " " + mon(d) + " " + d.getFullYear()).toUpperCase(), X - 2, 400); g.letterSpacing = "0px";
-    let size = 150; g.font = "600 " + size + "px " + DISP;
+    g.fillStyle = ACC; g.font = "400 36px " + MONO; g.letterSpacing = "4px";
+    g.fillText((d.getDate() + " " + mon(d) + " " + d.getFullYear()).toUpperCase(), X, 400); g.letterSpacing = "0px";
+    let size = 150; g.font = "380 " + size + "px " + DISP;
     let lines = wrap(c.artist, R - X);
-    while ((lines.length > 2 || lines.some((l) => g.measureText(l).width > R - X)) && size > 70) { size -= 10; g.font = "600 " + size + "px " + DISP; lines = wrap(c.artist, R - X); }
+    while ((lines.length > 2 || lines.some((l) => g.measureText(l).width > R - X)) && size > 70) { size -= 10; g.font = "380 " + size + "px " + DISP; lines = wrap(c.artist, R - X); }
     let yy = 400 + size * 1.05;
     g.fillStyle = TXT;
     lines.slice(0, 2).forEach((l, i) => { if (i) yy += size * 1.02; g.fillText(fit(l, R - X), X - 4, yy); });
     yy += 80;
-    g.font = "400 36px " + BODY;
-    if (c.festival) { g.fillStyle = ACC; g.fillText(fit(c.festival, R - X), X, yy); yy += 52; }
-    g.fillStyle = MUT; g.fillText(fit(c.venue + " · " + c.city + (c.country !== "Portugal" ? ", " + c.country : ""), R - X), X, yy); yy += 52;
-    g.font = "400 28px " + BODY;
-    g.fillText("Concert #" + fmtN(idx + 1) + " · " + (nth > 1 ? ordinal(nth) + " time seeing them" : "First time seeing them"), X, yy);
+    g.font = "340 42px " + DISP;
+    if (c.festival) { g.fillStyle = ACC; g.fillText(fit(c.festival, R - X), X, yy); yy += 56; }
+    g.fillStyle = INK2; g.fillText(fit(c.venue + " · " + c.city + (c.country !== "Portugal" ? ", " + c.country : ""), R - X), X, yy); yy += 56;
+    g.fillStyle = MUT; g.font = "400 26px " + MONO;
+    g.fillText("concert #" + fmtN(idx + 1) + " · " + (nth > 1 ? ordinal(nth) + " time seeing them" : "first time seeing them"), X, yy);
     yy += 50;
     g.fillStyle = LINE; g.fillRect(X, yy, R - X, 2); yy += 70;
     // setlist: one column, or two when it is long; whatever does not fit is counted at the end
-    g.fillStyle = ACC; g.font = "600 25px " + BODY; g.letterSpacing = "4px";
+    g.fillStyle = MUT; g.font = "500 24px " + BODY; g.letterSpacing = "4px";
     g.fillText(played.length ? "SETLIST · " + played.length + (played.length === 1 ? " SONG" : " SONGS") : "SETLIST", X, yy); g.letterSpacing = "0px";
     yy += 30;
     if (!played.length) { g.fillStyle = MUT; g.font = "400 32px " + BODY; g.fillText("No setlist on setlist.fm yet.", X, yy + 40); }
@@ -1439,15 +1439,15 @@
       shown.forEach((r, i) => {
         const x = X + Math.floor(i / perCol) * colW, ry = top + (i % perCol) * lh + lh * 0.7;
         if (r.blank) return;
-        if (r.label) { g.fillStyle = r.encore ? ACC : MUT; g.font = "600 " + (fs - 8) + "px " + BODY; g.letterSpacing = "3px"; g.fillText(fit(r.label.toUpperCase(), colW - 20), x, ry); g.letterSpacing = "0px"; return; }
+        if (r.label) { g.fillStyle = r.encore ? ACC : MUT; g.font = "400 " + (fs - 8) + "px " + MONO; g.letterSpacing = "3px"; g.fillText(fit(r.label.toUpperCase(), colW - 20), x, ry); g.letterSpacing = "0px"; return; }
         n++;
-        g.fillStyle = MUT; g.font = "500 " + (fs - 4) + "px " + BODY; g.textAlign = "right"; g.fillText(n + ".", x + 44, ry); g.textAlign = "left";
+        g.fillStyle = MUT; g.font = "400 " + (fs - 6) + "px " + MONO; g.textAlign = "right"; g.fillText(n + ".", x + 44, ry); g.textAlign = "left";
         g.fillStyle = TXT; g.font = "400 " + fs + "px " + BODY; g.fillText(fit(r.name, colW - 76), x + 58, ry);
       });
       const left = rows.filter((r) => r.name).length - n;
       if (left > 0) { g.fillStyle = MUT; g.font = "400 " + (fs - 2) + "px " + BODY; g.fillText("+ " + left + " more", X + (cols - 1) * colW + 58, top + (perCol - 1) * lh + lh * 0.7); }
     }
-    g.fillStyle = MUT; g.font = "400 26px " + BODY; g.textAlign = "right"; g.fillText("longroad.joaomiguel.com", R, 1815); g.textAlign = "left";
+    g.fillStyle = MUT; g.font = "400 25px " + MONO; g.textAlign = "right"; g.fillText("longroad.joaomiguel.com", R, 1815); g.textAlign = "left";
     await deliverPng(cv, "long-road-" + c.date + "-" + c.artist.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") + ".png", c.artist + " · " + fmtDate(c.date));
   }
 
